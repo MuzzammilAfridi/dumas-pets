@@ -45,7 +45,7 @@ const Hero = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 max-w-md">
+            <div className="grid grid-cols-3 gap-4 max-w-screen-md ">
               {categories.map((cat, idx) => <div key={idx} className="bg-background rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105">
                   <img src={cat.image} alt={cat.title} className="w-full h-40 object-cover rounded-xl mb-2.5 " />
                   <p className="text-xs font-bold text-center text-foreground">{cat.title}</p>
