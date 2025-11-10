@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 import heroDog from "@/assets/hero-dog.jpg";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 const Hero = () => {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = [heroDog, heroDog, heroDog]; // Using same image for slideshow demo
 
@@ -16,13 +18,16 @@ const Hero = () => {
   }, []);
   const categories = [{
     title: "PET FOOD",
-    image: product1
+    image: product1,
+    route: "/category/pet-food"
   }, {
     title: "TREATS",
-    image: product2
+    image: product2,
+    route: "/category/treats"
   }, {
     title: "CAKES",
-    image: product3
+    image: product3,
+    route: "/category/cakes"
   }];
   return <section className="bg-primary relative overflow-hidden" style={{
     height: "calc(100vh - 4rem)"
@@ -46,7 +51,10 @@ const Hero = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-4 max-w-screen-md ">
-              {categories.map((cat, idx) => <div key={idx} className="bg-background rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105">
+              {categories.map((cat, idx) => <div 
+                  key={idx} 
+                  onClick={() => navigate(cat.route)}
+                  className="bg-background rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105">
                   <img src={cat.image} alt={cat.title} className="w-full h-40 object-cover rounded-xl mb-2.5 " />
                   <p className="text-xs font-bold text-center text-foreground">{cat.title}</p>
                 </div>)}
