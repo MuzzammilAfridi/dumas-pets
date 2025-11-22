@@ -78,16 +78,9 @@ const Hero = () => {
 
           <div className="hidden lg:flex items-center justify-center relative">
             <div className="relative w-full max-w-lg aspect-square">
-              <div className="absolute inset-0 bg-background rounded-full"></div>
+              <div className="absolute inset-0 bg-background"></div>
               <div className="absolute inset-4 bg-background/50 rounded-full overflow-hidden shadow-2xl">
-                <video
-                  src={heroVideo}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
+                <video src={heroVideo} autoPlay loop muted playsInline className="w-full h-full object-cover" />
               </div>
             </div>
           </div>
