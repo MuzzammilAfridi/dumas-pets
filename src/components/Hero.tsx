@@ -1,21 +1,12 @@
-import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
-import heroDog from "@/assets/hero-dog.jpg";
+import heroVideo from "@/assets/hero-video.mp4";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
+
 const Hero = () => {
   const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const slides = [heroDog, heroDog, heroDog]; // Using same image for slideshow demo
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
   const categories = [
     {
       title: "PET FOOD",
@@ -41,7 +32,7 @@ const Hero = () => {
       }}
     >
       <div className="container mx-auto px-4 h-full">
-        <div className="grid lg:grid-cols-2 gap-8 h-full items-center py-12">
+        <div className="grid lg:grid-cols-[55%_45%] gap-8 h-full items-center py-12">
           <div className="flex flex-col justify-center gap-6 z-10">
             <div className="space-y-4">
               <div className="inline-block">
@@ -86,13 +77,16 @@ const Hero = () => {
           </div>
 
           <div className="hidden lg:flex items-center justify-center relative">
-            <div className="relative w-96 h-96">
+            <div className="relative w-full max-w-lg aspect-square">
               <div className="absolute inset-0 bg-background rounded-full"></div>
               <div className="absolute inset-4 bg-background/50 rounded-full overflow-hidden shadow-2xl">
-                <img
-                  src={slides[currentSlide]}
-                  alt="Happy pet"
-                  className="w-full h-full object-cover transition-opacity duration-500"
+                <video
+                  src={heroVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
                 />
               </div>
             </div>
