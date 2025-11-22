@@ -42,8 +42,8 @@ const Hero = () => {
                   <path d="M45 30 Q45 15, 55 15 Q65 15, 65 25 L65 45 Q65 55, 55 55 Q45 55, 45 40 Z" fill="currentColor" />
                 </svg>
               </div>
-              <h1 className="text-6xl lg:text-7xl font-black text-primary-foreground leading-tight">
-                dumas
+              <h1 className="text-6xl font-black text-primary-foreground leading-tight lg:text-7xl">
+                Healthy Pets, Happy Pets...    
               </h1>
               <p className="text-xl lg:text-2xl text-primary-foreground/90 font-medium">
                 Bakes 'N' Meals for Pets
@@ -51,12 +51,9 @@ const Hero = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-4 max-w-screen-md ">
-              {categories.map((cat, idx) => <div 
-                  key={idx} 
-                  onClick={() => navigate(cat.route)}
-                  className="bg-background rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105">
+              {categories.map((cat, idx) => <div key={idx} onClick={() => navigate(cat.route)} className="bg-background rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105">
                   <img src={cat.image} alt={cat.title} className="w-full h-40 object-cover rounded-xl mb-2.5 " />
-                  <p className="text-xs font-bold text-center text-foreground">{cat.title}</p>
+                  <p className="font-bold text-center text-foreground text-2xl">{cat.title}</p>
                 </div>)}
             </div>
 
