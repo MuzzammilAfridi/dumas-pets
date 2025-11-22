@@ -86,7 +86,7 @@ const Hero = () => {
           </div>
 
           <div className="hidden lg:flex items-center justify-center relative">
-            <div className="relative w-160 h-160">
+            <div className="relative w-96 h-96">
               <div className="absolute inset-0 bg-background rounded-full"></div>
               <div className="absolute inset-4 bg-background/50 rounded-full overflow-hidden shadow-2xl">
                 <img
