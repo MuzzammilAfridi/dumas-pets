@@ -1,23 +1,14 @@
+import { Link } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import { Button } from "./ui/button";
 import { Shield, Wheat, Globe, Truck } from "lucide-react";
-import product1 from "@/assets/product-1.jpg";
-import product2 from "@/assets/product-2.jpg";
-import product3 from "@/assets/product-3.jpg";
-import product4 from "@/assets/product-4.jpg";
-import product5 from "@/assets/product-5.jpg";
-import product6 from "@/assets/product-6.jpg";
+import { getProductsByCategory } from "@/data/products";
 import nutritionDog from "@/assets/nutrition-dog.jpg";
 
 const FeaturedProducts = () => {
-  const products = [
-    { image: product1, name: "Premium Bowl", price: 12.99, originalPrice: 15.99 },
-    { image: product2, name: "Nutritious Treats", price: 8.99, originalPrice: 11.99 },
-    { image: product3, name: "Special Cake", price: 24.99 },
-    { image: product4, name: "Gourmet Fish", price: 14.99, originalPrice: 18.99 },
-    { image: product5, name: "Premium Beef", price: 16.99, originalPrice: 19.99 },
-    { image: product6, name: "Healthy Turkey", price: 13.99 },
-  ];
+  const petFoodProducts = getProductsByCategory('PET FOOD').slice(0, 3);
+  const treatsProducts = getProductsByCategory('TREATS').slice(0, 3);
+  const cakesProducts = getProductsByCategory('CAKES').slice(0, 3);
 
   const features = [
     { icon: Shield, title: "No Preservatives Added", desc: "100% natural ingredients for better health" },
@@ -26,15 +17,75 @@ const FeaturedProducts = () => {
     { icon: Truck, title: "Free Shipping", desc: "Fast and free delivery to your door" },
   ];
 
+  const categories = [
+    {
+      name: "PET FOOD",
+      slug: "pet-food",
+      products: petFoodProducts,
+      description: "Nutritious & Home-Cooked Meals",
+      bgClass: "bg-primary",
+    },
+    {
+      name: "TREATS",
+      slug: "treats",
+      products: treatsProducts,
+      description: "Delicious & Healthy Rewards",
+      bgClass: "bg-secondary",
+    },
+    {
+      name: "CAKES",
+      slug: "cakes",
+      products: cakesProducts,
+      description: "Celebrate with Special Cakes",
+      bgClass: "bg-accent",
+    },
+  ];
+
   return (
-    <section className="py-16 bg-background" style={{ minHeight: "100vh" }}>
+    <section className="py-16 bg-background">
       <div className="container mx-auto px-4 space-y-16">
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product, idx) => (
-            <ProductCard key={idx} {...product} />
-          ))}
-        </div>
+        {/* Category Sections */}
+        {categories.map((category, index) => (
+          <div key={category.slug} className="space-y-8">
+            {/* Category Banner */}
+            <div className={`${category.bgClass} rounded-2xl p-8 text-center`}>
+              <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground">
+                {category.name}
+              </h2>
+              <p className="text-lg text-primary-foreground/90 mt-2">
+                {category.description}
+              </p>
+            </div>
+
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {category.products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  image={product.image}
+                  name={product.name}
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                />
+              ))}
+            </div>
+
+            {/* Load More Button */}
+            <div className="text-center">
+              <Link to={`/category/${category.slug}/all`}>
+                <Button variant="outline" size="lg" className="px-8">
+                  Load More {category.name}
+                </Button>
+              </Link>
+            </div>
+
+            {/* Divider - except for last category */}
+            {index < categories.length - 1 && (
+              <div className="border-t border-border/50 pt-8" />
+            )}
+          </div>
+        ))}
 
         {/* Nutrition Plan Banner */}
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-secondary to-accent shadow-2xl">
