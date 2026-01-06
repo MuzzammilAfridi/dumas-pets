@@ -9,6 +9,12 @@ import CategoryListing from "./pages/CategoryListing";
 import AllProducts from "./pages/AllProducts";
 import ProductDetail from "./pages/ProductDetail";
 import AboutUs from "./pages/AboutUs";
+import Shop from "./pages/Shop";
+import Blog from "./pages/Blog";
+import Events from "./pages/Events";
+import Gallery from "./pages/Gallery";
+import FAQ from "./pages/FAQ";
+import ContactPage from "./pages/ContactPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +29,12 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<AboutUs />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/contact" element={<ContactPage />} />
             <Route path="/category/:category" element={<CategoryListing />} />
             <Route path="/category/:category/all" element={<AllProducts />} />
             <Route path="/product/:id" element={<ProductDetail />} />
