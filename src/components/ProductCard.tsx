@@ -1,16 +1,18 @@
 import { ShoppingCart } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 
 interface ProductCardProps {
+  id?: string;
   image: string;
   name: string;
   price: number;
   originalPrice?: number;
 }
 
-const ProductCard = ({ image, name, price, originalPrice }: ProductCardProps) => {
-  return (
+const ProductCard = ({ id, image, name, price, originalPrice }: ProductCardProps) => {
+  const cardContent = (
     <Card className="overflow-hidden hover:shadow-xl transition-all hover:scale-105 cursor-pointer border-2">
       <div className="relative h-48 overflow-hidden">
         <img
@@ -36,6 +38,12 @@ const ProductCard = ({ image, name, price, originalPrice }: ProductCardProps) =>
       </CardContent>
     </Card>
   );
+
+  if (id) {
+    return <Link to={`/product/${id}`}>{cardContent}</Link>;
+  }
+
+  return cardContent;
 };
 
 export default ProductCard;
