@@ -6,12 +6,12 @@ const Navigation = () => {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },
-    { name: "Shop", href: "/#shop" },
-    { name: "Blog", href: "#blog" },
-    { name: "Events", href: "#events" },
-    { name: "Gallery", href: "#gallery" },
-    { name: "FAQ", href: "#faq" },
-    { name: "Contact", href: "#contact" },
+    { name: "Shop", href: "/shop" },
+    { name: "Blog", href: "/blog" },
+    { name: "Events", href: "/events" },
+    { name: "Gallery", href: "/gallery" },
+    { name: "FAQ", href: "/faq" },
+    { name: "Contact", href: "/contact" },
   ];
 
   return (
@@ -27,23 +27,13 @@ const Navigation = () => {
           
           <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
-              link.href.startsWith("#") ? (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-                >
-                  {link.name}
-                </a>
-              ) : (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="text-sm font-medium text-foreground hover:text-primary transition-colors"
-                >
-                  {link.name}
-                </Link>
-              )
+              <Link
+                key={link.name}
+                to={link.href}
+                className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              >
+                {link.name}
+              </Link>
             ))}
           </div>
           
