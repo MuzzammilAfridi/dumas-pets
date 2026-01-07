@@ -24,60 +24,66 @@ const Hero = () => {
       route: "/category/cakes",
     },
   ];
-  return (
-    <section
-      className="bg-primary relative overflow-hidden"
-      style={{
-        height: "calc(100vh - 4rem)",
-      }}
-    >
-      <div className="container mx-auto px-4 h-full">
-        <div className="grid lg:grid-cols-[55%_45%] gap-8 h-full items-center py-12">
-          <div className="flex flex-col justify-center gap-6 z-10">
-            <div className="space-y-4">
-              <div className="inline-block">
-                <svg width="80" height="60" viewBox="0 0 80 60" className="text-primary-foreground">
-                  <path
-                    d="M15 30 Q15 15, 25 15 Q35 15, 35 25 L35 45 Q35 55, 25 55 Q15 55, 15 40 Z"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M45 30 Q45 15, 55 15 Q65 15, 65 25 L65 45 Q65 55, 55 55 Q45 55, 45 40 Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </div>
-              <h1 className="text-6xl font-black text-primary-foreground leading-tight lg:text-7xl">
-                Healthy Pets, Happy Pets...    
-              </h1>
-              <p className="text-xl lg:text-2xl text-primary-foreground/90 font-medium">Bakes 'N' Meals for Pets</p>
-            </div>
 
-            <div className="grid grid-cols-3 gap-4 max-w-screen-md ">
+  return (
+    <section className="bg-primary relative overflow-hidden min-h-[calc(100vh-4rem)] py-8 lg:py-12">
+      <div className="container mx-auto px-4 h-full flex flex-col">
+        {/* Row 1: Full-width title */}
+        <div className="text-center mb-8">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-primary-foreground leading-tight italic">
+            Healthy Pets, Happy Pets...
+          </h1>
+          <p className="text-xl lg:text-2xl text-primary-foreground/90 font-medium mt-2">
+            Bakes 'N' Meals for Pets
+          </p>
+        </div>
+
+        {/* Row 2: Two columns - Categories + Video */}
+        <div className="grid lg:grid-cols-[1fr_1fr] gap-8 flex-1 items-center">
+          {/* Left column: Categories */}
+          <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-3 gap-4">
               {categories.map((cat, idx) => (
                 <div
                   key={idx}
                   onClick={() => navigate(cat.route)}
                   className="bg-background rounded-2xl p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105"
                 >
-                  <img src={cat.image} alt={cat.title} className="w-full h-40 object-cover rounded-xl mb-2.5 " />
-                  <p className="font-bold text-center text-foreground text-2xl">{cat.title}</p>
+                  <img
+                    src={cat.image}
+                    alt={cat.title}
+                    className="w-full h-32 lg:h-40 object-cover rounded-xl mb-2.5"
+                  />
+                  <p className="font-bold text-center text-foreground text-lg lg:text-xl">
+                    {cat.title}
+                  </p>
                 </div>
               ))}
             </div>
 
-            <div className="flex gap-4">
-              <Button variant="hero" size="xl">
-                ORDER NOW
+            {/* Buttons */}
+            <div className="flex gap-4 mt-2">
+              <Button variant="subscribe" size="xl">
+                SUBSCRIBE MONTHLY
               </Button>
-              <Button variant="heroOutline" size="xl">
-                SHOP NOW
+              <Button variant="orderNow" size="xl">
+                ORDER NOW
               </Button>
             </div>
           </div>
 
+          {/* Right column: Video */}
           <div className="hidden lg:flex items-center justify-center">
-            <video src={heroVideo} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+            <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-background/20">
+              <video
+                src={heroVideo}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-auto max-h-[400px] object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -86,4 +92,5 @@ const Hero = () => {
     </section>
   );
 };
+
 export default Hero;
