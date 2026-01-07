@@ -1,3 +1,5 @@
+import buffaloMeal from '@/assets/buffalo-meal.webp';
+
 export type ProductCategory = 'PET FOOD' | 'TREATS' | 'CAKES';
 
 export interface Product {
@@ -16,6 +18,8 @@ export interface Product {
   }>;
 }
 
+const productImage = buffaloMeal;
+
 export const products: Product[] = [
   // PET FOOD
   {
@@ -24,7 +28,7 @@ export const products: Product[] = [
     category: 'PET FOOD',
     price: 24.99,
     originalPrice: 29.99,
-    image: '/src/assets/product-1.jpg',
+    image: productImage,
     description: 'High-quality protein-rich meal with wholesome grains, perfect for active dogs.',
     specifications: 'Cook at 350°F for 15-20 minutes. Store in cool, dry place. Shelf life: 6 months.',
     testimonials: [
@@ -37,7 +41,7 @@ export const products: Product[] = [
     name: 'Buffalo & Grain Mix',
     category: 'PET FOOD',
     price: 27.99,
-    image: '/src/assets/product-2.jpg',
+    image: productImage,
     description: 'Rich buffalo protein with whole grains for a balanced diet.',
     specifications: 'Serve at room temperature. Mix with warm water if needed.',
     testimonials: [
@@ -49,7 +53,7 @@ export const products: Product[] = [
     name: 'Fish & Vegetable Delight',
     category: 'PET FOOD',
     price: 26.99,
-    image: '/src/assets/product-3.jpg',
+    image: productImage,
     description: 'Omega-3 rich fish with farm-fresh vegetables.',
     specifications: 'Rich in omega fatty acids. Refrigerate after opening.',
     testimonials: [
@@ -62,7 +66,7 @@ export const products: Product[] = [
     category: 'PET FOOD',
     price: 28.99,
     originalPrice: 32.99,
-    image: '/src/assets/product-4.jpg',
+    image: productImage,
     description: 'Tender mutton with nutrient-rich sweet potatoes.',
     specifications: 'High protein formula. Best served warm.',
     testimonials: [
@@ -74,7 +78,7 @@ export const products: Product[] = [
     name: 'Grain-Free Chicken',
     category: 'PET FOOD',
     price: 29.99,
-    image: '/src/assets/product-5.jpg',
+    image: productImage,
     description: 'Pure chicken protein without any grains, perfect for allergies.',
     specifications: 'Grain-free formula. Consult vet for portion sizes.',
     testimonials: [
@@ -86,7 +90,7 @@ export const products: Product[] = [
     name: 'Complete Nutrition Mix',
     category: 'PET FOOD',
     price: 25.99,
-    image: '/src/assets/product-6.jpg',
+    image: productImage,
     description: 'Balanced blend of proteins, grains, and vegetables.',
     specifications: 'All-in-one nutrition. Suitable for all breeds.',
     testimonials: [
@@ -100,7 +104,7 @@ export const products: Product[] = [
     name: 'Crunchy Chicken Bites',
     category: 'TREATS',
     price: 12.99,
-    image: '/src/assets/product-1.jpg',
+    image: productImage,
     description: 'Crispy chicken treats perfect for training and rewards.',
     specifications: 'Keep sealed. Use within 3 months of opening.',
     testimonials: [
@@ -113,7 +117,7 @@ export const products: Product[] = [
     category: 'TREATS',
     price: 10.99,
     originalPrice: 13.99,
-    image: '/src/assets/product-2.jpg',
+    image: productImage,
     description: 'Delicious peanut butter flavored bone-shaped treats.',
     specifications: 'No artificial colors. Made with natural peanut butter.',
     testimonials: [
@@ -125,7 +129,7 @@ export const products: Product[] = [
     name: 'Dental Chew Sticks',
     category: 'TREATS',
     price: 14.99,
-    image: '/src/assets/product-3.jpg',
+    image: productImage,
     description: 'Healthy dental treats that clean teeth while they chew.',
     specifications: 'Promotes dental health. Long-lasting chew.',
     testimonials: [
@@ -137,7 +141,7 @@ export const products: Product[] = [
     name: 'Sweet Potato Chips',
     category: 'TREATS',
     price: 11.99,
-    image: '/src/assets/product-4.jpg',
+    image: productImage,
     description: 'Crispy sweet potato slices, naturally delicious.',
     specifications: 'Single ingredient. No preservatives.',
     testimonials: [
@@ -149,7 +153,7 @@ export const products: Product[] = [
     name: 'Beef Jerky Strips',
     category: 'TREATS',
     price: 15.99,
-    image: '/src/assets/product-5.jpg',
+    image: productImage,
     description: 'Premium beef jerky strips for the ultimate reward.',
     specifications: 'High protein. Made from real beef.',
     testimonials: [
@@ -161,7 +165,7 @@ export const products: Product[] = [
     name: 'Veggie Crunch Mix',
     category: 'TREATS',
     price: 9.99,
-    image: '/src/assets/product-6.jpg',
+    image: productImage,
     description: 'Mixed vegetable treats for health-conscious pups.',
     specifications: 'Low calorie. Rich in vitamins.',
     testimonials: [
@@ -175,7 +179,7 @@ export const products: Product[] = [
     name: 'Birthday Celebration Cake',
     category: 'CAKES',
     price: 34.99,
-    image: '/src/assets/product-1.jpg',
+    image: productImage,
     description: 'Special birthday cake for your furry friend celebration.',
     specifications: 'Serves 6-8 pets. Refrigerate and consume within 3 days.',
     testimonials: [
@@ -188,7 +192,7 @@ export const products: Product[] = [
     category: 'CAKES',
     price: 29.99,
     originalPrice: 34.99,
-    image: '/src/assets/product-2.jpg',
+    image: productImage,
     description: 'Delicious peanut butter flavored individual cupcakes.',
     specifications: 'Pack of 4. Freeze for longer storage.',
     testimonials: [
@@ -200,7 +204,7 @@ export const products: Product[] = [
     name: 'Carrot & Banana Cake',
     category: 'CAKES',
     price: 32.99,
-    image: '/src/assets/product-3.jpg',
+    image: productImage,
     description: 'Healthy carrot and banana cake with cream cheese frosting.',
     specifications: 'No sugar added. Natural sweetness from fruits.',
     testimonials: [
@@ -212,7 +216,7 @@ export const products: Product[] = [
     name: 'Mini Celebration Pack',
     category: 'CAKES',
     price: 24.99,
-    image: '/src/assets/product-4.jpg',
+    image: productImage,
     description: 'Pack of 6 mini cakes perfect for small gatherings.',
     specifications: 'Variety pack. Individual serving size.',
     testimonials: [
@@ -224,7 +228,7 @@ export const products: Product[] = [
     name: 'Pumpkin Spice Cake',
     category: 'CAKES',
     price: 31.99,
-    image: '/src/assets/product-5.jpg',
+    image: productImage,
     description: 'Seasonal pumpkin spice cake with yogurt frosting.',
     specifications: 'Fall favorite. Rich in fiber.',
     testimonials: [
@@ -236,7 +240,7 @@ export const products: Product[] = [
     name: 'Apple Cinnamon Delight',
     category: 'CAKES',
     price: 30.99,
-    image: '/src/assets/product-6.jpg',
+    image: productImage,
     description: 'Warm apple cinnamon cake with honey drizzle.',
     specifications: 'Warm before serving. All natural ingredients.',
     testimonials: [
