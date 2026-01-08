@@ -3,9 +3,8 @@ import Navigation from "@/components/Navigation";
 import { getProductById } from "@/data/products";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
@@ -16,18 +15,20 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const product = getProductById(id || "");
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const descriptionTabRef = useRef<HTMLButtonElement>(null);
 
   // Pet Food Customization States
   const [meatType, setMeatType] = useState<string>("");
   const [grainType, setGrainType] = useState<string>("");
   const [grainPercentage, setGrainPercentage] = useState<number>(0);
-  const [vegetables, setVegetables] = useState<string[]>([]);
+  const [selectedVegetable, setSelectedVegetable] = useState<string>("");
   const [quantity, setQuantity] = useState<string>("100g");
   const [preparationInstructions, setPreparationInstructions] = useState<string>("");
 
@@ -56,10 +57,17 @@ const ProductDetail = () => {
 
   const isPetFood = product.category === "PET FOOD";
 
-  const handleVegetableToggle = (veg: string) => {
-    setVegetables(prev =>
-      prev.includes(veg) ? prev.filter(v => v !== veg) : [...prev, veg]
-    );
+  const handleReadMoreClick = () => {
+    descriptionTabRef.current?.click();
+    descriptionTabRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const truncateDescription = (text: string, maxLines: number = 3) => {
+    const words = text.split(' ');
+    const wordsPerLine = 12;
+    const maxWords = maxLines * wordsPerLine;
+    if (words.length <= maxWords) return { text, truncated: false };
+    return { text: words.slice(0, maxWords).join(' '), truncated: true };
   };
 
   const handleAddToCart = () => {
@@ -73,7 +81,7 @@ const ProductDetail = () => {
           meatType,
           grainType,
           grainPercentage,
-          vegetables,
+          vegetables: selectedVegetable ? [selectedVegetable] : [],
           preparationInstructions,
         }
       })
@@ -111,7 +119,7 @@ const ProductDetail = () => {
           meatType,
           grainType,
           grainPercentage,
-          vegetables,
+          vegetables: selectedVegetable ? [selectedVegetable] : [],
           preparationInstructions,
         }
       })
@@ -135,6 +143,9 @@ const ProductDetail = () => {
     setReviewComment("");
   };
 
+  const { text: descriptionText, truncated: isDescriptionTruncated } = truncateDescription(product.description);
+  const subscriptionPrice = (product.price * 0.84).toFixed(2); // ~16% discount for 7+ days
+
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -142,152 +153,187 @@ const ProductDetail = () => {
       {/* Product Header - White Background */}
       <section className="bg-background py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
+          <div className="grid md:grid-cols-2 gap-12 items-stretch">
+            {/* Left Column - Product Image */}
+            <div className="flex">
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full rounded-2xl shadow-lg"
+                className="w-full h-full object-cover rounded-2xl shadow-lg"
               />
             </div>
-            <div>
-              <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-              <div className="flex items-center gap-3 mb-6">
-                <span className="text-3xl font-bold text-primary">${product.price.toFixed(2)}</span>
-                {product.originalPrice && (
-                  <span className="text-xl text-muted-foreground line-through">
-                    ${product.originalPrice.toFixed(2)}
-                  </span>
-                )}
-              </div>
-              <p className="text-lg text-muted-foreground mb-8">{product.description}</p>
 
-              {/* PET FOOD Advanced Customization */}
-              {isPetFood && (
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="meat-type" className="text-base font-semibold mb-2 block">
-                      Meat Type *
-                    </Label>
-                    <Select value={meatType} onValueChange={setMeatType}>
-                      <SelectTrigger id="meat-type">
-                        <SelectValue placeholder="Select meat type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Chicken">Chicken</SelectItem>
-                        <SelectItem value="Buffalo">Buffalo</SelectItem>
-                        <SelectItem value="Mutton">Mutton</SelectItem>
-                        <SelectItem value="Fish">Fish</SelectItem>
-                      </SelectContent>
-                    </Select>
+            {/* Right Column - Product Details */}
+            <div className="flex flex-col justify-between py-4">
+              <div className="space-y-6">
+                {/* Product Name */}
+                <h1 className="text-4xl font-bold">{product.name}</h1>
+
+                {/* Pricing */}
+                <div className="space-y-3">
+                  <span className="text-3xl font-bold text-primary">${product.price.toFixed(2)}</span>
+                  <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3 inline-block">
+                    <span className="text-primary font-semibold">${subscriptionPrice} for 7+ days Subscription</span>
                   </div>
+                </div>
 
-                  <div>
-                    <Label htmlFor="grain-type" className="text-base font-semibold mb-2 block">
-                      Grain Type *
-                    </Label>
-                    <Select value={grainType} onValueChange={(val) => {
-                      setGrainType(val);
-                      if (val === "No grain") setGrainPercentage(0);
-                    }}>
-                      <SelectTrigger id="grain-type">
-                        <SelectValue placeholder="Select grain type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="No grain">No grain</SelectItem>
-                        <SelectItem value="Wheat">Wheat</SelectItem>
-                        <SelectItem value="Rice">Rice</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Description with Read More */}
+                <div className="text-muted-foreground leading-relaxed">
+                  <span>{descriptionText}</span>
+                  {isDescriptionTruncated && (
+                    <>
+                      {"... "}
+                      <button
+                        onClick={handleReadMoreClick}
+                        className="text-primary font-bold hover:underline inline"
+                      >
+                        Read more
+                      </button>
+                    </>
+                  )}
+                </div>
 
-                  {grainType && grainType !== "No grain" && (
+                {/* PET FOOD Advanced Customization */}
+                {isPetFood && (
+                  <div className="space-y-6">
+                    {/* Two Column Layout for Meat/Grain and Vegetables */}
+                    <div className="grid md:grid-cols-2 gap-8">
+                      {/* Left: Meat Type and Grain Type */}
+                      <div className="space-y-5">
+                        <div>
+                          <Label htmlFor="meat-type" className="text-base font-semibold mb-2 block">
+                            Meat Type *
+                          </Label>
+                          <Select value={meatType} onValueChange={setMeatType}>
+                            <SelectTrigger 
+                              id="meat-type"
+                              className={cn(meatType && "bg-primary/10 border-primary/30")}
+                            >
+                              <SelectValue placeholder="Chicken" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background">
+                              <SelectItem value="Chicken">Chicken</SelectItem>
+                              <SelectItem value="Buffalo">Buffalo</SelectItem>
+                              <SelectItem value="Mutton">Mutton</SelectItem>
+                              <SelectItem value="Fish">Fish</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="grain-type" className="text-base font-semibold mb-2 block">
+                            Grain Type *
+                          </Label>
+                          <Select value={grainType} onValueChange={(val) => {
+                            setGrainType(val);
+                            if (val === "No grain") setGrainPercentage(0);
+                          }}>
+                            <SelectTrigger 
+                              id="grain-type"
+                              className={cn(grainType && "bg-primary/10 border-primary/30")}
+                            >
+                              <SelectValue placeholder="Select grain type" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background">
+                              <SelectItem value="No grain">No grain</SelectItem>
+                              <SelectItem value="Wheat">Wheat</SelectItem>
+                              <SelectItem value="Rice">Rice</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {/* Right: Vegetables Radio Selection */}
+                      <div>
+                        <Label className="text-base font-semibold mb-3 block">Vegetables</Label>
+                        <RadioGroup value={selectedVegetable} onValueChange={setSelectedVegetable}>
+                          <div className="space-y-3">
+                            {["Carrot", "Pumpkin", "Sweet Potato", "No veg"].map(veg => (
+                              <div key={veg} className="flex items-center space-x-3">
+                                <RadioGroupItem 
+                                  value={veg} 
+                                  id={veg}
+                                  className="border-primary text-primary"
+                                />
+                                <label 
+                                  htmlFor={veg} 
+                                  className={cn(
+                                    "text-sm font-medium cursor-pointer",
+                                    selectedVegetable === veg && "text-primary"
+                                  )}
+                                >
+                                  {veg}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+
+                    {/* Quantity - Full Width */}
                     <div>
-                      <Label htmlFor="grain-percentage" className="text-base font-semibold mb-2 block">
-                        Grain Percentage *
+                      <Label htmlFor="quantity" className="text-base font-semibold mb-2 block">
+                        Quantity *
                       </Label>
-                      <Select value={grainPercentage.toString()} onValueChange={(val) => setGrainPercentage(Number(val))}>
-                        <SelectTrigger id="grain-percentage">
-                          <SelectValue placeholder="Select percentage" />
+                      <Select value={quantity} onValueChange={setQuantity}>
+                        <SelectTrigger 
+                          id="quantity"
+                          className={cn(quantity && "bg-primary/10 border-primary/30")}
+                        >
+                          <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(pct => (
-                            <SelectItem key={pct} value={pct.toString()}>{pct}%</SelectItem>
+                        <SelectContent className="bg-background">
+                          {["100g", "200g", "300g", "400g", "500g", "600g", "700g", "800g", "900g", "1kg"].map(q => (
+                            <SelectItem key={q} value={q}>{q}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                  )}
 
-                  <div>
-                    <Label className="text-base font-semibold mb-3 block">Vegetables</Label>
-                    <div className="space-y-3">
-                      {["Carrot", "Pumpkin", "Sweet Potato", "No veg"].map(veg => (
-                        <div key={veg} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={veg}
-                            checked={vegetables.includes(veg)}
-                            onCheckedChange={() => handleVegetableToggle(veg)}
-                          />
-                          <label htmlFor={veg} className="text-sm font-medium cursor-pointer">
-                            {veg}
-                          </label>
-                        </div>
-                      ))}
+                    {/* Preparation Instructions - Full Width */}
+                    <div>
+                      <Label htmlFor="prep-instructions" className="text-base font-semibold mb-2 block">
+                        Preparation Instructions
+                      </Label>
+                      <Textarea
+                        id="prep-instructions"
+                        value={preparationInstructions}
+                        onChange={(e) => setPreparationInstructions(e.target.value)}
+                        placeholder="Enter any special preparation instructions..."
+                        className={cn(
+                          "min-h-[100px] resize-none",
+                          preparationInstructions && "bg-primary/10 border-primary/30"
+                        )}
+                      />
                     </div>
                   </div>
+                )}
 
-                  <div>
-                    <Label htmlFor="quantity" className="text-base font-semibold mb-2 block">
-                      Quantity *
-                    </Label>
-                    <Select value={quantity} onValueChange={setQuantity}>
-                      <SelectTrigger id="quantity">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {["100g", "200g", "300g", "400g", "500g", "600g", "700g", "800g", "900g", "1kg"].map(q => (
-                          <SelectItem key={q} value={q}>{q}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* TREATS & CAKES Standard Selection */}
+                {!isPetFood && (
+                  <div className="space-y-6">
+                    <div>
+                      <Label htmlFor="std-quantity" className="text-base font-semibold mb-2 block">
+                        Quantity
+                      </Label>
+                      <Select value={standardQuantity.toString()} onValueChange={(val) => setStandardQuantity(Number(val))}>
+                        <SelectTrigger 
+                          id="std-quantity"
+                          className={cn(standardQuantity && "bg-primary/10 border-primary/30")}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(q => (
+                            <SelectItem key={q} value={q.toString()}>{q}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-
-                  <div>
-                    <Label htmlFor="prep-instructions" className="text-base font-semibold mb-2 block">
-                      Preparation Instructions
-                    </Label>
-                    <Textarea
-                      id="prep-instructions"
-                      value={preparationInstructions}
-                      onChange={(e) => setPreparationInstructions(e.target.value)}
-                      placeholder="Enter any special preparation instructions..."
-                      className="min-h-[120px]"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* TREATS & CAKES Standard Selection */}
-              {!isPetFood && (
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="std-quantity" className="text-base font-semibold mb-2 block">
-                      Quantity
-                    </Label>
-                    <Select value={standardQuantity.toString()} onValueChange={(val) => setStandardQuantity(Number(val))}>
-                      <SelectTrigger id="std-quantity">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(q => (
-                          <SelectItem key={q} value={q.toString()}>{q}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -362,7 +408,7 @@ const ProductDetail = () => {
         <div className="container mx-auto px-4 max-w-5xl">
           <Tabs defaultValue="description" className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-8">
-              <TabsTrigger value="description">Description</TabsTrigger>
+              <TabsTrigger value="description" ref={descriptionTabRef}>Description</TabsTrigger>
               <TabsTrigger value="specifications">Cooking & Specs</TabsTrigger>
               <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
               <TabsTrigger value="review">Write Review</TabsTrigger>
