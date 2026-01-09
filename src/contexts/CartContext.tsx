@@ -14,8 +14,11 @@ export interface CartItem {
   };
   subscription?: {
     frequency: string;
-    date: Date;
-    timeSlot: 'morning' | 'noon' | 'evening';
+    date?: Date;
+    startDate?: Date;
+    endDate?: Date;
+    timeSlot?: string;
+    deliveryDays?: string[];
   };
 }
 
