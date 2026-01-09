@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Star } from "lucide-react";
+import { CalendarIcon, ShoppingCart, Star } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -35,9 +36,15 @@ const ProductDetail = () => {
   // Standard Product States
   const [standardQuantity, setStandardQuantity] = useState<number>(1);
 
+  // One-Time Purchase States
+  const [deliveryDate, setDeliveryDate] = useState<Date>();
+  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState<string>("");
+
   // Subscription States
-  const [subscriptionDate, setSubscriptionDate] = useState<Date>();
-  const [timeSlot, setTimeSlot] = useState<'morning' | 'noon' | 'evening'>('morning');
+  const [subscriptionStartDate, setSubscriptionStartDate] = useState<Date>();
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date>();
+  const [subscriptionTimeSlot, setSubscriptionTimeSlot] = useState<string>("");
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
 
   // Review States
   const [reviewName, setReviewName] = useState("");
@@ -95,10 +102,18 @@ const ProductDetail = () => {
   };
 
   const handleSubscribe = () => {
-    if (!subscriptionDate) {
+    if (!subscriptionStartDate || !subscriptionEndDate) {
       toast({
-        title: "Select a Date",
-        description: "Please select a delivery date for your subscription.",
+        title: "Select Date Range",
+        description: "Please select a delivery date range for your subscription.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (selectedDays.length === 0) {
+      toast({
+        title: "Select Delivery Days",
+        description: "Please select at least one delivery day.",
         variant: "destructive",
       });
       return;
@@ -110,9 +125,11 @@ const ProductDetail = () => {
       price: product.price,
       quantity: isPetFood ? 1 : standardQuantity,
       subscription: {
-        frequency: "monthly",
-        date: subscriptionDate,
-        timeSlot,
+        frequency: "weekly",
+        startDate: subscriptionStartDate,
+        endDate: subscriptionEndDate,
+        timeSlot: subscriptionTimeSlot,
+        deliveryDays: selectedDays,
       },
       ...(isPetFood && {
         customization: {
@@ -131,6 +148,14 @@ const ProductDetail = () => {
       description: `Your subscription for ${product.name} has been set up.`,
     });
   };
+
+  const toggleDay = (day: string) => {
+    setSelectedDays(prev => 
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
+
+  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -342,19 +367,11 @@ const ProductDetail = () => {
       {/* Purchase Options - Orange Background */}
       <section className="bg-primary/10 py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Add to Cart */}
-            <div className="bg-background p-8 rounded-2xl shadow-lg">
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* One-Time Purchase */}
+            <div className="bg-background p-8 rounded-2xl shadow-lg flex flex-col min-h-[320px]">
               <h3 className="text-2xl font-bold mb-6">One-Time Purchase</h3>
-              <Button size="xl" onClick={handleAddToCart} className="w-full text-lg">
-                Add to Cart
-              </Button>
-            </div>
-
-            {/* Subscribe */}
-            <div className="bg-background p-8 rounded-2xl shadow-lg">
-              <h3 className="text-2xl font-bold mb-6">Subscribe & Save</h3>
-              <div className="space-y-4 mb-6">
+              <div className="space-y-4 flex-1">
                 <div>
                   <Label className="text-sm font-semibold mb-2 block">Delivery Date</Label>
                   <Popover>
@@ -363,19 +380,20 @@ const ProductDetail = () => {
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          !subscriptionDate && "text-muted-foreground"
+                          deliveryDate && "bg-primary/10 border-primary/30 text-primary"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {subscriptionDate ? format(subscriptionDate, "PPP") : "Pick a date"}
+                        {deliveryDate ? format(deliveryDate, "MMMM do, yyyy") : "Select a date"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 bg-background" align="start">
                       <Calendar
                         mode="single"
-                        selected={subscriptionDate}
-                        onSelect={setSubscriptionDate}
+                        selected={deliveryDate}
+                        onSelect={setDeliveryDate}
                         initialFocus
+                        className="pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
@@ -383,11 +401,11 @@ const ProductDetail = () => {
 
                 <div>
                   <Label className="text-sm font-semibold mb-2 block">Time Slot</Label>
-                  <Select value={timeSlot} onValueChange={(val: any) => setTimeSlot(val)}>
-                    <SelectTrigger>
-                      <SelectValue />
+                  <Select value={deliveryTimeSlot} onValueChange={setDeliveryTimeSlot}>
+                    <SelectTrigger className={cn(deliveryTimeSlot && "bg-primary/10 border-primary/30")}>
+                      <SelectValue placeholder="Select time slot" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-background">
                       <SelectItem value="morning">Morning (8AM - 12PM)</SelectItem>
                       <SelectItem value="noon">Noon (12PM - 4PM)</SelectItem>
                       <SelectItem value="evening">Evening (4PM - 8PM)</SelectItem>
@@ -395,8 +413,100 @@ const ProductDetail = () => {
                   </Select>
                 </div>
               </div>
-              <Button size="xl" onClick={handleSubscribe} variant="secondary" className="w-full text-lg">
-                Subscribe Now
+              <Button size="xl" onClick={handleAddToCart} className="w-full text-lg mt-6">
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Add to Cart
+              </Button>
+            </div>
+
+            {/* Subscribe & Save */}
+            <div className="bg-background p-8 rounded-2xl shadow-lg flex flex-col min-h-[320px]">
+              <h3 className="text-2xl font-bold mb-6">Subscribe & Save</h3>
+              <div className="grid md:grid-cols-2 gap-6 flex-1">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-semibold mb-2 block">Delivery Date Between</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal text-sm",
+                            (subscriptionStartDate || subscriptionEndDate) && "bg-primary/10 border-primary/30 text-primary"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">
+                            {subscriptionStartDate && subscriptionEndDate 
+                              ? `${format(subscriptionStartDate, "MMM d")} - ${format(subscriptionEndDate, "MMM d, yyyy")}`
+                              : "Select date range"}
+                          </span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-background" align="start">
+                        <Calendar
+                          mode="range"
+                          selected={{ from: subscriptionStartDate, to: subscriptionEndDate }}
+                          onSelect={(range) => {
+                            setSubscriptionStartDate(range?.from);
+                            setSubscriptionEndDate(range?.to);
+                          }}
+                          initialFocus
+                          className="pointer-events-auto"
+                          numberOfMonths={2}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-semibold mb-2 block">Time Slot</Label>
+                    <Select value={subscriptionTimeSlot} onValueChange={setSubscriptionTimeSlot}>
+                      <SelectTrigger className={cn(subscriptionTimeSlot && "bg-primary/10 border-primary/30")}>
+                        <SelectValue placeholder="Select time slot" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background">
+                        <SelectItem value="morning">Morning (8AM - 12PM)</SelectItem>
+                        <SelectItem value="noon">Noon (12PM - 4PM)</SelectItem>
+                        <SelectItem value="evening">Evening (4PM - 8PM)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Right Column - Days Selection */}
+                <div>
+                  <Label className="text-sm font-semibold mb-2 block">Delivery Days</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {weekDays.map((day) => (
+                      <div 
+                        key={day} 
+                        className={cn(
+                          "flex items-center space-x-2 p-2 rounded-lg border cursor-pointer transition-colors",
+                          selectedDays.includes(day) 
+                            ? "bg-primary/10 border-primary/30" 
+                            : "border-border hover:bg-muted/50"
+                        )}
+                        onClick={() => toggleDay(day)}
+                      >
+                        <Checkbox 
+                          checked={selectedDays.includes(day)}
+                          onCheckedChange={() => toggleDay(day)}
+                          className="border-primary data-[state=checked]:bg-primary"
+                        />
+                        <span className={cn(
+                          "text-sm font-medium",
+                          selectedDays.includes(day) && "text-primary"
+                        )}>{day}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <Button size="xl" onClick={handleSubscribe} variant="orderNow" className="w-full text-lg mt-6">
+                <CalendarIcon className="mr-2 h-5 w-5" />
+                Subscribe for 7+ days
               </Button>
             </div>
           </div>
