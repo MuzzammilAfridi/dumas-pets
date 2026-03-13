@@ -130,6 +130,9 @@ const ProductDetail = () => {
       name: product.name,
       price: product.price,
       quantity: isPetFood ? 1 : standardQuantity,
+      image: product.image,
+      category: product.category,
+      purchaseType: 'subscription' as const,
       subscription: {
         frequency: "weekly",
         startDate: subscriptionStartDate,
@@ -149,10 +152,7 @@ const ProductDetail = () => {
     };
 
     addToCart(cartItem);
-    toast({
-      title: "Subscription Created",
-      description: `Your subscription for ${product.name} has been set up.`,
-    });
+    navigate('/cart');
   };
 
   const toggleDay = (day: string) => {

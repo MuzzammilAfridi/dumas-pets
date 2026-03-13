@@ -54,6 +54,7 @@ const App = () => (
               <Route path="/category/:category" element={<CategoryListing />} />
               <Route path="/category/:category/all" element={<AllProducts />} />
               <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={<Login />} />
 
               {/* Admin Routes */}

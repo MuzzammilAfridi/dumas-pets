@@ -69,9 +69,16 @@ const Navigation = () => {
                 </Button>
               </Link>
             )}
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="w-5 h-5" />
-            </Button>
+            <Link to="/cart" className="relative">
+              <Button variant="ghost" size="icon">
+                <ShoppingCart className="w-5 h-5" />
+              </Button>
+              {itemCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
+                  {itemCount}
+                </Badge>
+              )}
+            </Link>
           </div>
         </div>
       </div>
