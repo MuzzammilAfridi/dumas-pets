@@ -15,6 +15,7 @@ const Navigation = () => {
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },
     { name: "Shop", href: "/shop" },
+    { name: "Nutrition Plan", href: "/nutrition-plan" },
     { name: "Blog", href: "/blog" },
     { name: "Events", href: "/events" },
     { name: "Gallery", href: "/gallery" },
