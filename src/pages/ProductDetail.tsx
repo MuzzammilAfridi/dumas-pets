@@ -23,6 +23,7 @@ const ProductDetail = () => {
   const product = getProductById(id || "");
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const descriptionTabRef = useRef<HTMLButtonElement>(null);
 
   // Pet Food Customization States
