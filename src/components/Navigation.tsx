@@ -4,6 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navigation = () => {
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },
@@ -14,6 +17,8 @@ const Navigation = () => {
     { name: "FAQ", href: "/faq" },
     { name: "Contact", href: "/contact" },
   ];
+
+  const handleLogout = () => { logout(); navigate('/'); };
 
   return (
     <nav className="bg-background border-b border-border sticky top-0 z-50 shadow-sm">
@@ -42,9 +47,24 @@ const Navigation = () => {
             <Button variant="ghost" size="icon">
               <Search className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon">
-              <User className="w-5 h-5" />
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Link to={user?.role === 'admin' ? '/admin' : '/dashboard'}>
+                  <Button variant="ghost" size="icon">
+                    <User className="w-5 h-5" />
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="icon" onClick={handleLogout}>
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </>
+            ) : (
+              <Link to="/login">
+                <Button variant="ghost" size="icon">
+                  <User className="w-5 h-5" />
+                </Button>
+              </Link>
+            )}
             <Button variant="ghost" size="icon">
               <ShoppingCart className="w-5 h-5" />
             </Button>
