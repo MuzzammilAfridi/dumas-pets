@@ -517,7 +517,7 @@ const NutritionPlan = () => {
                           className="flex-1 text-[10px] h-7"
                           onClick={() => {
                             addToCart({
-                              id: product.id,
+                              productId: product.id,
                               name: product.name,
                               price: product.price,
                               quantity: 1,
