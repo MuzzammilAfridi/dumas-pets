@@ -2,6 +2,8 @@ import { ShoppingCart, Search, User, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
+import { Badge } from "./ui/badge";
 
 const Navigation = () => {
   const { user, isAuthenticated, logout } = useAuth();
