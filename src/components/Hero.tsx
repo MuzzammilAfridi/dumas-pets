@@ -63,10 +63,10 @@ const Hero = () => {
 
             {/* Buttons */}
             <div className="flex gap-4 mt-2">
-              <Button variant="subscribe" size="xl">
+              <Button variant="subscribe" size="xl" onClick={() => navigate("/category/pet-food/all")}>
                 SUBSCRIBE MONTHLY
               </Button>
-              <Button variant="orderNow" size="xl">
+              <Button variant="orderNow" size="xl" onClick={() => navigate("/category/pet-food/all")}>
                 ORDER NOW
               </Button>
             </div>
