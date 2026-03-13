@@ -1,6 +1,7 @@
-import { ShoppingCart, Search, User } from "lucide-react";
+import { ShoppingCart, Search, User, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navigation = () => {
   const navLinks = [
