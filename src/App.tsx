@@ -30,6 +30,7 @@ import MyOrders from "./pages/customer/MyOrders";
 import PetProfile from "./pages/customer/PetProfile";
 import ProfileManagement from "./pages/customer/ProfileManagement";
 import AddressManagement from "./pages/customer/AddressManagement";
+import NutritionPlan from "./pages/NutritionPlan";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
