@@ -7,7 +7,9 @@ import { Badge } from "./ui/badge";
 
 const Navigation = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { getItemCount } = useCart();
   const navigate = useNavigate();
+  const itemCount = getItemCount();
 
   const navLinks = [
     { name: "Home", href: "/" },
