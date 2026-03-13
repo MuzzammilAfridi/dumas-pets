@@ -84,6 +84,14 @@ const ProductDetail = () => {
       name: product.name,
       price: product.price,
       quantity: isPetFood ? 1 : standardQuantity,
+      image: product.image,
+      category: product.category,
+      purchaseType: 'onetime' as const,
+      subscription: {
+        frequency: 'once',
+        date: deliveryDate,
+        timeSlot: deliveryTimeSlot,
+      },
       ...(isPetFood && {
         customization: {
           meatType,
@@ -96,10 +104,7 @@ const ProductDetail = () => {
     };
 
     addToCart(cartItem);
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+    navigate('/cart');
   };
 
   const handleSubscribe = () => {
