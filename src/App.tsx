@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import CategoryListing from "./pages/CategoryListing";
 import AllProducts from "./pages/AllProducts";
@@ -15,35 +17,67 @@ import Events from "./pages/Events";
 import Gallery from "./pages/Gallery";
 import FAQ from "./pages/FAQ";
 import ContactPage from "./pages/ContactPage";
+import Login from "./pages/Login";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import ManageProducts from "./pages/admin/ManageProducts";
+import OrdersManagement from "./pages/admin/OrdersManagement";
+import CustomerManagement from "./pages/admin/CustomerManagement";
+import CustomerLayout from "./pages/customer/CustomerLayout";
+import CustomerDashboard from "./pages/customer/CustomerDashboard";
+import MyOrders from "./pages/customer/MyOrders";
+import PetProfile from "./pages/customer/PetProfile";
+import ProfileManagement from "./pages/customer/ProfileManagement";
+import AddressManagement from "./pages/customer/AddressManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <CartProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/category/:category" element={<CategoryListing />} />
-            <Route path="/category/:category/all" element={<AllProducts />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/category/:category" element={<CategoryListing />} />
+              <Route path="/category/:category/all" element={<AllProducts />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/login" element={<Login />} />
+
+              {/* Admin Routes */}
+              <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products" element={<ManageProducts />} />
+                <Route path="orders" element={<OrdersManagement />} />
+                <Route path="customers" element={<CustomerManagement />} />
+              </Route>
+
+              {/* Customer Routes */}
+              <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['customer']}><CustomerLayout /></ProtectedRoute>}>
+                <Route index element={<CustomerDashboard />} />
+                <Route path="orders" element={<MyOrders />} />
+                <Route path="pets" element={<PetProfile />} />
+                <Route path="profile" element={<ProfileManagement />} />
+                <Route path="addresses" element={<AddressManagement />} />
+              </Route>
+
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </CartProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
