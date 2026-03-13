@@ -5,6 +5,9 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  image?: string;
+  category?: string;
+  purchaseType?: 'onetime' | 'subscription';
   customization?: {
     meatType?: string;
     grainType?: string;
@@ -38,15 +41,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [items, setItems] = useState<CartItem[]>([]);
 
   const addToCart = (item: CartItem) => {
-    setItems(prev => {
-      const existingIndex = prev.findIndex(i => i.productId === item.productId);
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex].quantity += item.quantity;
-        return updated;
-      }
-      return [...prev, item];
-    });
+    setItems(prev => [...prev, item]);
   };
 
   const removeFromCart = (productId: string) => {

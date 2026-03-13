@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import CategoryListing from "./pages/CategoryListing";
 import AllProducts from "./pages/AllProducts";
 import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
 import AboutUs from "./pages/AboutUs";
 import Shop from "./pages/Shop";
 import Blog from "./pages/Blog";
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/category/:category" element={<CategoryListing />} />
               <Route path="/category/:category/all" element={<AllProducts />} />
               <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={<Login />} />
 
               {/* Admin Routes */}

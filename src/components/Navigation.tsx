@@ -2,10 +2,14 @@ import { ShoppingCart, Search, User, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
+import { Badge } from "./ui/badge";
 
 const Navigation = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { getItemCount } = useCart();
   const navigate = useNavigate();
+  const itemCount = getItemCount();
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -65,9 +69,16 @@ const Navigation = () => {
                 </Button>
               </Link>
             )}
-            <Button variant="ghost" size="icon">
-              <ShoppingCart className="w-5 h-5" />
-            </Button>
+            <Link to="/cart" className="relative">
+              <Button variant="ghost" size="icon">
+                <ShoppingCart className="w-5 h-5" />
+              </Button>
+              {itemCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
+                  {itemCount}
+                </Badge>
+              )}
+            </Link>
           </div>
         </div>
       </div>

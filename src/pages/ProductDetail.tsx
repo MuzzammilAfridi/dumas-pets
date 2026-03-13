@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { getProductById } from "@/data/products";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ const ProductDetail = () => {
   const product = getProductById(id || "");
   const { addToCart } = useCart();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const descriptionTabRef = useRef<HTMLButtonElement>(null);
 
   // Pet Food Customization States
@@ -83,6 +84,14 @@ const ProductDetail = () => {
       name: product.name,
       price: product.price,
       quantity: isPetFood ? 1 : standardQuantity,
+      image: product.image,
+      category: product.category,
+      purchaseType: 'onetime' as const,
+      subscription: {
+        frequency: 'once',
+        date: deliveryDate,
+        timeSlot: deliveryTimeSlot,
+      },
       ...(isPetFood && {
         customization: {
           meatType,
@@ -95,10 +104,7 @@ const ProductDetail = () => {
     };
 
     addToCart(cartItem);
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+    navigate('/cart');
   };
 
   const handleSubscribe = () => {
@@ -124,6 +130,9 @@ const ProductDetail = () => {
       name: product.name,
       price: product.price,
       quantity: isPetFood ? 1 : standardQuantity,
+      image: product.image,
+      category: product.category,
+      purchaseType: 'subscription' as const,
       subscription: {
         frequency: "weekly",
         startDate: subscriptionStartDate,
@@ -143,10 +152,7 @@ const ProductDetail = () => {
     };
 
     addToCart(cartItem);
-    toast({
-      title: "Subscription Created",
-      description: `Your subscription for ${product.name} has been set up.`,
-    });
+    navigate('/cart');
   };
 
   const toggleDay = (day: string) => {
