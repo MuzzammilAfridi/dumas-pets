@@ -30,6 +30,7 @@ import MyOrders from "./pages/customer/MyOrders";
 import PetProfile from "./pages/customer/PetProfile";
 import ProfileManagement from "./pages/customer/ProfileManagement";
 import AddressManagement from "./pages/customer/AddressManagement";
+import NutritionPlan from "./pages/NutritionPlan";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/nutrition-plan" element={<NutritionPlan />} />
               <Route path="/category/:category" element={<CategoryListing />} />
               <Route path="/category/:category/all" element={<AllProducts />} />
               <Route path="/product/:id" element={<ProductDetail />} />
