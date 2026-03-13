@@ -523,7 +523,7 @@ const NutritionPlan = () => {
                               quantity: 1,
                               image: product.image,
                               category: product.category,
-                              purchaseType: "one-time",
+                              purchaseType: "onetime",
                             });
                             navigate("/cart");
                           }}
