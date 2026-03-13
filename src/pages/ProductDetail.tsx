@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { getProductById } from "@/data/products";
 import { Button } from "@/components/ui/button";
