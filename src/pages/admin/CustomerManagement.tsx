@@ -36,7 +36,7 @@ const CustomerManagement = () => {
                   <TableCell>{c.phone}</TableCell>
                   <TableCell>{c.joinDate}</TableCell>
                   <TableCell>{c.totalOrders}</TableCell>
-                  <TableCell>${c.totalSpent.toFixed(2)}</TableCell>
+                  <TableCell>₹{c.totalSpent.toFixed(2)}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => setSelectedCustomer(c)}><Eye className="w-4 h-4" /></Button>
                   </TableCell>
