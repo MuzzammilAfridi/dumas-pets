@@ -1,4 +1,4 @@
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, CalendarCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
@@ -9,9 +9,12 @@ interface ProductCardProps {
   name: string;
   price: number;
   originalPrice?: number;
+  category?: string;
 }
 
-const ProductCard = ({ id, image, name, price, originalPrice }: ProductCardProps) => {
+const ProductCard = ({ id, image, name, price, originalPrice, category }: ProductCardProps) => {
+  const isPetFood = category === 'PET FOOD';
+
   const cardContent = (
     <Card className="overflow-hidden hover:shadow-xl transition-all hover:scale-105 cursor-pointer border-2">
       <div className="relative h-48 overflow-hidden">
@@ -31,10 +34,23 @@ const ProductCard = ({ id, image, name, price, originalPrice }: ProductCardProps
             </span>
           )}
         </div>
-        <Button className="w-full" size="lg">
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          Order
-        </Button>
+        {isPetFood ? (
+          <div className="flex gap-2">
+            <Button className="flex-1" size="lg" variant="default">
+              <ShoppingCart className="w-4 h-4 mr-1" />
+              Order
+            </Button>
+            <Button className="flex-1" size="lg" variant="outline">
+              <CalendarCheck className="w-4 h-4 mr-1" />
+              Subscribe
+            </Button>
+          </div>
+        ) : (
+          <Button className="w-full" size="lg">
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            Order
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
