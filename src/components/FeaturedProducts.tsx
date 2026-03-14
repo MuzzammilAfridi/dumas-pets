@@ -98,7 +98,7 @@ const FeaturedProducts = () => {
                 Every pet is unique! Consider their age, breed, activity level, and any allergies 
                 to create the perfect feeding plan for your beloved companion.
               </p>
-              <Button variant="default" size="xl" className="w-fit shadow-lg">
+              <Button variant="default" size="xl" className="w-fit shadow-lg" onClick={() => navigate("/nutrition-plan")}>
                 Create a personalized feeding plan
               </Button>
             </div>
