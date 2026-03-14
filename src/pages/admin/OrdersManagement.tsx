@@ -61,7 +61,7 @@ const OrdersManagement = () => {
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.customerName}</TableCell>
                   <TableCell>{order.date}</TableCell>
-                  <TableCell>${order.total.toFixed(2)}</TableCell>
+                  <TableCell>₹{order.total.toFixed(2)}</TableCell>
                   <TableCell><Badge variant={statusColor(order.status) as any}>{order.status}</Badge></TableCell>
                   <TableCell>
                     <Select value={order.status} onValueChange={v => updateStatus(order.id, v as Order['status'])}>
