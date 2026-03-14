@@ -35,7 +35,7 @@ const MyOrders = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline">{order.status}</Badge>
-                <span className="font-bold">${order.total.toFixed(2)}</span>
+                <span className="font-bold">₹{order.total.toFixed(2)}</span>
               </div>
             </div>
 
