@@ -546,7 +546,7 @@ const Cart = () => {
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Grand Total</span>
-                    <span className="text-primary">${grandTotal.toFixed(2)}</span>
+                    <span className="text-primary">₹{grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
                 {subscriptionDiscount > 0 && (
