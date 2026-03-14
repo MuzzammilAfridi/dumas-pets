@@ -540,7 +540,7 @@ const Cart = () => {
                   {subscriptionDiscount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Subscription Savings</span>
-                      <span className="font-medium">-${subscriptionDiscount.toFixed(2)}</span>
+                      <span className="font-medium">-₹{subscriptionDiscount.toFixed(2)}</span>
                     </div>
                   )}
                   <Separator />
