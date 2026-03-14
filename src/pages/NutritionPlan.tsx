@@ -510,7 +510,7 @@ const NutritionPlan = () => {
                       <Badge variant="outline" className="text-[10px]">{product.category}</Badge>
                       <h3 className="font-bold text-xs leading-tight text-foreground">{product.name}</h3>
                       <p className="text-xs text-muted-foreground">{Math.round(dailyGrams / 3)}g / meal</p>
-                      <p className="text-sm font-bold text-primary">${product.price.toFixed(2)}</p>
+                      <p className="text-sm font-bold text-primary">₹{product.price.toFixed(2)}</p>
                       <div className="flex gap-1">
                         <Button
                           size="sm"

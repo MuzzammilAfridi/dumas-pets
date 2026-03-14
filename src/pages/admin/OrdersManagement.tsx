@@ -61,7 +61,7 @@ const OrdersManagement = () => {
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.customerName}</TableCell>
                   <TableCell>{order.date}</TableCell>
-                  <TableCell>${order.total.toFixed(2)}</TableCell>
+                  <TableCell>₹{order.total.toFixed(2)}</TableCell>
                   <TableCell><Badge variant={statusColor(order.status) as any}>{order.status}</Badge></TableCell>
                   <TableCell>
                     <Select value={order.status} onValueChange={v => updateStatus(order.id, v as Order['status'])}>
@@ -100,11 +100,11 @@ const OrdersManagement = () => {
                 {selectedOrder.items.map((item, i) => (
                   <div key={i} className="flex justify-between text-sm py-1 border-b border-border last:border-0">
                     <span>{item.name} × {item.quantity}</span>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between font-bold text-sm pt-2">
-                  <span>Total</span><span>${selectedOrder.total.toFixed(2)}</span>
+                  <span>Total</span><span>₹{selectedOrder.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

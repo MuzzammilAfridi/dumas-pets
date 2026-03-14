@@ -36,7 +36,7 @@ const CustomerManagement = () => {
                   <TableCell>{c.phone}</TableCell>
                   <TableCell>{c.joinDate}</TableCell>
                   <TableCell>{c.totalOrders}</TableCell>
-                  <TableCell>${c.totalSpent.toFixed(2)}</TableCell>
+                  <TableCell>₹{c.totalSpent.toFixed(2)}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => setSelectedCustomer(c)}><Eye className="w-4 h-4" /></Button>
                   </TableCell>
@@ -56,7 +56,7 @@ const CustomerManagement = () => {
                 <p><span className="text-muted-foreground">Email:</span> {selectedCustomer.email}</p>
                 <p><span className="text-muted-foreground">Phone:</span> {selectedCustomer.phone}</p>
                 <p><span className="text-muted-foreground">Joined:</span> {selectedCustomer.joinDate}</p>
-                <p><span className="text-muted-foreground">Total Spent:</span> ${selectedCustomer.totalSpent.toFixed(2)}</p>
+                <p><span className="text-muted-foreground">Total Spent:</span> ₹{selectedCustomer.totalSpent.toFixed(2)}</p>
               </div>
               <div>
                 <p className="font-semibold text-sm mb-2">Order History ({customerOrders.length})</p>
@@ -69,7 +69,7 @@ const CustomerManagement = () => {
                       <p className="text-muted-foreground text-xs">{o.date}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span>${o.total.toFixed(2)}</span>
+                      <span>₹{o.total.toFixed(2)}</span>
                       <Badge variant="outline">{o.status}</Badge>
                     </div>
                   </div>

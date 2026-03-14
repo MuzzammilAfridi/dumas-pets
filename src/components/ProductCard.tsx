@@ -24,10 +24,10 @@ const ProductCard = ({ id, image, name, price, originalPrice }: ProductCardProps
       <CardContent className="p-4 space-y-3">
         <h3 className="font-bold text-lg">{name}</h3>
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-primary">${price.toFixed(2)}</span>
+          <span className="text-2xl font-bold text-primary">₹{price.toFixed(2)}</span>
           {originalPrice && (
             <span className="text-sm text-muted-foreground line-through">
-              ${originalPrice.toFixed(2)}
+              ₹{originalPrice.toFixed(2)}
             </span>
           )}
         </div>
