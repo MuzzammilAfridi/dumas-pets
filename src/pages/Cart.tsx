@@ -552,7 +552,7 @@ const Cart = () => {
                 {subscriptionDiscount > 0 && (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
                     <p className="text-sm text-green-700 font-semibold">
-                      🎉 You're saving ${subscriptionDiscount.toFixed(2)} with subscriptions!
+                      🎉 You're saving ₹{subscriptionDiscount.toFixed(2)} with subscriptions!
                     </p>
                   </div>
                 )}
