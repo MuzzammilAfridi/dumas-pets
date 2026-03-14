@@ -445,9 +445,9 @@ const Cart = () => {
                         </div>
                         <div className="text-right">
                           {isSubscription && (
-                            <p className="text-xs text-muted-foreground line-through">${(item.price * item.quantity * (dayCount || 1)).toFixed(2)}</p>
+                            <p className="text-xs text-muted-foreground line-through">₹{(item.price * item.quantity * (dayCount || 1)).toFixed(2)}</p>
                           )}
-                          <p className="text-lg font-bold text-primary">${itemTotal.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-primary">₹{itemTotal.toFixed(2)}</p>
                         </div>
                       </div>
                     </div>
