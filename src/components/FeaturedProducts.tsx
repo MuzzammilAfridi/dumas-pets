@@ -6,6 +6,7 @@ import { getProductsByCategory } from "@/data/products";
 import nutritionDog from "@/assets/nutrition-dog.jpg";
 
 const FeaturedProducts = () => {
+  const navigate = useNavigate();
   const petFoodProducts = getProductsByCategory('PET FOOD').slice(0, 3);
   const treatsProducts = getProductsByCategory('TREATS').slice(0, 3);
   const cakesProducts = getProductsByCategory('CAKES').slice(0, 3);
