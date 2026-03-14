@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import { Button } from "./ui/button";
 import { Shield, Wheat, Globe, Truck } from "lucide-react";
@@ -6,6 +6,7 @@ import { getProductsByCategory } from "@/data/products";
 import nutritionDog from "@/assets/nutrition-dog.jpg";
 
 const FeaturedProducts = () => {
+  const navigate = useNavigate();
   const petFoodProducts = getProductsByCategory('PET FOOD').slice(0, 3);
   const treatsProducts = getProductsByCategory('TREATS').slice(0, 3);
   const cakesProducts = getProductsByCategory('CAKES').slice(0, 3);
@@ -98,7 +99,7 @@ const FeaturedProducts = () => {
                 Every pet is unique! Consider their age, breed, activity level, and any allergies 
                 to create the perfect feeding plan for your beloved companion.
               </p>
-              <Button variant="default" size="xl" className="w-fit shadow-lg">
+              <Button variant="default" size="xl" className="w-fit shadow-lg" onClick={() => navigate("/nutrition-plan")}>
                 Create a personalized feeding plan
               </Button>
             </div>
