@@ -56,7 +56,7 @@ const CustomerManagement = () => {
                 <p><span className="text-muted-foreground">Email:</span> {selectedCustomer.email}</p>
                 <p><span className="text-muted-foreground">Phone:</span> {selectedCustomer.phone}</p>
                 <p><span className="text-muted-foreground">Joined:</span> {selectedCustomer.joinDate}</p>
-                <p><span className="text-muted-foreground">Total Spent:</span> ${selectedCustomer.totalSpent.toFixed(2)}</p>
+                <p><span className="text-muted-foreground">Total Spent:</span> ₹{selectedCustomer.totalSpent.toFixed(2)}</p>
               </div>
               <div>
                 <p className="font-semibold text-sm mb-2">Order History ({customerOrders.length})</p>
