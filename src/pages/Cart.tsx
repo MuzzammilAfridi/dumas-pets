@@ -248,11 +248,11 @@ const Cart = () => {
             </div>
             <div className="bg-muted rounded-xl p-4 text-left space-y-1">
               <p className="text-sm font-semibold">Order Summary</p>
-              <div className="flex justify-between text-sm"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-sm"><span>Delivery</span><span>{deliveryCharge === 0 ? "Free" : `$${deliveryCharge.toFixed(2)}`}</span></div>
-              {subscriptionDiscount > 0 && <div className="flex justify-between text-sm text-green-600"><span>Subscription Savings</span><span>-${subscriptionDiscount.toFixed(2)}</span></div>}
+              <div className="flex justify-between text-sm"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-sm"><span>Delivery</span><span>{deliveryCharge === 0 ? "Free" : `₹${deliveryCharge.toFixed(2)}`}</span></div>
+              {subscriptionDiscount > 0 && <div className="flex justify-between text-sm text-green-600"><span>Subscription Savings</span><span>-₹{subscriptionDiscount.toFixed(2)}</span></div>}
               <Separator className="my-1" />
-              <div className="flex justify-between font-bold"><span>Grand Total</span><span className="text-primary">${grandTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between font-bold"><span>Grand Total</span><span className="text-primary">₹{grandTotal.toFixed(2)}</span></div>
             </div>
             <Button size="xl" className="w-full" onClick={() => navigate("/shop")}>
               Continue Shopping
