@@ -23,6 +23,7 @@ const ProductGrid = ({ products, showAddToCart = false }: ProductGridProps) => {
             name={product.name}
             price={product.price}
             originalPrice={product.originalPrice}
+            category={product.category}
           />
         </div>
       ))}
