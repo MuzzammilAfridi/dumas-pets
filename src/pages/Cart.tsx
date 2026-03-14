@@ -402,7 +402,7 @@ const Cart = () => {
                             </div>
                             <div>
                               <span className="text-muted-foreground">Price/Day</span>
-                              <p className="font-bold text-primary">${subscriptionPrice.toFixed(2)}</p>
+                              <p className="font-bold text-primary">₹{subscriptionPrice.toFixed(2)}</p>
                             </div>
                           </div>
                         </div>
