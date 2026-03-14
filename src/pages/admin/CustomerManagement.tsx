@@ -69,7 +69,7 @@ const CustomerManagement = () => {
                       <p className="text-muted-foreground text-xs">{o.date}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span>${o.total.toFixed(2)}</span>
+                      <span>₹{o.total.toFixed(2)}</span>
                       <Badge variant="outline">{o.status}</Badge>
                     </div>
                   </div>

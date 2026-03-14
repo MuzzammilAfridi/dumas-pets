@@ -202,9 +202,9 @@ const ProductDetail = () => {
 
                 {/* Pricing */}
                 <div className="space-y-3">
-                  <span className="text-3xl font-bold text-primary">${product.price.toFixed(2)}</span>
+                  <span className="text-3xl font-bold text-primary">₹{product.price.toFixed(2)}</span>
                   <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3 inline-block">
-                    <span className="text-primary font-semibold">${subscriptionPrice} for 7+ days Subscription</span>
+                    <span className="text-primary font-semibold">₹{subscriptionPrice} for 7+ days Subscription</span>
                   </div>
                 </div>
 

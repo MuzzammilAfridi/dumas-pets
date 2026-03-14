@@ -570,7 +570,7 @@ const Cart = () => {
                   ) : (
                     <>
                       <CreditCard className="mr-2 h-5 w-5" />
-                      Pay Now — ${grandTotal.toFixed(2)}
+                      Pay Now — ₹{grandTotal.toFixed(2)}
                     </>
                   )}
                 </Button>

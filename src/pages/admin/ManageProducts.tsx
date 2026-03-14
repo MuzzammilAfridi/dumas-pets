@@ -126,7 +126,7 @@ const ManageProducts = () => {
                   <TableCell><div className="w-10 h-10 rounded-lg bg-muted overflow-hidden">{p.image && <img src={p.image} alt={p.name} className="w-full h-full object-cover" />}</div></TableCell>
                   <TableCell className="font-medium">{p.name}</TableCell>
                   <TableCell><Badge variant="outline">{p.category}</Badge></TableCell>
-                  <TableCell>${p.price.toFixed(2)}</TableCell>
+                  <TableCell>₹{p.price.toFixed(2)}</TableCell>
                   <TableCell>10</TableCell>
                   <TableCell><Badge variant="default">Active</Badge></TableCell>
                   <TableCell className="text-right">
