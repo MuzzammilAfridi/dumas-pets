@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import { getProductById } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useState, useRef } from "react";
@@ -18,9 +18,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+import { createCart, updateCart } from "@/services/cartService";
+
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const product = getProductById(id || "");
+  const { products, loading } = useProducts();
+
+// const { id } = useParams();
+
+const createSlug = (str) => {
+  return str
+    ?.trim()
+    .replace(/\//g, "-")
+    .replace(/%/g, "percent")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .toLowerCase();
+};
+
+const product = products.find(
+  (p: any) => createSlug(p.id) === id
+);
   const { addToCart } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -52,16 +69,20 @@ const ProductDetail = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
 
-  if (!product) {
-    return (
-      <div className="min-h-screen">
-        <Navigation />
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-3xl font-bold">Product not found</h1>
-        </div>
+if (loading) {
+  return <p className="text-center py-10">Loading...</p>;
+}
+
+if (!product) {
+  return (
+    <div className="min-h-screen">
+      <Navigation />
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-3xl font-bold">Product not found</h1>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   const isPetFood = product.category === "PET FOOD";
 
@@ -70,8 +91,8 @@ const ProductDetail = () => {
     descriptionTabRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const truncateDescription = (text: string, maxLines: number = 3) => {
-    const words = text.split(' ');
+const truncateDescription = (text = "", maxLines = 3) => {
+  const words = text.split(" ");
     const wordsPerLine = 12;
     const maxWords = maxLines * wordsPerLine;
     if (words.length <= maxWords) return { text, truncated: false };

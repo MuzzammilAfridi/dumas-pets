@@ -6,6 +6,14 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
+  proxy: {
+  "/api": {
+    target: "https://dumas.frappe.cloud",
+    changeOrigin: true,
+    secure: true,
+  },
+},
+
     host: "::",
     port: 8080,
   },

@@ -1,34 +1,56 @@
 import { useParams, Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import ProductGrid from "@/components/ProductGrid";
-import { getProductsByCategory, ProductCategory } from "@/data/products";
+
 import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Filter, ArrowUpDown } from "lucide-react";
 
+import { useProducts } from "@/hooks/useProducts";
+
 const PRODUCTS_PER_PAGE = 18;
 
 const AllProducts = () => {
+
+  const { products, loading } = useProducts();
   const { category } = useParams<{ category: string }>();
-  const categoryName = category?.toUpperCase().replace('-', ' ') as ProductCategory;
+
   const [sortBy, setSortBy] = useState<string>("name");
   const [displayCount, setDisplayCount] = useState(PRODUCTS_PER_PAGE);
   const [isLoading, setIsLoading] = useState(false);
+
+  console.log("produts in all products", products);
   
-  let products = getProductsByCategory(categoryName);
+  
+const decodedCategory = category
+  ?.split("-")
+  .join(" ")
+  .toLowerCase();
+
+const displayName = decodedCategory
+  ?.split(" ")
+  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  .join(" ");
+
+let filteredProducts = products.filter((p: any) =>
+  p.category?.toLowerCase().includes(decodedCategory || "")
+);
+  
 
   // Sort products
-  if (sortBy === "price-low") {
-    products = [...products].sort((a, b) => a.price - b.price);
-  } else if (sortBy === "price-high") {
-    products = [...products].sort((a, b) => b.price - a.price);
-  } else if (sortBy === "name") {
-    products = [...products].sort((a, b) => a.name.localeCompare(b.name));
-  }
+if (sortBy === "price-low") {
+  filteredProducts = [...filteredProducts].sort((a, b) => a.price - b.price);
+} else if (sortBy === "price-high") {
+  filteredProducts = [...filteredProducts].sort((a, b) => b.price - a.price);
+} else {
+  filteredProducts = [...filteredProducts].sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+}
 
-  const displayedProducts = products.slice(0, displayCount);
-  const hasMore = displayCount < products.length;
+const displayedProducts = filteredProducts.slice(0, displayCount);
+const hasMore = displayCount < filteredProducts.length;
 
   const loadMore = () => {
     setIsLoading(true);
@@ -44,10 +66,13 @@ const AllProducts = () => {
   }, [category]);
 
   const categories = [
-    { name: "PET FOOD", slug: "pet-food" },
+    { name: "PET FOOD", slug: "pet-meals" },
     { name: "TREATS", slug: "treats" },
     { name: "CAKES", slug: "cakes" },
   ];
+
+
+  if (loading) return <p className="text-center py-10">Loading...</p>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,7 +82,7 @@ const AllProducts = () => {
       <section className="bg-primary py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground text-center">
-            {categoryName}
+            {displayName}
           </h1>
           <p className="text-xl text-primary-foreground/90 text-center mt-4">
             Browse our complete collection
@@ -128,7 +153,7 @@ const AllProducts = () => {
               {/* Product Count */}
               <div className="flex justify-between items-center mb-6">
                 <p className="text-muted-foreground">
-                  Showing {displayedProducts.length} of {products.length} products
+             Showing {displayedProducts.length} of {filteredProducts.length}
                 </p>
               </div>
 

@@ -29,6 +29,9 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import buffaloMeal from "@/assets/buffalo-meal.webp";
 
+
+
+
 // Mock cart items for UI preview
 const MOCK_CART_ITEMS: CartItem[] = [
   {
@@ -133,7 +136,7 @@ const Cart = () => {
   const { toast } = useToast();
 
   // Use mock items if cart is empty for preview
-  const displayItems = cartItems.length > 0 ? cartItems : MOCK_CART_ITEMS;
+const displayItems = cartItems;
   const isUsingMock = cartItems.length === 0;
 
   // Customer details
@@ -160,6 +163,14 @@ const Cart = () => {
 
   // Checkout mobile collapse
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+
+  const { getERPItems } = useCart();
+
+  const payload = {
+  quotation_to: "Customer",
+  party_name: fullName,
+  items: getERPItems(),
+};
 
   const getItemTotal = (item: CartItem) => {
     if (item.purchaseType === "subscription" && item.subscription?.startDate && item.subscription?.endDate && item.subscription?.deliveryDays) {
@@ -199,6 +210,10 @@ const Cart = () => {
   const handleRemove = (productId: string) => {
     if (!isUsingMock) removeFromCart(productId);
   };
+
+  const { items } = useCart();
+
+  console.log("CART ITEMS:", items);
 
   const validate = () => {
     const errs: Record<string, string> = {};

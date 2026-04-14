@@ -60,7 +60,14 @@ const App = () => (
               <Route path="/login" element={<Login />} />
 
               {/* Admin Routes */}
-              <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<AdminDashboard />} />
                 <Route path="products" element={<ManageProducts />} />
                 <Route path="orders" element={<OrdersManagement />} />
@@ -68,7 +75,14 @@ const App = () => (
               </Route>
 
               {/* Customer Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['customer']}><CustomerLayout /></ProtectedRoute>}>
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["customer"]}>
+                    <CustomerLayout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<CustomerDashboard />} />
                 <Route path="orders" element={<MyOrders />} />
                 <Route path="pets" element={<PetProfile />} />

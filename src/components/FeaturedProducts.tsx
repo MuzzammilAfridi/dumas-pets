@@ -2,14 +2,29 @@ import { Link, useNavigate } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import { Button } from "./ui/button";
 import { Shield, Wheat, Globe, Truck } from "lucide-react";
-import { getProductsByCategory } from "@/data/products";
+
 import nutritionDog from "@/assets/nutrition-dog.jpg";
+import { useProducts } from "@/hooks/useProducts";
 
 const FeaturedProducts = () => {
   const navigate = useNavigate();
-  const petFoodProducts = getProductsByCategory('PET FOOD').slice(0, 3);
-  const treatsProducts = getProductsByCategory('TREATS').slice(0, 3);
-  const cakesProducts = getProductsByCategory('CAKES').slice(0, 3);
+  const { products, loading } = useProducts();
+
+const petFoodProducts = products
+  .filter((p: any) => p.category?.trim().toLowerCase() === "pet meals")
+  .slice(0, 3);
+
+const treatsProducts = products
+  .filter((p: any) => p.category?.trim().toLowerCase() === "bakes") // or correct group
+  .slice(0, 3);
+
+const cakesProducts = products
+  .filter((p: any) => p.category?.trim().toLowerCase() === "desserts")
+  .slice(0, 3);
+
+
+  console.log("ALL PRODUCTS:", products);
+console.log("PET FOOD:", products.filter(p => p.category === "PET FOOD"));
 
   const features = [
     { icon: Shield, title: "No Preservatives Added", desc: "100% natural ingredients for better health" },
@@ -18,29 +33,31 @@ const FeaturedProducts = () => {
     { icon: Truck, title: "Free Shipping", desc: "Fast and free delivery to your door" },
   ];
 
-  const categories = [
-    {
-      name: "PET FOOD",
-      slug: "pet-food",
-      products: petFoodProducts,
-      description: "Nutritious & Home-Cooked Meals",
-      bgClass: "bg-primary",
-    },
-    {
-      name: "TREATS",
-      slug: "treats",
-      products: treatsProducts,
-      description: "Delicious & Healthy Rewards",
-      bgClass: "bg-secondary",
-    },
-    {
-      name: "CAKES",
-      slug: "cakes",
-      products: cakesProducts,
-      description: "Celebrate with Special Cakes",
-      bgClass: "bg-accent",
-    },
-  ];
+ const categories = [
+  {
+    name: "Pet Meals",
+    slug: "pet-meals",   
+    products: petFoodProducts,
+    description: "Nutritious & Home-Cooked Meals",
+    bgClass: "bg-primary",
+  },
+  {
+    name: "Bakes",
+    slug: "bakes",
+    products: treatsProducts,
+    description: "Delicious & Healthy Rewards",
+    bgClass: "bg-secondary",
+  },
+  {
+    name: "Desserts",
+    slug: "desserts",
+    products: cakesProducts,
+    description: "Celebrate with Special Cakes",
+    bgClass: "bg-accent",
+  },
+];
+
+  if (loading) return <p className="text-center py-10">Loading...</p>;
 
   return (
     <section className="py-16 bg-background">
@@ -69,6 +86,7 @@ const FeaturedProducts = () => {
                   price={product.price}
                   originalPrice={product.originalPrice}
                   category={product.category}
+                   slug={product.slug} 
                 />
               ))}
             </div>
