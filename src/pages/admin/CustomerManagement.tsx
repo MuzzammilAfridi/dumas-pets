@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,15 +23,40 @@ import { useCustomers } from "@/hooks/useCustomers";
 const CustomerManagement = () => {
   const { customers, loading } = useCustomers();
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const customerOrders = selectedCustomer
     ? customers.filter((o) => o.customerId === selectedCustomer.id)
     : [];
 
+const filteredCustomers = customers.filter((c) =>
+  `${c.customer_name} ${c.email} ${c.phone}`
+    .toLowerCase()
+    .includes(searchTerm.toLowerCase())
+);
+
+
   return (
     <div className="space-y-4">
       <Card>
         <CardContent className="p-0">
+<div className="p-4">
+  <div className="relative">
+    
+    {/* Search Icon */}
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+    {/* Input */}
+    <input
+      type="text"
+      placeholder="Search customers..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full border rounded-lg pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    
+  </div>
+</div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -44,7 +70,7 @@ const CustomerManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {customers.map((c) => (
+              {filteredCustomers.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">
                     {c.customer_name}

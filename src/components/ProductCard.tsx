@@ -16,6 +16,9 @@ interface ProductCardProps {
 const ProductCard = ({ id, image, name, price, originalPrice, category, slug }: ProductCardProps) => {
   const isPetFood = category === 'PET FOOD';
 
+  console.log("item in product card", id, slug );
+  
+
   const cardContent = (
  <Card className="h-full flex flex-col overflow-hidden hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer border-2">
      <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-100">

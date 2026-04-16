@@ -18,7 +18,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+
+
 import { createCart, updateCart } from "@/services/cartService";
+
+const VEGETABLE_OPTIONS = [
+  { label: "Carrot", value: "carrot" },
+  { label: "Pumpkin", value: "pumpkin" },
+  { label: "Sweet Potato", value: "sweet_potato" },
+  { label: "No veg", value: "no_veg" },
+];
+
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,8 +56,8 @@ const product = products.find(
   // Pet Food Customization States
   const [meatType, setMeatType] = useState<string>("");
   const [grainType, setGrainType] = useState<string>("");
-  const [grainPercentage, setGrainPercentage] = useState<number>(0);
-  const [selectedVegetable, setSelectedVegetable] = useState<string>("");
+  // const [grainPercentage, setGrainPercentage] = useState<number>(0);
+const [selectedVegetables, setSelectedVegetables] = useState<string[]>([]);
   const [quantity, setQuantity] = useState<string>("100g");
   const [preparationInstructions, setPreparationInstructions] = useState<string>("");
 
@@ -69,6 +79,43 @@ const product = products.find(
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
 
+  const [grainPercentage, setGrainPercentage] = useState<number>(0);
+const [gpvRatio, setGpvRatio] = useState<string>("");
+
+const [extraSoup, setExtraSoup] = useState<number>(0);
+
+const getQuantityInGrams = (q: string) => {
+  if (q.includes("kg")) return parseInt(q) * 1000;
+  return parseInt(q);
+};
+
+const freeSoup = Math.floor(getQuantityInGrams(quantity) / 250);
+
+const remainingForNextSoup = 250 - (getQuantityInGrams(quantity) % 250);
+
+const showUnlockMessage = freeSoup > 0;
+const showUpsellMessage = freeSoup === 0 && getQuantityInGrams(quantity) < 250;
+
+const toggleVegetable = (veg: string) => {
+  setSelectedVegetables((prev) => {
+    
+    // ✅ If user selects "No veg"
+    if (veg === "no_veg") {
+      return prev.includes("no_veg") ? [] : ["no_veg"];
+    }
+
+    // ✅ If selecting other veg → remove "no_veg"
+    let updated = prev.filter((v) => v !== "no_veg");
+
+    // Toggle logic
+    if (updated.includes(veg)) {
+      return updated.filter((v) => v !== veg);
+    } else {
+      return [...updated, veg];
+    }
+  });
+};
+
 if (loading) {
   return <p className="text-center py-10">Loading...</p>;
 }
@@ -84,7 +131,7 @@ if (!product) {
   );
 }
 
-  const isPetFood = product.category === "PET FOOD";
+  const isPetFood = true
 
   const handleReadMoreClick = () => {
     descriptionTabRef.current?.click();
@@ -100,30 +147,39 @@ const truncateDescription = (text = "", maxLines = 3) => {
   };
 
   const handleAddToCart = () => {
-    const cartItem = {
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: isPetFood ? 1 : standardQuantity,
-      image: product.image,
-      category: product.category,
-      purchaseType: 'onetime' as const,
-      subscription: {
-        frequency: 'once',
-        date: deliveryDate,
-        timeSlot: deliveryTimeSlot,
-      },
+   const cartItem = {
+   productId: product.item_code ,     // ✅ THIS IS item_code
+  name: product.name,           // ✅ already mapped
+  price: product.price || 100,   
+  category: product.category,    // ✅ FIXED
+  quantity: isPetFood ? 1 : standardQuantity,
+  image: product.image,
+              // ✅ FIXED
+  purchaseType: 'onetime' as const,
+  subscription: {
+    frequency: 'once',
+    date: deliveryDate,
+    timeSlot: deliveryTimeSlot,
+  },
       ...(isPetFood && {
-        customization: {
-          meatType,
-          grainType,
-          grainPercentage,
-          vegetables: selectedVegetable ? [selectedVegetable] : [],
-          preparationInstructions,
-        }
-      })
-    };
+      customization: {
+        meatType,
+        grainType,
+        grainPercentage,
+        gpvRatio,
+        freeSoup,
+extraSoup,
+        vegetables: selectedVegetables,
+        ...(preparationInstructions && {
+    preparationInstructions
+  })
+      }
+    })
 
+};
+
+console.log("PRODUCT:", product);
+console.log("ADDING TO CART:", cartItem);
     addToCart(cartItem);
     navigate('/cart');
   };
@@ -147,7 +203,7 @@ const truncateDescription = (text = "", maxLines = 3) => {
     }
 
     const cartItem = {
-      productId: product.id,
+      productId: product.item_code,
       name: product.name,
       price: product.price,
       quantity: isPetFood ? 1 : standardQuantity,
@@ -162,13 +218,16 @@ const truncateDescription = (text = "", maxLines = 3) => {
         deliveryDays: selectedDays,
       },
       ...(isPetFood && {
-        customization: {
-          meatType,
-          grainType,
-          grainPercentage,
-          vegetables: selectedVegetable ? [selectedVegetable] : [],
-          preparationInstructions,
-        }
+      customization: {
+  meatType,
+  grainType,
+  grainPercentage,
+  gpvRatio,
+   freeSoup,
+  extraSoup,
+  vegetables: selectedVegetables,
+  preparationInstructions,
+}
       })
     };
 
@@ -296,31 +355,39 @@ const truncateDescription = (text = "", maxLines = 3) => {
                       </div>
 
                       {/* Right: Vegetables Radio Selection */}
-                      <div>
-                        <Label className="text-base font-semibold mb-3 block">Vegetables</Label>
-                        <RadioGroup value={selectedVegetable} onValueChange={setSelectedVegetable}>
-                          <div className="space-y-3">
-                            {["Carrot", "Pumpkin", "Sweet Potato", "No veg"].map(veg => (
-                              <div key={veg} className="flex items-center space-x-3">
-                                <RadioGroupItem 
-                                  value={veg} 
-                                  id={veg}
-                                  className="border-primary text-primary"
-                                />
-                                <label 
-                                  htmlFor={veg} 
-                                  className={cn(
-                                    "text-sm font-medium cursor-pointer",
-                                    selectedVegetable === veg && "text-primary"
-                                  )}
-                                >
-                                  {veg}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </RadioGroup>
-                      </div>
+                    <div>
+  <Label className="text-base font-semibold mb-3 block">Vegetables</Label>
+
+  <div className="space-y-3">
+    {VEGETABLE_OPTIONS.map((veg) => (
+      <div
+        key={veg.value}
+        className={cn(
+          "flex items-center space-x-3 p-2 rounded-lg border cursor-pointer transition",
+          selectedVegetables.includes(veg.value)
+            ? "bg-primary/10 border-primary/30"
+            : "border-border hover:bg-muted/50"
+        )}
+        onClick={() => toggleVegetable(veg.value)}
+      >
+        <Checkbox
+          checked={selectedVegetables.includes(veg.value)}
+          onCheckedChange={() => toggleVegetable(veg.value)}
+          className="border-primary data-[state=checked]:bg-primary"
+        />
+
+        <span
+          className={cn(
+            "text-sm font-medium",
+            selectedVegetables.includes(veg.value) && "text-primary"
+          )}
+        >
+          {veg.label}
+        </span>
+      </div>
+    ))}
+  </div>
+</div>
                     </div>
 
                     {/* Quantity - Full Width */}
@@ -342,6 +409,109 @@ const truncateDescription = (text = "", maxLines = 3) => {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    <div>
+  <Label className="text-base font-semibold mb-2 block">
+    Grain Percentage (%)
+  </Label>
+
+  <Select
+    value={grainPercentage.toString()}
+    onValueChange={(val) => setGrainPercentage(Number(val))}
+  >
+    <SelectTrigger className={cn(grainPercentage && "bg-primary/10 border-primary/30")}>
+      <SelectValue placeholder="Select grain %" />
+    </SelectTrigger>
+
+    <SelectContent className="bg-background">
+      {[0, 5, 10, 15, 20, 25, 30].map((val) => (
+        <SelectItem key={val} value={val.toString()}>
+          {val}%
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
+
+<div>
+  <Label className="text-base font-semibold mb-2 block">
+    GPV Ratio (Grain : Protein : Veg)
+  </Label>
+
+  <Select 
+  value={gpvRatio}
+  onValueChange={(val) => {
+  setGpvRatio(val);
+
+  const [grain] = val.split("-");
+  setGrainPercentage(Number(grain));
+}}
+   >
+    <SelectTrigger className={cn(gpvRatio && "bg-primary/10 border-primary/30")}>
+      <SelectValue placeholder="Select ratio" />
+    </SelectTrigger>
+
+    <SelectContent className="bg-background">
+      <SelectItem value="10-80-10">10% : 80% : 10%</SelectItem>
+      <SelectItem value="15-75-10">15% : 75% : 10%</SelectItem>
+      <SelectItem value="20-70-10">20% : 70% : 10%</SelectItem>
+      <SelectItem value="0-90-10">0% : 90% : 10%</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+
+<div className="space-y-3">
+
+{/* 🎉 Free Soup Unlock Banner */}
+
+
+  <Label className="text-base font-semibold block">
+    🍲 Soup Add-on
+  </Label>
+
+  {/* Free Soup Info */}
+{showUnlockMessage && (
+  <div className="bg-green-100 border border-green-300 text-green-800 rounded-lg px-4 py-2 text-sm font-semibold">
+    🎉 You unlocked <b>{freeSoup}</b> free soup{freeSoup > 1 ? "s" : ""}!
+  </div>
+)}
+
+{/* ⚡ Upsell Message */}
+{showUpsellMessage && (
+  <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg px-4 py-2 text-sm">
+    ⚡ Add <b>{remainingForNextSoup}g</b> more to unlock 1 free soup
+  </div>
+)}
+
+  {/* Extra Soup Controls */}
+  <div className="flex items-center gap-3">
+    <span className="text-sm">Add extra soup:</span>
+
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={() => setExtraSoup((prev) => Math.max(0, prev - 1))}
+    >
+      -
+    </Button>
+
+    <span className="font-semibold">{extraSoup}</span>
+
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={() => setExtraSoup((prev) => prev + 1)}
+    >
+      +
+    </Button>
+
+    <span className="text-xs text-muted-foreground">
+      (₹10 per soup)
+    </span>
+  </div>
+</div>
 
                     {/* Preparation Instructions - Full Width */}
                     <div>

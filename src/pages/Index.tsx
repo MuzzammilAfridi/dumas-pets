@@ -5,13 +5,15 @@ import About from "@/components/About";
 import Testimonials from "@/components/Testimonials";
 import Resources from "@/components/Resources";
 import Contact from "@/components/Contact";
+import Templates from "@/components/Templates";
 
 const Index = () => {
   return (
     <div className="min-h-screen">
       <Navigation />
       <Hero />
-      <FeaturedProducts />
+      {/* <FeaturedProducts /> */}
+      <Templates/>
       <About />
       <Testimonials />
       <Resources />

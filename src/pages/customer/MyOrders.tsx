@@ -8,24 +8,38 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Package, RefreshCw, Eye } from 'lucide-react';
 
+import { useOrders } from "@/hooks/useOrders";
+
+
 const statusSteps = ['Pending', 'Processing', 'Delivered'];
 
 const MyOrders = () => {
+
+
+const { orders, loading } = useOrders();
   const { user } = useAuth();
-  const orders = mockOrders.filter(o => o.customerId === user?.id);
+  // const orders = mockOrders.filter(o => o.customerId === user?.id);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const { toast } = useToast();
+
+  const formattedOrders = orders.map((o) => ({
+  id: o.name,
+  date: o.transaction_date,
+  total: o.grand_total,
+  status: "Pending", // temporary (ERP status later)
+  items: [], // we’ll fetch later
+}));
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-foreground">My Orders</h2>
 
-      {orders.length === 0 ? (
+  {formattedOrders.length === 0 ? (
         <Card><CardContent className="py-12 text-center text-muted-foreground">
           <Package className="w-10 h-10 mx-auto mb-2 opacity-50" />
           <p>No orders yet.</p>
         </CardContent></Card>
-      ) : orders.map(order => (
+      ) : formattedOrders.map(order => (
         <Card key={order.id}>
           <CardContent className="p-4">
             <div className="flex justify-between items-start">

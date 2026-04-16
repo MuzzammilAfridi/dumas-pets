@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState } from 'react';
 
+import {createCart, updateCart, getCart }from '../services/cartService.js'
+import { useEffect } from "react";
+
 export interface CartItem {
   productId: string;
   name: string;
@@ -35,66 +38,141 @@ interface CartContextType {
   getItemCount: () => number;
 
   // ✅ ADD THIS
-  getERPItems: () => {
-    item_code: string;
-    qty: number;
-    rate: number;
-  }[];
+ getERPItems: () => {
+  item_code: string;
+  qty: number;
+}[];
 }
+
+
+
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
+  const [quotationId, setQuotationId] = useState<string | null>(
+  localStorage.getItem("quotation_id")
+);
+
+
+useEffect(() => {
+  const loadCart = async () => {
+    if (!quotationId) return;
+
+    try {
+      const res = await getCart(quotationId);
+
+      const erpItems = res.data.data.items;
+
+      const mapped = erpItems.map(i => ({
+        productId: i.item_code,
+        name: i.item_name,
+        price: i.rate,
+        quantity: i.qty,
+      }));
+
+      setItems(mapped);
+    } catch (err) {
+      console.error("Failed to load ERP cart");
+    }
+  };
+
+  loadCart();
+}, [quotationId]);
+
+const syncWithERP = async (updatedItems) => {
+  try {
+
+    console.log("udpatedItem in context", updatedItems);
+    
+    const payload = {
+      quotation_to: "Customer",
+      party_name: "Aanchal Sagar Jain", // TODO: dynamic user
+      items: updatedItems.map(item => ({
+   item_code: item.productId.trim(),
+        qty: item.quantity,
+      })),
+    };
+
+    if (!quotationId) {
+      // CREATE
+      const res = await createCart(payload);
+      const id = res.data.data.name;
+
+      setQuotationId(id);
+      localStorage.setItem("quotation_id", id);
+    } else {
+      // UPDATE
+      await updateCart(quotationId, payload);
+    }
+  } catch (err) {
+    console.error("ERP Sync Failed", err);
+  }
+};
+
 const getERPItems = () => {
+  
   return items
-    .filter(item => item.price > 0) // 🚨 prevent bad data
+  
+    .filter(item => item.productId)
     .map(item => ({
-      item_code: item.productId,
+      item_code: item.productId, // ✅ NO TRIM
       qty: item.quantity,
-      rate: item.price,
     }));
 };
 
 
-
- const addToCart = (item: CartItem) => {
+const addToCart = (item: CartItem) => {
   setItems(prev => {
+    let updated;
+
     const existing = prev.find(p => p.productId === item.productId);
 
     if (existing) {
-      // ✅ increase quantity instead of duplicate
-      return prev.map(p =>
+      updated = prev.map(p =>
         p.productId === item.productId
           ? { ...p, quantity: p.quantity + item.quantity }
           : p
       );
+    } else {
+      updated = [...prev, item];
     }
 
-    return [...prev, item];
+    syncWithERP(updated); // 🔥 IMPORTANT
+
+    return updated;
   });
 };
 
 const removeFromCart = (productId: string) => {
-  setItems(prev =>
-    prev
+  setItems(prev => {
+    const updated = prev
       .map(item =>
         item.productId === productId
           ? { ...item, quantity: item.quantity - 1 }
           : item
       )
-      .filter(item => item.quantity > 0)
-  );
+      .filter(item => item.quantity > 0);
+
+    syncWithERP(updated); // 🔥 IMPORTANT
+
+    return updated;
+  });
 };
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    setItems(prev =>
-      prev.map(item =>
-        item.productId === productId ? { ...item, quantity } : item
-      )
+const updateQuantity = (productId: string, quantity: number) => {
+  setItems(prev => {
+    const updated = prev.map(item =>
+      item.productId === productId ? { ...item, quantity } : item
     );
-  };
+
+    syncWithERP(updated); // 🔥 IMPORTANT
+
+    return updated;
+  });
+};
 
   const clearCart = () => {
     setItems([]);

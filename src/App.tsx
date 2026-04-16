@@ -32,10 +32,13 @@ import ProfileManagement from "./pages/customer/ProfileManagement";
 import AddressManagement from "./pages/customer/AddressManagement";
 import NutritionPlan from "./pages/NutritionPlan";
 import NotFound from "./pages/NotFound";
+import TemplateDetails from "./pages/customer/TemplateDetails";
 
 const queryClient = new QueryClient();
 
 const App = () => (
+
+  
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <CartProvider>
@@ -58,6 +61,7 @@ const App = () => (
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/template/:itemCode" element={<TemplateDetails />} />
 
               {/* Admin Routes */}
               <Route

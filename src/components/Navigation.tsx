@@ -17,13 +17,14 @@ const Navigation = () => {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "About Us", href: "/about" },
+    
     { name: "Shop", href: "/shop" },
     { name: "Nutrition Plan", href: "/nutrition-plan" },
     { name: "Blog", href: "/blog" },
     { name: "Events", href: "/events" },
     { name: "Gallery", href: "/gallery" },
     { name: "FAQ", href: "/faq" },
+    { name: "About Us", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
 

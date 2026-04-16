@@ -29,9 +29,6 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import buffaloMeal from "@/assets/buffalo-meal.webp";
 
-
-
-
 // Mock cart items for UI preview
 const MOCK_CART_ITEMS: CartItem[] = [
   {
@@ -136,7 +133,7 @@ const Cart = () => {
   const { toast } = useToast();
 
   // Use mock items if cart is empty for preview
-const displayItems = cartItems;
+  const displayItems = cartItems.length > 0 ? cartItems : MOCK_CART_ITEMS;
   const isUsingMock = cartItems.length === 0;
 
   // Customer details
@@ -164,26 +161,35 @@ const displayItems = cartItems;
   // Checkout mobile collapse
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-  const { getERPItems } = useCart();
+const SOUP_PRICE = 10;
 
-  const payload = {
-  quotation_to: "Customer",
-  party_name: fullName,
-  items: getERPItems(),
+const getItemTotal = (item: CartItem) => {
+  let base = item.price * item.quantity;
+
+  // ✅ Add soup price
+  if (item.customization?.extraSoup) {
+    base += item.customization.extraSoup * SOUP_PRICE;
+  }
+
+  // ✅ Subscription logic
+  if (
+    item.purchaseType === "subscription" &&
+    item.subscription?.startDate &&
+    item.subscription?.endDate &&
+    item.subscription?.deliveryDays
+  ) {
+    const deliveryCount = countDeliveryDaysInRange(
+      item.subscription.startDate,
+      item.subscription.endDate,
+      item.subscription.deliveryDays
+    );
+
+    const subscriptionPrice = base * 0.84; // apply discount after adding soup
+    return subscriptionPrice * deliveryCount;
+  }
+
+  return base;
 };
-
-  const getItemTotal = (item: CartItem) => {
-    if (item.purchaseType === "subscription" && item.subscription?.startDate && item.subscription?.endDate && item.subscription?.deliveryDays) {
-      const deliveryCount = countDeliveryDaysInRange(
-        item.subscription.startDate,
-        item.subscription.endDate,
-        item.subscription.deliveryDays
-      );
-      const subscriptionPrice = item.price * 0.84;
-      return subscriptionPrice * item.quantity * deliveryCount;
-    }
-    return item.price * item.quantity;
-  };
 
   const getDeliveryDayCount = (item: CartItem) => {
     if (item.subscription?.startDate && item.subscription?.endDate && item.subscription?.deliveryDays) {
@@ -211,10 +217,6 @@ const displayItems = cartItems;
     if (!isUsingMock) removeFromCart(productId);
   };
 
-  const { items } = useCart();
-
-  console.log("CART ITEMS:", items);
-
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!fullName.trim()) errs.fullName = "Full name is required";
@@ -235,16 +237,22 @@ const displayItems = cartItems;
     return Object.keys(errs).length === 0;
   };
 
-  const handlePlaceOrder = () => {
-    if (!validate()) return;
-    setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setOrderId(`ORD-${Date.now().toString().slice(-6)}`);
-      setOrderSuccess(true);
-      if (!isUsingMock) clearCart();
-    }, 2000);
-  };
+const handlePlaceOrder = () => {
+  if (!validate()) return;
+
+  setIsProcessing(true);
+
+  setTimeout(() => {
+    setIsProcessing(false);
+
+    const quotation_id = localStorage.getItem("quotation_id");
+
+    setOrderId(quotation_id || "NO-ID");
+    setOrderSuccess(true);
+
+    // ❌ DO NOT clear quotation_id (important for Option 2)
+  }, 1000);
+};
 
   if (orderSuccess) {
     return (
@@ -360,25 +368,61 @@ const displayItems = cartItems;
                       </div>
 
                       {/* Customization */}
-                      {item.customization && (
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          {item.customization.meatType && (
-                            <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-                              🥩 {item.customization.meatType}
-                            </span>
-                          )}
-                          {item.customization.grainType && (
-                            <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-                              🌾 {item.customization.grainType}
-                            </span>
-                          )}
-                          {item.customization.vegetables && item.customization.vegetables.length > 0 && (
-                            <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-                              🥕 {item.customization.vegetables.join(", ")}
-                            </span>
-                          )}
-                        </div>
-                      )}
+                   {item.customization && (
+  <div className="flex flex-wrap gap-2 text-xs">
+    
+    {item.customization.meatType && (
+      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+        🥩 {item.customization.meatType}
+      </span>
+    )}
+
+    {item.customization.grainType && (
+      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+        🌾 {item.customization.grainType}
+      </span>
+    )}
+
+    {item.customization.grainPercentage !== undefined && (
+      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+        📊 {item.customization.grainPercentage}%
+      </span>
+    )}
+
+    {item.customization.gpvRatio && (
+      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+        ⚖️ {item.customization.gpvRatio}
+      </span>
+    )}
+
+    {item.customization.vegetables?.length > 0 && (
+      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+        🥕 {item.customization.vegetables.join(", ")}
+      </span>
+    )}
+
+      {item.customization.preparationInstructions && (
+      <div className="bg-muted/50 border rounded-lg px-3 py-2 text-sm text-muted-foreground">
+        <span className="font-semibold text-foreground">📝 Note:</span>{" "}
+        {item.customization.preparationInstructions}
+      </div>
+    )}
+
+
+{item.customization.freeSoup !== undefined && (
+  <span className="bg-green-100 text-green-700 px-2 py-1 rounded-md">
+    🎁 Free Soup: {item.customization.freeSoup}
+  </span>
+)}
+
+{item.customization.extraSoup > 0 && (
+  <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-md">
+    ➕ Extra Soup: {item.customization.extraSoup}
+  </span>
+)}
+
+  </div>
+)}
 
                       {/* Delivery Info */}
                       {isSubscription && item.subscription ? (

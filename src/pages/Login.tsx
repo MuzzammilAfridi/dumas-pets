@@ -25,74 +25,109 @@ const Login = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [registerName, setRegisterName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { loginWithAPI, register } = useAuth();
+  // const { loginWithAPI, register } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+ const { login, loginWithAPI, register } = useAuth();
 
-    if (!email.trim() || !password.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields.",
-        variant: "destructive",
-      });
-      return;
-    }
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  if (!email.trim() || !password.trim()) {
+    toast({
+      title: "Error",
+      description: "Please fill in all fields.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-      const res = await loginUser({
-        usr: email,
-        pwd: password,
-      });
-
-      console.log("Login Success:", res.data);
-
-      toast({
-        title: "Welcome!",
-        description: "Login successful",
-      });
-
-      loginWithAPI(res.data);
-
-      navigate(activeTab === "admin" ? "/admin" : "/dashboard");
-    } catch (err) {
-      console.error(err);
-
-      toast({
-        title: "Login Failed",
-        description: "Invalid credentials or API error",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!registerName.trim() || !email.trim() || !password.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields.",
-        variant: "destructive",
-      });
-      return;
-    }
+  try {
     setLoading(true);
-    setTimeout(() => {
-      register(registerName, email, password);
-      toast({
-        title: "Welcome!",
-        description: "Account created successfully.",
-      });
-      navigate("/dashboard");
-      setLoading(false);
-    }, 500);
-  };
+
+    // ✅ ONE LOGIN FLOW for both admin + customer
+    const success = await login(email, password);
+
+    if (!success) {
+      throw new Error("Invalid credentials");
+    }
+
+    // ✅ IMPORTANT: get updated user AFTER login
+    const userData = JSON.parse(localStorage.getItem("dumas_user"));
+
+    toast({ title: `Welcome ${userData.role === "admin" ? "Admin" : "Customer"}!` });
+
+    // ✅ ROLE BASED REDIRECT
+    if (userData.role === "admin") {
+      navigate("/admin", { replace: true });
+    } else {
+      navigate("/dashboard", { replace: true });
+    }
+
+  } catch (err) {
+    console.error(err);
+
+    toast({
+      title: "Login Failed",
+      description: "Invalid credentials",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!registerName.trim() || !email.trim() || !password.trim()) {
+    toast({
+      title: "Error",
+      description: "Please fill in all fields.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const success = await register(registerName, email, password);
+
+    if (!success) {
+      throw new Error("Registration failed");
+    }
+
+    toast({
+      title: "Success",
+      description: "Account created successfully!",
+    });
+
+    // ✅ OPTIONAL: wait for user to be set
+    const userData = JSON.parse(localStorage.getItem("dumas_user") || "{}");
+
+    if (userData?.role === "admin") {
+      navigate("/admin", { replace: true });
+    } else {
+      navigate("/dashboard", { replace: true });
+    }
+
+  } catch (err: any) {
+    console.error(err);
+
+    toast({
+      title: "Register Failed",
+      description:
+        err?.response?.data?.message ||
+        err?.message ||
+        "Something went wrong",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-muted flex items-center justify-center p-4">

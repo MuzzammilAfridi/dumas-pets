@@ -11,6 +11,9 @@ interface ProductGridProps {
 const ProductGrid = ({ products, showAddToCart = false }: ProductGridProps) => {
   const navigate = useNavigate();
 
+  console.log("product in product grid", products);
+  
+
 
 
   return (

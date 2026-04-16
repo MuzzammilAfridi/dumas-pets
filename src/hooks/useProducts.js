@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getProducts } from "@/services/productService";
 
+
 export const useProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,8 +40,9 @@ const createSlug = (str) => {
 };
 
 const formatted = rawData.map((item) => ({
-  id: item.item_code,          // keep original
-  slug: createSlug(item.item_code), // ✅ safe URL
+  id: item.item_code,           // UI usage
+  item_code: item.item_code,    // 🔥 ADD THIS (CRITICAL FIX)
+  slug: createSlug(item.item_code),
   name: item.item_name,
   price: item.standard_rate,
   category: item.item_group,
@@ -50,6 +52,7 @@ const formatted = rawData.map((item) => ({
 }));
 
     setProducts(formatted);
+    console.log("Formatted Products:", formatted);
   } catch (err) {
     console.error("Error fetching products:", err);
   } finally {
@@ -59,6 +62,9 @@ const formatted = rawData.map((item) => ({
 
     fetchProducts();
   }, []);
+
+
+
 
   return { products, loading };
 };

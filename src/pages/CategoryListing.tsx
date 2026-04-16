@@ -12,6 +12,10 @@ const CategoryListing = () => {
 
   const { products, loading } = useProducts();
 
+
+  console.log("product in categoruList", products);
+  
+
 const decodedCategory = category
   ?.split("-")
   .join(" ")
@@ -21,6 +25,10 @@ const decodedCategory = category
 const allProducts = products.filter((p: any) =>
 p.category?.trim().toLowerCase() === decodedCategory
 );
+
+
+console.log("All product in categoryListing", allProducts);
+
 
 
 const displayName = decodedCategory
