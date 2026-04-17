@@ -37,8 +37,6 @@ import TemplateDetails from "./pages/customer/TemplateDetails";
 const queryClient = new QueryClient();
 
 const App = () => (
-
-  
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <CartProvider>

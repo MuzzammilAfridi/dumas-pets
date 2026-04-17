@@ -3,7 +3,13 @@ import Navigation from "@/components/Navigation";
 import ProductGrid from "@/components/ProductGrid";
 
 import { useState, useEffect } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Filter, ArrowUpDown } from "lucide-react";
 
@@ -12,7 +18,6 @@ import { useProducts } from "@/hooks/useProducts";
 const PRODUCTS_PER_PAGE = 18;
 
 const AllProducts = () => {
-
   const { products, loading } = useProducts();
   const { category } = useParams<{ category: string }>();
 
@@ -20,42 +25,37 @@ const AllProducts = () => {
   const [displayCount, setDisplayCount] = useState(PRODUCTS_PER_PAGE);
   const [isLoading, setIsLoading] = useState(false);
 
-  console.log("produts in all products", products);
-  
-  
-const decodedCategory = category
-  ?.split("-")
-  .join(" ")
-  .toLowerCase();
+  // console.log("produts in all products", products);
 
-const displayName = decodedCategory
-  ?.split(" ")
-  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-  .join(" ");
+  const decodedCategory = category?.split("-").join(" ").toLowerCase();
 
-let filteredProducts = products.filter((p: any) =>
-  p.category?.toLowerCase().includes(decodedCategory || "")
-);
-  
+  const displayName = decodedCategory
+    ?.split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  let filteredProducts = products.filter((p: any) =>
+    p.category?.toLowerCase().includes(decodedCategory || ""),
+  );
 
   // Sort products
-if (sortBy === "price-low") {
-  filteredProducts = [...filteredProducts].sort((a, b) => a.price - b.price);
-} else if (sortBy === "price-high") {
-  filteredProducts = [...filteredProducts].sort((a, b) => b.price - a.price);
-} else {
-  filteredProducts = [...filteredProducts].sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
-}
+  if (sortBy === "price-low") {
+    filteredProducts = [...filteredProducts].sort((a, b) => a.price - b.price);
+  } else if (sortBy === "price-high") {
+    filteredProducts = [...filteredProducts].sort((a, b) => b.price - a.price);
+  } else {
+    filteredProducts = [...filteredProducts].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+  }
 
-const displayedProducts = filteredProducts.slice(0, displayCount);
-const hasMore = displayCount < filteredProducts.length;
+  const displayedProducts = filteredProducts.slice(0, displayCount);
+  const hasMore = displayCount < filteredProducts.length;
 
   const loadMore = () => {
     setIsLoading(true);
     setTimeout(() => {
-      setDisplayCount(prev => prev + PRODUCTS_PER_PAGE);
+      setDisplayCount((prev) => prev + PRODUCTS_PER_PAGE);
       setIsLoading(false);
     }, 500);
   };
@@ -71,13 +71,12 @@ const hasMore = displayCount < filteredProducts.length;
     { name: "CAKES", slug: "cakes" },
   ];
 
-
   if (loading) return <p className="text-center py-10">Loading...</p>;
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       {/* Header Section */}
       <section className="bg-primary py-12">
         <div className="container mx-auto px-4">
@@ -133,15 +132,22 @@ const hasMore = displayCount < filteredProducts.length;
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="name">Name (A-Z)</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="price-low">
+                        Price: Low to High
+                      </SelectItem>
+                      <SelectItem value="price-high">
+                        Price: High to Low
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Quick Links */}
                 <div className="pt-4 border-t border-border">
-                  <Link to="/shop" className="text-sm text-primary hover:underline">
+                  <Link
+                    to="/shop"
+                    className="text-sm text-primary hover:underline"
+                  >
                     ← Back to Shop
                   </Link>
                 </div>
@@ -153,7 +159,8 @@ const hasMore = displayCount < filteredProducts.length;
               {/* Product Count */}
               <div className="flex justify-between items-center mb-6">
                 <p className="text-muted-foreground">
-             Showing {displayedProducts.length} of {filteredProducts.length}
+                  Showing {displayedProducts.length} of{" "}
+                  {filteredProducts.length}
                 </p>
               </div>
 
@@ -188,7 +195,10 @@ const hasMore = displayCount < filteredProducts.length;
 
       <footer className="bg-foreground text-background py-6 mt-16">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm">© 2024 Dumas 'N' Bismi. All rights reserved. | Premium Pet Nutrition Scheme</p>
+          <p className="text-sm">
+            © 2024 Dumas 'N' Bismi. All rights reserved. | Premium Pet Nutrition
+            Scheme
+          </p>
         </div>
       </footer>
     </div>

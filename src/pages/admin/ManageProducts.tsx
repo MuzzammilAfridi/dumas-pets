@@ -54,11 +54,11 @@ const ManageProducts = () => {
 
   const { products } = useProducts();
 
-  useEffect(() => {
-    console.log("Updated products:", products);
-  }, [products]);
+  // useEffect(() => {
+  //   console.log("Updated products:", products);
+  // }, [products]);
 
-  console.log("products in Manage products", products);
+  // console.log("products in Manage products", products);
 
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()),
@@ -270,23 +270,23 @@ const ManageProducts = () => {
               ) : (
                 filtered.map((p) => (
                   <TableRow key={p.id}>
-                   <TableCell>
-  <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden">
-    {p.image ? (
-      <img
-        src={p.image}
-        alt={p.name}
-        className="w-full h-full object-cover"
-      />
-    ) : (
-      <img
-        src="https://img.freepik.com/free-vector/dog-food-snack-cartoon-vector-icon-illustration-animal-food-icon-concept-isolated-premium-vector_138676-4751.jpg"
-        alt="Placeholder"
-        className="w-full h-full object-cover"
-      />
-    )}
-  </div>
-</TableCell>
+                    <TableCell>
+                      <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden">
+                        {p.image ? (
+                          <img
+                            src={p.image}
+                            alt={p.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <img
+                            src="https://img.freepik.com/free-vector/dog-food-snack-cartoon-vector-icon-illustration-animal-food-icon-concept-isolated-premium-vector_138676-4751.jpg"
+                            alt="Placeholder"
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    </TableCell>
 
                     <TableCell className="font-medium  truncate max-w-36 ">
                       {p.name}

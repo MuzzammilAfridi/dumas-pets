@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Button } from "@/components/ui/button";
 
 const Templates = () => {
-  const [templates, setTemplates] = useState([]);
   const navigate = useNavigate();
+  const [groupedTemplates, setGroupedTemplates] = useState({});
 
-  const categorySlug = "bakes"; // 👈 dynamic later
+  const BASE_URL = "https://dumas.frappe.cloud";
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -18,15 +17,27 @@ const Templates = () => {
               "item_name",
               "item_code",
               "image",
+              "item_group"
             ]),
             filters: JSON.stringify([
-              ["has_variants", "=", 1],
-              ["item_group", "=", "All Item Groups"],
+              ["has_variants","=",1],
+              ["item_group","in",["All Item Groups","Street Dog Meals","Bakes","Desserts"]]
             ]),
           },
         });
 
-        setTemplates(res.data.data || []);
+        const data = res.data.data || [];
+
+        const grouped = data.reduce((acc, item) => {
+          if (!acc[item.item_group]) {
+            acc[item.item_group] = [];
+          }
+          acc[item.item_group].push(item);
+          return acc;
+        }, {});
+
+        setGroupedTemplates(grouped);
+
       } catch (err) {
         console.error(err);
       }
@@ -38,33 +49,48 @@ const Templates = () => {
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-10">Templates</h2>
 
-        {/* 👇 Only 3 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {templates.slice(0, 3).map((item) => (
-            <div
-              key={item.item_code}
-              onClick={() => navigate(`/template/${item.item_code}`)}
-              className="cursor-pointer p-4 border rounded-xl hover:shadow-lg"
-            >
-              <img
-                src={item.image || "/placeholder.png"}
-                className="w-full h-40 object-cover rounded"
-              />
-              <h3 className="mt-3 font-bold">{item.item_name}</h3>
+        {Object.entries(groupedTemplates).map(([group, items]) => (
+          <div key={group} className="mb-10">
+
+            {/* 🔥 Header */}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">{group}</h2>
+              <span
+                onClick={() => navigate(`/category/${group}`)}
+                className="text-sm text-blue-500 cursor-pointer"
+              >
+                View All →
+              </span>
             </div>
-          ))}
-        </div>
 
-        {/* 👇 Navigate instead of expand */}
-        <div className="text-center mt-8">
-          <Link to={`/category/${categorySlug}/all`}>
-            <Button variant="outline" size="lg">
-              Load More
-            </Button>
-          </Link>
-        </div>
+            {/* 👉 Horizontal Scroll */}
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              {items.slice(0, 6).map((item) => (
+                <div
+                  key={item.item_code}
+                  onClick={() => navigate(`/template/${item.item_code}`)}
+                  className="min-w-[200px] cursor-pointer border rounded-xl p-3 hover:shadow-lg"
+                >
+                  <img
+                    src={
+                      item.image
+                        ? `${BASE_URL}${item.image}`
+                        : "/placeholder.png"
+                    }
+                    className="w-full h-32 object-cover rounded"
+                    alt={item.item_name}
+                  />
+                  <h3 className="mt-2 font-semibold text-sm">
+                    {item.item_name}
+                  </h3>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        ))}
+
       </div>
     </section>
   );

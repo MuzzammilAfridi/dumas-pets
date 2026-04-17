@@ -58,7 +58,7 @@ const AdminDashboard = () => {
 
   const navigate = useNavigate();
 
-  console.log("products in admin dashboard", products);
+  // console.log("products in admin dashboard", products);
 
   const stats = [
     {

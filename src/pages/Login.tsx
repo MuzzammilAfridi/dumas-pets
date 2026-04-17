@@ -29,105 +29,105 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
- const { login, loginWithAPI, register } = useAuth();
+  const { login, loginWithAPI, register } = useAuth();
 
-const handleLogin = async (e) => {
-  e.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  if (!email.trim() || !password.trim()) {
-    toast({
-      title: "Error",
-      description: "Please fill in all fields.",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    // ✅ ONE LOGIN FLOW for both admin + customer
-    const success = await login(email, password);
-
-    if (!success) {
-      throw new Error("Invalid credentials");
+    if (!email.trim() || !password.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
     }
 
-    // ✅ IMPORTANT: get updated user AFTER login
-    const userData = JSON.parse(localStorage.getItem("dumas_user"));
+    try {
+      setLoading(true);
 
-    toast({ title: `Welcome ${userData.role === "admin" ? "Admin" : "Customer"}!` });
+      // ✅ ONE LOGIN FLOW for both admin + customer
+      const success = await login(email, password);
 
-    // ✅ ROLE BASED REDIRECT
-    if (userData.role === "admin") {
-      navigate("/admin", { replace: true });
-    } else {
-      navigate("/dashboard", { replace: true });
+      if (!success) {
+        throw new Error("Invalid credentials");
+      }
+
+      // ✅ IMPORTANT: get updated user AFTER login
+      const userData = JSON.parse(localStorage.getItem("dumas_user"));
+
+      toast({
+        title: `Welcome ${userData.role === "admin" ? "Admin" : "Customer"}!`,
+      });
+
+      // ✅ ROLE BASED REDIRECT
+      if (userData.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (err) {
+      console.error(err);
+
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!registerName.trim() || !email.trim() || !password.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
     }
 
-  } catch (err) {
-    console.error(err);
+    try {
+      setLoading(true);
 
-    toast({
-      title: "Login Failed",
-      description: "Invalid credentials",
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      const success = await register(registerName, email, password);
 
-const handleRegister = async (e: React.FormEvent) => {
-  e.preventDefault();
+      if (!success) {
+        throw new Error("Registration failed");
+      }
 
-  if (!registerName.trim() || !email.trim() || !password.trim()) {
-    toast({
-      title: "Error",
-      description: "Please fill in all fields.",
-      variant: "destructive",
-    });
-    return;
-  }
+      toast({
+        title: "Success",
+        description: "Account created successfully!",
+      });
 
-  try {
-    setLoading(true);
+      // ✅ OPTIONAL: wait for user to be set
+      const userData = JSON.parse(localStorage.getItem("dumas_user") || "{}");
 
-    const success = await register(registerName, email, password);
+      if (userData?.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (err: any) {
+      console.error(err);
 
-    if (!success) {
-      throw new Error("Registration failed");
+      toast({
+        title: "Register Failed",
+        description:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-
-    toast({
-      title: "Success",
-      description: "Account created successfully!",
-    });
-
-    // ✅ OPTIONAL: wait for user to be set
-    const userData = JSON.parse(localStorage.getItem("dumas_user") || "{}");
-
-    if (userData?.role === "admin") {
-      navigate("/admin", { replace: true });
-    } else {
-      navigate("/dashboard", { replace: true });
-    }
-
-  } catch (err: any) {
-    console.error(err);
-
-    toast({
-      title: "Register Failed",
-      description:
-        err?.response?.data?.message ||
-        err?.message ||
-        "Something went wrong",
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-muted flex items-center justify-center p-4">

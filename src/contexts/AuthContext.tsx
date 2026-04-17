@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { getLoggedUser,loginUser, logoutAPI, registerUserAPI } from "@/services/authService";
-
+import {
+  getLoggedUser,
+  loginUser,
+  logoutAPI,
+  registerUserAPI,
+} from "@/services/authService";
 
 export type UserRole = "admin" | "customer";
 
@@ -16,11 +20,11 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   updateProfile: (updates: Partial<User>) => void;
- loginWithAPI: () => Promise<void>;
+  loginWithAPI: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -60,25 +64,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return stored ? JSON.parse(stored) : null;
   });
 
+  const logout = useCallback(async () => {
+    try {
+      await logoutAPI(); // 🔥 destroy ERP session
+    } catch (err) {
+      console.error("Logout API failed", err);
+    }
 
+    // ✅ Clear frontend
+    setUser(null);
+    localStorage.removeItem("dumas_user");
 
-const logout = useCallback(async () => {
-  try {
-    await logoutAPI(); // 🔥 destroy ERP session
-  } catch (err) {
-    console.error("Logout API failed", err);
-  }
-
-  // ✅ Clear frontend
-  setUser(null);
-  localStorage.removeItem("dumas_user");
-
-  // ✅ OPTIONAL: clear cart id (important for your Option 2)
-  localStorage.removeItem("quotation_id");
-
-}, []);
-
-
+    // ✅ OPTIONAL: clear cart id (important for your Option 2)
+    localStorage.removeItem("quotation_id");
+  }, []);
 
   const updateProfile = useCallback((updates: Partial<User>) => {
     setUser((prev) => {
@@ -89,69 +88,66 @@ const logout = useCallback(async () => {
     });
   }, []);
 
- 
-
-const loginWithAPI = useCallback(async () => {
-  try {
-    const res = await getLoggedUser();
-    const email = res.data.message;
-
-    const role =
-      email === "Administrator" ? "admin" : "customer";
-
-    const user = {
-      id: email,
-      name: email.includes("@") ? email.split("@")[0] : email,
-      email,
-      role,
-    };
-
-    setUser(user);
-    localStorage.setItem("dumas_user", JSON.stringify(user));
-
-    return user; // ✅ MUST return
-  } catch (err) {
-    console.error("Error fetching user:", err);
-    throw err;
-  }
-}, []);
-
-const login = useCallback(
-  async (email: string, password: string): Promise<boolean> => {
+  const loginWithAPI = useCallback(async () => {
     try {
-      await loginUser({
-        usr: email,
-        pwd: password,
-      });
+      const res = await getLoggedUser();
+      const email = res.data.message;
 
-      await loginWithAPI(); // fetch logged user
+      const role = email === "Administrator" ? "admin" : "customer";
 
-      return true;
+      const user = {
+        id: email,
+        name: email.includes("@") ? email.split("@")[0] : email,
+        email,
+        role,
+      };
+
+      setUser(user);
+      localStorage.setItem("dumas_user", JSON.stringify(user));
+
+      return user; // ✅ MUST return
     } catch (err) {
-      console.error("Login failed", err);
-      return false;
+      console.error("Error fetching user:", err);
+      throw err;
     }
-  },
-  [loginWithAPI]
-);
+  }, []);
 
- const register = useCallback(
-  async (name: string, email: string, password: string): Promise<boolean> => {
-    try {
-      //  1. Create user + customer
-      await registerUserAPI({ name, email, password });
+  const login = useCallback(
+    async (email: string, password: string): Promise<boolean> => {
+      try {
+        await loginUser({
+          usr: email,
+          pwd: password,
+        });
 
-      // 2. Auto login after register
-      await login(email, password);
+        await loginWithAPI(); // fetch logged user
 
-      return true;
-    } catch (err) {
-      console.error("Register failed", err);
-      return false;
-    }
-  },
-  [login]
-);
+        return true;
+      } catch (err) {
+        console.error("Login failed", err);
+        return false;
+      }
+    },
+    [loginWithAPI],
+  );
+
+  const register = useCallback(
+    async (name: string, email: string, password: string): Promise<boolean> => {
+      try {
+        //  1. Create user + customer
+        await registerUserAPI({ name, email, password });
+
+        // 2. Auto login after register
+        await login(email, password);
+
+        return true;
+      } catch (err) {
+        console.error("Register failed", err);
+        return false;
+      }
+    },
+    [login],
+  );
 
   return (
     <AuthContext.Provider

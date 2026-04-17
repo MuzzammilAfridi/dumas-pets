@@ -4,11 +4,21 @@ import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useState, useRef } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CalendarIcon, ShoppingCart, Star } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
@@ -18,7 +28,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-
+import axios from "axios";
+import { useEffect } from "react";
 
 import { createCart, updateCart } from "@/services/cartService";
 
@@ -29,25 +40,46 @@ const VEGETABLE_OPTIONS = [
   { label: "No veg", value: "no_veg" },
 ];
 
-
 const ProductDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const { products, loading } = useProducts();
+  // const { id } = useParams<{ id: string }>();
+  // const { products, loading } = useProducts();
 
-// const { id } = useParams();
+  const { id } = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-const createSlug = (str) => {
-  return str
-    ?.trim()
-    .replace(/\//g, "-")
-    .replace(/%/g, "percent")
-    .replace(/[^a-zA-Z0-9]+/g, "-")
-    .toLowerCase();
-};
+  const BASE_URL = "https://dumas.frappe.cloud";
 
-const product = products.find(
-  (p: any) => createSlug(p.id) === id
-);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const decodedId = decodeURIComponent(id);
+
+        const res = await axios.get(`/api/resource/Item/${decodedId}`);
+
+        setProduct(res.data.data);
+        console.log("PRODUCT DATA:", res.data.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  // const { id } = useParams();
+
+  const createSlug = (str) => {
+    return str
+      ?.trim()
+      .replace(/\//g, "-")
+      .replace(/%/g, "percent")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .toLowerCase();
+  };
+
   const { addToCart } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -57,9 +89,10 @@ const product = products.find(
   const [meatType, setMeatType] = useState<string>("");
   const [grainType, setGrainType] = useState<string>("");
   // const [grainPercentage, setGrainPercentage] = useState<number>(0);
-const [selectedVegetables, setSelectedVegetables] = useState<string[]>([]);
+  const [selectedVegetables, setSelectedVegetables] = useState<string[]>([]);
   const [quantity, setQuantity] = useState<string>("100g");
-  const [preparationInstructions, setPreparationInstructions] = useState<string>("");
+  const [preparationInstructions, setPreparationInstructions] =
+    useState<string>("");
 
   // Standard Product States
   const [standardQuantity, setStandardQuantity] = useState<number>(1);
@@ -80,115 +113,118 @@ const [selectedVegetables, setSelectedVegetables] = useState<string[]>([]);
   const [reviewComment, setReviewComment] = useState("");
 
   const [grainPercentage, setGrainPercentage] = useState<number>(0);
-const [gpvRatio, setGpvRatio] = useState<string>("");
+  const [gpvRatio, setGpvRatio] = useState<string>("");
 
-const [extraSoup, setExtraSoup] = useState<number>(0);
+  const [extraSoup, setExtraSoup] = useState<number>(0);
 
-const getQuantityInGrams = (q: string) => {
-  if (q.includes("kg")) return parseInt(q) * 1000;
-  return parseInt(q);
-};
+  const getQuantityInGrams = (q: string) => {
+    if (q.includes("kg")) return parseInt(q) * 1000;
+    return parseInt(q);
+  };
 
-const freeSoup = Math.floor(getQuantityInGrams(quantity) / 250);
+  const freeSoup = Math.floor(getQuantityInGrams(quantity) / 250);
 
-const remainingForNextSoup = 250 - (getQuantityInGrams(quantity) % 250);
+  const remainingForNextSoup = 250 - (getQuantityInGrams(quantity) % 250);
 
-const showUnlockMessage = freeSoup > 0;
-const showUpsellMessage = freeSoup === 0 && getQuantityInGrams(quantity) < 250;
+  const showUnlockMessage = freeSoup > 0;
+  const showUpsellMessage =
+    freeSoup === 0 && getQuantityInGrams(quantity) < 250;
 
-const toggleVegetable = (veg: string) => {
-  setSelectedVegetables((prev) => {
-    
-    // ✅ If user selects "No veg"
-    if (veg === "no_veg") {
-      return prev.includes("no_veg") ? [] : ["no_veg"];
-    }
+  const toggleVegetable = (veg: string) => {
+    setSelectedVegetables((prev) => {
+      // ✅ If user selects "No veg"
+      if (veg === "no_veg") {
+        return prev.includes("no_veg") ? [] : ["no_veg"];
+      }
 
-    // ✅ If selecting other veg → remove "no_veg"
-    let updated = prev.filter((v) => v !== "no_veg");
+      // ✅ If selecting other veg → remove "no_veg"
+      let updated = prev.filter((v) => v !== "no_veg");
 
-    // Toggle logic
-    if (updated.includes(veg)) {
-      return updated.filter((v) => v !== veg);
-    } else {
-      return [...updated, veg];
-    }
-  });
-};
+      // Toggle logic
+      if (updated.includes(veg)) {
+        return updated.filter((v) => v !== veg);
+      } else {
+        return [...updated, veg];
+      }
+    });
+  };
 
-if (loading) {
-  return <p className="text-center py-10">Loading...</p>;
-}
+  if (loading) {
+    return <p className="text-center py-10">Loading...</p>;
+  }
 
-if (!product) {
-  return (
-    <div className="min-h-screen">
-      <Navigation />
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-3xl font-bold">Product not found</h1>
+  if (!product) {
+    return (
+      <div className="min-h-screen">
+        <Navigation />
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h1 className="text-3xl font-bold">Product not found</h1>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-  const isPetFood = true
+  const isPetFood = true;
 
   const handleReadMoreClick = () => {
     descriptionTabRef.current?.click();
-    descriptionTabRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    descriptionTabRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
-const truncateDescription = (text = "", maxLines = 3) => {
-  const words = text.split(" ");
+  const truncateDescription = (text = "", maxLines = 3) => {
+    const words = text.split(" ");
     const wordsPerLine = 12;
     const maxWords = maxLines * wordsPerLine;
     if (words.length <= maxWords) return { text, truncated: false };
-    return { text: words.slice(0, maxWords).join(' '), truncated: true };
+    return { text: words.slice(0, maxWords).join(" "), truncated: true };
   };
 
   const handleAddToCart = () => {
-   const cartItem = {
-   productId: product.item_code ,     // ✅ THIS IS item_code
-  name: product.name,           // ✅ already mapped
-  price: product.price || 100,   
-  category: product.category,    // ✅ FIXED
-  quantity: isPetFood ? 1 : standardQuantity,
-  image: product.image,
-              // ✅ FIXED
-  purchaseType: 'onetime' as const,
-  subscription: {
-    frequency: 'once',
-    date: deliveryDate,
-    timeSlot: deliveryTimeSlot,
-  },
+    const cartItem = {
+      productId: product.item_code, // ✅ THIS IS item_code
+      name: product.item_name, // ✅ already mapped
+      price: product.standard_rate || 100,
+      category: product.item_group, // ✅ FIXED
+      quantity: isPetFood ? 1 : standardQuantity,
+      image: product.image,
+     
+      purchaseType: "onetime" as const,
+      subscription: {
+        frequency: "once",
+        date: deliveryDate,
+        timeSlot: deliveryTimeSlot,
+      },
       ...(isPetFood && {
-      customization: {
-        meatType,
-        grainType,
-        grainPercentage,
-        gpvRatio,
-        freeSoup,
-extraSoup,
-        vegetables: selectedVegetables,
-        ...(preparationInstructions && {
-    preparationInstructions
-  })
-      }
-    })
+        customization: {
+          meatType,
+          grainType,
+          grainPercentage,
+          gpvRatio,
+          freeSoup,
+          extraSoup,
+          vegetables: selectedVegetables,
+          ...(preparationInstructions && {
+            preparationInstructions,
+          }),
+        },
+      }),
+    };
 
-};
-
-console.log("PRODUCT:", product);
-console.log("ADDING TO CART:", cartItem);
+    console.log("PRODUCT:", product);
+    // console.log("ADDING TO CART:", cartItem);
     addToCart(cartItem);
-    navigate('/cart');
+    navigate("/cart");
   };
 
   const handleSubscribe = () => {
     if (!subscriptionStartDate || !subscriptionEndDate) {
       toast({
         title: "Select Date Range",
-        description: "Please select a delivery date range for your subscription.",
+        description:
+          "Please select a delivery date range for your subscription.",
         variant: "destructive",
       });
       return;
@@ -204,12 +240,12 @@ console.log("ADDING TO CART:", cartItem);
 
     const cartItem = {
       productId: product.item_code,
-      name: product.name,
-      price: product.price,
+      name: product.item_name,
+      price: product.standard_rate,
       quantity: isPetFood ? 1 : standardQuantity,
       image: product.image,
-      category: product.category,
-      purchaseType: 'subscription' as const,
+      category: product.item_group,
+      purchaseType: "subscription" as const,
       subscription: {
         frequency: "weekly",
         startDate: subscriptionStartDate,
@@ -218,26 +254,26 @@ console.log("ADDING TO CART:", cartItem);
         deliveryDays: selectedDays,
       },
       ...(isPetFood && {
-      customization: {
-  meatType,
-  grainType,
-  grainPercentage,
-  gpvRatio,
-   freeSoup,
-  extraSoup,
-  vegetables: selectedVegetables,
-  preparationInstructions,
-}
-      })
+        customization: {
+          meatType,
+          grainType,
+          grainPercentage,
+          gpvRatio,
+          freeSoup,
+          extraSoup,
+          vegetables: selectedVegetables,
+          preparationInstructions,
+        },
+      }),
     };
 
     addToCart(cartItem);
-    navigate('/cart');
+    navigate("/cart");
   };
 
   const toggleDay = (day: string) => {
-    setSelectedDays(prev => 
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
     );
   };
 
@@ -254,8 +290,9 @@ console.log("ADDING TO CART:", cartItem);
     setReviewComment("");
   };
 
-  const { text: descriptionText, truncated: isDescriptionTruncated } = truncateDescription(product.description);
-  const subscriptionPrice = (product.price * 0.84).toFixed(2); // ~16% discount for 7+ days
+  const { text: descriptionText, truncated: isDescriptionTruncated } =
+    truncateDescription(product.description);
+  const subscriptionPrice = (product.standard_rate * 0.84).toFixed(2); // ~16% discount for 7+ days
 
   return (
     <div className="min-h-screen">
@@ -268,8 +305,12 @@ console.log("ADDING TO CART:", cartItem);
             {/* Left Column - Product Image */}
             <div className="flex">
               <img
-                src={product.image}
-                alt={product.name}
+                src={
+                  product.image
+                    ? `${BASE_URL}${product.image}`
+                    : "/placeholder.png"
+                }
+                alt={product.item_name}
                 className="w-full h-full object-cover rounded-2xl shadow-lg"
               />
             </div>
@@ -278,13 +319,17 @@ console.log("ADDING TO CART:", cartItem);
             <div className="flex flex-col justify-between py-4">
               <div className="space-y-6">
                 {/* Product Name */}
-                <h1 className="text-4xl font-bold">{product.name}</h1>
+                <h1 className="text-4xl font-bold">{product.item_name}</h1>
 
                 {/* Pricing */}
                 <div className="space-y-3">
-                  <span className="text-3xl font-bold text-primary">₹{product.price.toFixed(2)}</span>
+                  <span className="text-3xl font-bold text-primary">
+                    ₹{product.standard_rate.toFixed(2)}
+                  </span>
                   <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3 inline-block">
-                    <span className="text-primary font-semibold">₹{subscriptionPrice} for 7+ days Subscription</span>
+                    <span className="text-primary font-semibold">
+                      ₹{subscriptionPrice} for 7+ days Subscription
+                    </span>
                   </div>
                 </div>
 
@@ -312,13 +357,18 @@ console.log("ADDING TO CART:", cartItem);
                       {/* Left: Meat Type and Grain Type */}
                       <div className="space-y-5">
                         <div>
-                          <Label htmlFor="meat-type" className="text-base font-semibold mb-2 block">
+                          <Label
+                            htmlFor="meat-type"
+                            className="text-base font-semibold mb-2 block"
+                          >
                             Meat Type *
                           </Label>
                           <Select value={meatType} onValueChange={setMeatType}>
-                            <SelectTrigger 
+                            <SelectTrigger
                               id="meat-type"
-                              className={cn(meatType && "bg-primary/10 border-primary/30")}
+                              className={cn(
+                                meatType && "bg-primary/10 border-primary/30",
+                              )}
                             >
                               <SelectValue placeholder="Chicken" />
                             </SelectTrigger>
@@ -332,16 +382,24 @@ console.log("ADDING TO CART:", cartItem);
                         </div>
 
                         <div>
-                          <Label htmlFor="grain-type" className="text-base font-semibold mb-2 block">
+                          <Label
+                            htmlFor="grain-type"
+                            className="text-base font-semibold mb-2 block"
+                          >
                             Grain Type *
                           </Label>
-                          <Select value={grainType} onValueChange={(val) => {
-                            setGrainType(val);
-                            if (val === "No grain") setGrainPercentage(0);
-                          }}>
-                            <SelectTrigger 
+                          <Select
+                            value={grainType}
+                            onValueChange={(val) => {
+                              setGrainType(val);
+                              if (val === "No grain") setGrainPercentage(0);
+                            }}
+                          >
+                            <SelectTrigger
                               id="grain-type"
-                              className={cn(grainType && "bg-primary/10 border-primary/30")}
+                              className={cn(
+                                grainType && "bg-primary/10 border-primary/30",
+                              )}
                             >
                               <SelectValue placeholder="Select grain type" />
                             </SelectTrigger>
@@ -355,177 +413,223 @@ console.log("ADDING TO CART:", cartItem);
                       </div>
 
                       {/* Right: Vegetables Radio Selection */}
-                    <div>
-  <Label className="text-base font-semibold mb-3 block">Vegetables</Label>
+                      <div>
+                        <Label className="text-base font-semibold mb-3 block">
+                          Vegetables
+                        </Label>
 
-  <div className="space-y-3">
-    {VEGETABLE_OPTIONS.map((veg) => (
-      <div
-        key={veg.value}
-        className={cn(
-          "flex items-center space-x-3 p-2 rounded-lg border cursor-pointer transition",
-          selectedVegetables.includes(veg.value)
-            ? "bg-primary/10 border-primary/30"
-            : "border-border hover:bg-muted/50"
-        )}
-        onClick={() => toggleVegetable(veg.value)}
-      >
-        <Checkbox
-          checked={selectedVegetables.includes(veg.value)}
-          onCheckedChange={() => toggleVegetable(veg.value)}
-          className="border-primary data-[state=checked]:bg-primary"
-        />
+                        <div className="space-y-3">
+                          {VEGETABLE_OPTIONS.map((veg) => (
+                            <div
+                              key={veg.value}
+                              className={cn(
+                                "flex items-center space-x-3 p-2 rounded-lg border cursor-pointer transition",
+                                selectedVegetables.includes(veg.value)
+                                  ? "bg-primary/10 border-primary/30"
+                                  : "border-border hover:bg-muted/50",
+                              )}
+                              onClick={() => toggleVegetable(veg.value)}
+                            >
+                              <Checkbox
+                                checked={selectedVegetables.includes(veg.value)}
+                                onCheckedChange={() =>
+                                  toggleVegetable(veg.value)
+                                }
+                                className="border-primary data-[state=checked]:bg-primary"
+                              />
 
-        <span
-          className={cn(
-            "text-sm font-medium",
-            selectedVegetables.includes(veg.value) && "text-primary"
-          )}
-        >
-          {veg.label}
-        </span>
-      </div>
-    ))}
-  </div>
-</div>
+                              <span
+                                className={cn(
+                                  "text-sm font-medium",
+                                  selectedVegetables.includes(veg.value) &&
+                                    "text-primary",
+                                )}
+                              >
+                                {veg.label}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Quantity - Full Width */}
                     <div>
-                      <Label htmlFor="quantity" className="text-base font-semibold mb-2 block">
+                      <Label
+                        htmlFor="quantity"
+                        className="text-base font-semibold mb-2 block"
+                      >
                         Quantity *
                       </Label>
                       <Select value={quantity} onValueChange={setQuantity}>
-                        <SelectTrigger 
+                        <SelectTrigger
                           id="quantity"
-                          className={cn(quantity && "bg-primary/10 border-primary/30")}
+                          className={cn(
+                            quantity && "bg-primary/10 border-primary/30",
+                          )}
                         >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-background">
-                          {["100g", "200g", "300g", "400g", "500g", "600g", "700g", "800g", "900g", "1kg"].map(q => (
-                            <SelectItem key={q} value={q}>{q}</SelectItem>
+                          {[
+                            "100g",
+                            "200g",
+                            "300g",
+                            "400g",
+                            "500g",
+                            "600g",
+                            "700g",
+                            "800g",
+                            "900g",
+                            "1kg",
+                          ].map((q) => (
+                            <SelectItem key={q} value={q}>
+                              {q}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-  <Label className="text-base font-semibold mb-2 block">
-    Grain Percentage (%)
-  </Label>
+                      <Label className="text-base font-semibold mb-2 block">
+                        Grain Percentage (%)
+                      </Label>
 
-  <Select
-    value={grainPercentage.toString()}
-    onValueChange={(val) => setGrainPercentage(Number(val))}
-  >
-    <SelectTrigger className={cn(grainPercentage && "bg-primary/10 border-primary/30")}>
-      <SelectValue placeholder="Select grain %" />
-    </SelectTrigger>
+                      <Select
+                        value={grainPercentage.toString()}
+                        onValueChange={(val) => setGrainPercentage(Number(val))}
+                      >
+                        <SelectTrigger
+                          className={cn(
+                            grainPercentage &&
+                              "bg-primary/10 border-primary/30",
+                          )}
+                        >
+                          <SelectValue placeholder="Select grain %" />
+                        </SelectTrigger>
 
-    <SelectContent className="bg-background">
-      {[0, 5, 10, 15, 20, 25, 30].map((val) => (
-        <SelectItem key={val} value={val.toString()}>
-          {val}%
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-</div>
+                        <SelectContent className="bg-background">
+                          {[0, 5, 10, 15, 20, 25, 30].map((val) => (
+                            <SelectItem key={val} value={val.toString()}>
+                              {val}%
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
+                    <div>
+                      <Label className="text-base font-semibold mb-2 block">
+                        GPV Ratio (Grain : Protein : Veg)
+                      </Label>
 
-<div>
-  <Label className="text-base font-semibold mb-2 block">
-    GPV Ratio (Grain : Protein : Veg)
-  </Label>
+                      <Select
+                        value={gpvRatio}
+                        onValueChange={(val) => {
+                          setGpvRatio(val);
 
-  <Select 
-  value={gpvRatio}
-  onValueChange={(val) => {
-  setGpvRatio(val);
+                          const [grain] = val.split("-");
+                          setGrainPercentage(Number(grain));
+                        }}
+                      >
+                        <SelectTrigger
+                          className={cn(
+                            gpvRatio && "bg-primary/10 border-primary/30",
+                          )}
+                        >
+                          <SelectValue placeholder="Select ratio" />
+                        </SelectTrigger>
 
-  const [grain] = val.split("-");
-  setGrainPercentage(Number(grain));
-}}
-   >
-    <SelectTrigger className={cn(gpvRatio && "bg-primary/10 border-primary/30")}>
-      <SelectValue placeholder="Select ratio" />
-    </SelectTrigger>
+                        <SelectContent className="bg-background">
+                          <SelectItem value="10-80-10">
+                            10% : 80% : 10%
+                          </SelectItem>
+                          <SelectItem value="15-75-10">
+                            15% : 75% : 10%
+                          </SelectItem>
+                          <SelectItem value="20-70-10">
+                            20% : 70% : 10%
+                          </SelectItem>
+                          <SelectItem value="0-90-10">
+                            0% : 90% : 10%
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-    <SelectContent className="bg-background">
-      <SelectItem value="10-80-10">10% : 80% : 10%</SelectItem>
-      <SelectItem value="15-75-10">15% : 75% : 10%</SelectItem>
-      <SelectItem value="20-70-10">20% : 70% : 10%</SelectItem>
-      <SelectItem value="0-90-10">0% : 90% : 10%</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
+                    <div className="space-y-3">
+                      {/* 🎉 Free Soup Unlock Banner */}
 
+                      <Label className="text-base font-semibold block">
+                        🍲 Soup Add-on
+                      </Label>
 
-<div className="space-y-3">
+                      {/* Free Soup Info */}
+                      {showUnlockMessage && (
+                        <div className="bg-green-100 border border-green-300 text-green-800 rounded-lg px-4 py-2 text-sm font-semibold">
+                          🎉 You unlocked <b>{freeSoup}</b> free soup
+                          {freeSoup > 1 ? "s" : ""}!
+                        </div>
+                      )}
 
-{/* 🎉 Free Soup Unlock Banner */}
+                      {/* ⚡ Upsell Message */}
+                      {showUpsellMessage && (
+                        <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg px-4 py-2 text-sm">
+                          ⚡ Add <b>{remainingForNextSoup}g</b> more to unlock 1
+                          free soup
+                        </div>
+                      )}
 
+                      {/* Extra Soup Controls */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm">Add extra soup:</span>
 
-  <Label className="text-base font-semibold block">
-    🍲 Soup Add-on
-  </Label>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() =>
+                            setExtraSoup((prev) => Math.max(0, prev - 1))
+                          }
+                        >
+                          -
+                        </Button>
 
-  {/* Free Soup Info */}
-{showUnlockMessage && (
-  <div className="bg-green-100 border border-green-300 text-green-800 rounded-lg px-4 py-2 text-sm font-semibold">
-    🎉 You unlocked <b>{freeSoup}</b> free soup{freeSoup > 1 ? "s" : ""}!
-  </div>
-)}
+                        <span className="font-semibold">{extraSoup}</span>
 
-{/* ⚡ Upsell Message */}
-{showUpsellMessage && (
-  <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg px-4 py-2 text-sm">
-    ⚡ Add <b>{remainingForNextSoup}g</b> more to unlock 1 free soup
-  </div>
-)}
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setExtraSoup((prev) => prev + 1)}
+                        >
+                          +
+                        </Button>
 
-  {/* Extra Soup Controls */}
-  <div className="flex items-center gap-3">
-    <span className="text-sm">Add extra soup:</span>
-
-    <Button
-      variant="outline"
-      size="icon"
-      onClick={() => setExtraSoup((prev) => Math.max(0, prev - 1))}
-    >
-      -
-    </Button>
-
-    <span className="font-semibold">{extraSoup}</span>
-
-    <Button
-      variant="outline"
-      size="icon"
-      onClick={() => setExtraSoup((prev) => prev + 1)}
-    >
-      +
-    </Button>
-
-    <span className="text-xs text-muted-foreground">
-      (₹10 per soup)
-    </span>
-  </div>
-</div>
+                        <span className="text-xs text-muted-foreground">
+                          (₹10 per soup)
+                        </span>
+                      </div>
+                    </div>
 
                     {/* Preparation Instructions - Full Width */}
                     <div>
-                      <Label htmlFor="prep-instructions" className="text-base font-semibold mb-2 block">
+                      <Label
+                        htmlFor="prep-instructions"
+                        className="text-base font-semibold mb-2 block"
+                      >
                         Preparation Instructions
                       </Label>
                       <Textarea
                         id="prep-instructions"
                         value={preparationInstructions}
-                        onChange={(e) => setPreparationInstructions(e.target.value)}
+                        onChange={(e) =>
+                          setPreparationInstructions(e.target.value)
+                        }
                         placeholder="Enter any special preparation instructions..."
                         className={cn(
                           "min-h-[100px] resize-none",
-                          preparationInstructions && "bg-primary/10 border-primary/30"
+                          preparationInstructions &&
+                            "bg-primary/10 border-primary/30",
                         )}
                       />
                     </div>
@@ -536,19 +640,32 @@ console.log("ADDING TO CART:", cartItem);
                 {!isPetFood && (
                   <div className="space-y-6">
                     <div>
-                      <Label htmlFor="std-quantity" className="text-base font-semibold mb-2 block">
+                      <Label
+                        htmlFor="std-quantity"
+                        className="text-base font-semibold mb-2 block"
+                      >
                         Quantity
                       </Label>
-                      <Select value={standardQuantity.toString()} onValueChange={(val) => setStandardQuantity(Number(val))}>
-                        <SelectTrigger 
+                      <Select
+                        value={standardQuantity.toString()}
+                        onValueChange={(val) =>
+                          setStandardQuantity(Number(val))
+                        }
+                      >
+                        <SelectTrigger
                           id="std-quantity"
-                          className={cn(standardQuantity && "bg-primary/10 border-primary/30")}
+                          className={cn(
+                            standardQuantity &&
+                              "bg-primary/10 border-primary/30",
+                          )}
                         >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-background">
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(q => (
-                            <SelectItem key={q} value={q.toString()}>{q}</SelectItem>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((q) => (
+                            <SelectItem key={q} value={q.toString()}>
+                              {q}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -570,21 +687,29 @@ console.log("ADDING TO CART:", cartItem);
               <h3 className="text-2xl font-bold mb-6">One-Time Purchase</h3>
               <div className="space-y-4 flex-1">
                 <div>
-                  <Label className="text-sm font-semibold mb-2 block">Delivery Date</Label>
+                  <Label className="text-sm font-semibold mb-2 block">
+                    Delivery Date
+                  </Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          deliveryDate && "bg-primary/10 border-primary/30 text-primary"
+                          deliveryDate &&
+                            "bg-primary/10 border-primary/30 text-primary",
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {deliveryDate ? format(deliveryDate, "MMMM do, yyyy") : "Select a date"}
+                        {deliveryDate
+                          ? format(deliveryDate, "MMMM do, yyyy")
+                          : "Select a date"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-background" align="start">
+                    <PopoverContent
+                      className="w-auto p-0 bg-background"
+                      align="start"
+                    >
                       <Calendar
                         mode="single"
                         selected={deliveryDate}
@@ -597,20 +722,37 @@ console.log("ADDING TO CART:", cartItem);
                 </div>
 
                 <div>
-                  <Label className="text-sm font-semibold mb-2 block">Time Slot</Label>
-                  <Select value={deliveryTimeSlot} onValueChange={setDeliveryTimeSlot}>
-                    <SelectTrigger className={cn(deliveryTimeSlot && "bg-primary/10 border-primary/30")}>
+                  <Label className="text-sm font-semibold mb-2 block">
+                    Time Slot
+                  </Label>
+                  <Select
+                    value={deliveryTimeSlot}
+                    onValueChange={setDeliveryTimeSlot}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        deliveryTimeSlot && "bg-primary/10 border-primary/30",
+                      )}
+                    >
                       <SelectValue placeholder="Select time slot" />
                     </SelectTrigger>
                     <SelectContent className="bg-background">
-                      <SelectItem value="morning">Morning (8AM - 12PM)</SelectItem>
+                      <SelectItem value="morning">
+                        Morning (8AM - 12PM)
+                      </SelectItem>
                       <SelectItem value="noon">Noon (12PM - 4PM)</SelectItem>
-                      <SelectItem value="evening">Evening (4PM - 8PM)</SelectItem>
+                      <SelectItem value="evening">
+                        Evening (4PM - 8PM)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <Button size="xl" onClick={handleAddToCart} className="w-full text-lg mt-6">
+              <Button
+                size="xl"
+                onClick={handleAddToCart}
+                className="w-full text-lg mt-6"
+              >
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Add to Cart
               </Button>
@@ -623,28 +765,37 @@ console.log("ADDING TO CART:", cartItem);
                 {/* Left Column */}
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-sm font-semibold mb-2 block">Delivery Date Between</Label>
+                    <Label className="text-sm font-semibold mb-2 block">
+                      Delivery Date Between
+                    </Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
                             "w-full justify-start text-left font-normal text-sm",
-                            (subscriptionStartDate || subscriptionEndDate) && "bg-primary/10 border-primary/30 text-primary"
+                            (subscriptionStartDate || subscriptionEndDate) &&
+                              "bg-primary/10 border-primary/30 text-primary",
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                           <span className="truncate">
-                            {subscriptionStartDate && subscriptionEndDate 
+                            {subscriptionStartDate && subscriptionEndDate
                               ? `${format(subscriptionStartDate, "MMM d")} - ${format(subscriptionEndDate, "MMM d, yyyy")}`
                               : "Select date range"}
                           </span>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 bg-background" align="start">
+                      <PopoverContent
+                        className="w-auto p-0 bg-background"
+                        align="start"
+                      >
                         <Calendar
                           mode="range"
-                          selected={{ from: subscriptionStartDate, to: subscriptionEndDate }}
+                          selected={{
+                            from: subscriptionStartDate,
+                            to: subscriptionEndDate,
+                          }}
                           onSelect={(range) => {
                             setSubscriptionStartDate(range?.from);
                             setSubscriptionEndDate(range?.to);
@@ -658,15 +809,29 @@ console.log("ADDING TO CART:", cartItem);
                   </div>
 
                   <div>
-                    <Label className="text-sm font-semibold mb-2 block">Time Slot</Label>
-                    <Select value={subscriptionTimeSlot} onValueChange={setSubscriptionTimeSlot}>
-                      <SelectTrigger className={cn(subscriptionTimeSlot && "bg-primary/10 border-primary/30")}>
+                    <Label className="text-sm font-semibold mb-2 block">
+                      Time Slot
+                    </Label>
+                    <Select
+                      value={subscriptionTimeSlot}
+                      onValueChange={setSubscriptionTimeSlot}
+                    >
+                      <SelectTrigger
+                        className={cn(
+                          subscriptionTimeSlot &&
+                            "bg-primary/10 border-primary/30",
+                        )}
+                      >
                         <SelectValue placeholder="Select time slot" />
                       </SelectTrigger>
                       <SelectContent className="bg-background">
-                        <SelectItem value="morning">Morning (8AM - 12PM)</SelectItem>
+                        <SelectItem value="morning">
+                          Morning (8AM - 12PM)
+                        </SelectItem>
                         <SelectItem value="noon">Noon (12PM - 4PM)</SelectItem>
-                        <SelectItem value="evening">Evening (4PM - 8PM)</SelectItem>
+                        <SelectItem value="evening">
+                          Evening (4PM - 8PM)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -674,34 +839,45 @@ console.log("ADDING TO CART:", cartItem);
 
                 {/* Right Column - Days Selection */}
                 <div>
-                  <Label className="text-sm font-semibold mb-2 block">Delivery Days</Label>
+                  <Label className="text-sm font-semibold mb-2 block">
+                    Delivery Days
+                  </Label>
                   <div className="grid grid-cols-2 gap-2">
                     {weekDays.map((day) => (
-                      <div 
-                        key={day} 
+                      <div
+                        key={day}
                         className={cn(
                           "flex items-center space-x-2 p-2 rounded-lg border cursor-pointer transition-colors",
-                          selectedDays.includes(day) 
-                            ? "bg-primary/10 border-primary/30" 
-                            : "border-border hover:bg-muted/50"
+                          selectedDays.includes(day)
+                            ? "bg-primary/10 border-primary/30"
+                            : "border-border hover:bg-muted/50",
                         )}
                         onClick={() => toggleDay(day)}
                       >
-                        <Checkbox 
+                        <Checkbox
                           checked={selectedDays.includes(day)}
                           onCheckedChange={() => toggleDay(day)}
                           className="border-primary data-[state=checked]:bg-primary"
                         />
-                        <span className={cn(
-                          "text-sm font-medium",
-                          selectedDays.includes(day) && "text-primary"
-                        )}>{day}</span>
+                        <span
+                          className={cn(
+                            "text-sm font-medium",
+                            selectedDays.includes(day) && "text-primary",
+                          )}
+                        >
+                          {day}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-              <Button size="xl" onClick={handleSubscribe} variant="orderNow" className="w-full text-lg mt-6">
+              <Button
+                size="xl"
+                onClick={handleSubscribe}
+                variant="orderNow"
+                className="w-full text-lg mt-6"
+              >
                 <CalendarIcon className="mr-2 h-5 w-5" />
                 Subscribe for 7+ days
               </Button>
@@ -715,7 +891,9 @@ console.log("ADDING TO CART:", cartItem);
         <div className="container mx-auto px-4 max-w-5xl">
           <Tabs defaultValue="description" className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-8">
-              <TabsTrigger value="description" ref={descriptionTabRef}>Description</TabsTrigger>
+              <TabsTrigger value="description" ref={descriptionTabRef}>
+                Description
+              </TabsTrigger>
               <TabsTrigger value="specifications">Cooking & Specs</TabsTrigger>
               <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
               <TabsTrigger value="review">Write Review</TabsTrigger>
@@ -723,12 +901,18 @@ console.log("ADDING TO CART:", cartItem);
 
             <TabsContent value="description" className="space-y-4">
               <h3 className="text-2xl font-bold">Product Description</h3>
-              <p className="text-lg text-muted-foreground leading-relaxed">{product.description}</p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                {product.description}
+              </p>
             </TabsContent>
 
             <TabsContent value="specifications" className="space-y-4">
-              <h3 className="text-2xl font-bold">Cooking Instructions & Specifications</h3>
-              <p className="text-lg text-muted-foreground leading-relaxed">{product.specifications}</p>
+              <h3 className="text-2xl font-bold">
+                Cooking Instructions & Specifications
+              </h3>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                {product.specifications}
+              </p>
             </TabsContent>
 
             <TabsContent value="testimonials" className="space-y-6">
@@ -741,13 +925,19 @@ console.log("ADDING TO CART:", cartItem);
                         key={i}
                         className={cn(
                           "w-5 h-5",
-                          i < testimonial.rating ? "fill-primary text-primary" : "text-muted-foreground"
+                          i < testimonial.rating
+                            ? "fill-primary text-primary"
+                            : "text-muted-foreground",
                         )}
                       />
                     ))}
                   </div>
-                  <p className="text-muted-foreground mb-2">{testimonial.comment}</p>
-                  <p className="text-sm font-semibold">— {testimonial.author}</p>
+                  <p className="text-muted-foreground mb-2">
+                    {testimonial.comment}
+                  </p>
+                  <p className="text-sm font-semibold">
+                    — {testimonial.author}
+                  </p>
                 </div>
               ))}
             </TabsContent>
@@ -766,13 +956,18 @@ console.log("ADDING TO CART:", cartItem);
                 </div>
                 <div>
                   <Label htmlFor="review-rating">Rating</Label>
-                  <Select value={reviewRating.toString()} onValueChange={(val) => setReviewRating(Number(val))}>
+                  <Select
+                    value={reviewRating.toString()}
+                    onValueChange={(val) => setReviewRating(Number(val))}
+                  >
                     <SelectTrigger id="review-rating">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {[5, 4, 3, 2, 1].map(r => (
-                        <SelectItem key={r} value={r.toString()}>{r} Stars</SelectItem>
+                      {[5, 4, 3, 2, 1].map((r) => (
+                        <SelectItem key={r} value={r.toString()}>
+                          {r} Stars
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -787,7 +982,9 @@ console.log("ADDING TO CART:", cartItem);
                     required
                   />
                 </div>
-                <Button type="submit" size="lg">Submit Review</Button>
+                <Button type="submit" size="lg">
+                  Submit Review
+                </Button>
               </form>
             </TabsContent>
           </Tabs>
@@ -796,7 +993,10 @@ console.log("ADDING TO CART:", cartItem);
 
       <footer className="bg-foreground text-background py-6">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm">© 2024 Dumas 'N' Bismi. All rights reserved. | Premium Pet Nutrition Scheme</p>
+          <p className="text-sm">
+            © 2024 Dumas 'N' Bismi. All rights reserved. | Premium Pet Nutrition
+            Scheme
+          </p>
         </div>
       </footer>
     </div>

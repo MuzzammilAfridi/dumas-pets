@@ -13,7 +13,7 @@ const Index = () => {
       <Navigation />
       <Hero />
       {/* <FeaturedProducts /> */}
-      <Templates/>
+      <Templates />
       <About />
       <Testimonials />
       <Resources />
@@ -21,7 +21,10 @@ const Index = () => {
 
       <footer className="bg-foreground text-background py-6">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm">© 2024 Dumas 'N' Bismi. All rights reserved. | Premium Pet Nutrition Scheme</p>
+          <p className="text-sm">
+            © 2024 Dumas 'N' Bismi. All rights reserved. | Premium Pet Nutrition
+            Scheme
+          </p>
         </div>
       </footer>
     </div>

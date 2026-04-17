@@ -112,10 +112,16 @@ const timeSlotLabels: Record<string, string> = {
 function countDeliveryDaysInRange(
   start: Date,
   end: Date,
-  days: string[]
+  days: string[],
 ): number {
   const dayMap: Record<string, number> = {
-    Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
   };
   const selectedDayNumbers = days.map((d) => dayMap[d]);
   let count = 0;
@@ -128,13 +134,22 @@ function countDeliveryDaysInRange(
 }
 
 const Cart = () => {
-  const { items: cartItems, removeFromCart, updateQuantity, clearCart, getItemCount } = useCart();
+  const {
+    items: cartItems,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getItemCount,
+  } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Use mock items if cart is empty for preview
   const displayItems = cartItems.length > 0 ? cartItems : MOCK_CART_ITEMS;
   const isUsingMock = cartItems.length === 0;
+
+  console.log("Cart item in Cart", cartItems);
+  
 
   // Customer details
   const [fullName, setFullName] = useState("");
@@ -161,44 +176,57 @@ const Cart = () => {
   // Checkout mobile collapse
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-const SOUP_PRICE = 10;
+  const BASE_URL = "https://dumas.frappe.cloud";
 
-const getItemTotal = (item: CartItem) => {
-  let base = item.price * item.quantity;
+  const SOUP_PRICE = 10;
 
-  // ✅ Add soup price
-  if (item.customization?.extraSoup) {
-    base += item.customization.extraSoup * SOUP_PRICE;
-  }
+  const getItemTotal = (item: CartItem) => {
+    let base = item.price * item.quantity;
 
-  // ✅ Subscription logic
-  if (
-    item.purchaseType === "subscription" &&
-    item.subscription?.startDate &&
-    item.subscription?.endDate &&
-    item.subscription?.deliveryDays
-  ) {
-    const deliveryCount = countDeliveryDaysInRange(
-      item.subscription.startDate,
-      item.subscription.endDate,
-      item.subscription.deliveryDays
-    );
+    // ✅ Add soup price
+    if (item.customization?.extraSoup) {
+      base += item.customization.extraSoup * SOUP_PRICE;
+    }
 
-    const subscriptionPrice = base * 0.84; // apply discount after adding soup
-    return subscriptionPrice * deliveryCount;
-  }
+    // ✅ Subscription logic
+    if (
+      item.purchaseType === "subscription" &&
+      item.subscription?.startDate &&
+      item.subscription?.endDate &&
+      item.subscription?.deliveryDays
+    ) {
+      const deliveryCount = countDeliveryDaysInRange(
+        item.subscription.startDate,
+        item.subscription.endDate,
+        item.subscription.deliveryDays,
+      );
 
-  return base;
-};
+      const subscriptionPrice = base * 0.84; // apply discount after adding soup
+      return subscriptionPrice * deliveryCount;
+    }
+
+    return base;
+  };
 
   const getDeliveryDayCount = (item: CartItem) => {
-    if (item.subscription?.startDate && item.subscription?.endDate && item.subscription?.deliveryDays) {
-      return countDeliveryDaysInRange(item.subscription.startDate, item.subscription.endDate, item.subscription.deliveryDays);
+    if (
+      item.subscription?.startDate &&
+      item.subscription?.endDate &&
+      item.subscription?.deliveryDays
+    ) {
+      return countDeliveryDaysInRange(
+        item.subscription.startDate,
+        item.subscription.endDate,
+        item.subscription.deliveryDays,
+      );
     }
     return 0;
   };
 
-  const subtotal = displayItems.reduce((sum, item) => sum + getItemTotal(item), 0);
+  const subtotal = displayItems.reduce(
+    (sum, item) => sum + getItemTotal(item),
+    0,
+  );
   const deliveryCharge = subtotal > 100 ? 0 : 5.99;
   const subscriptionDiscount = displayItems
     .filter((i) => i.purchaseType === "subscription")
@@ -208,7 +236,11 @@ const getItemTotal = (item: CartItem) => {
     }, 0);
   const grandTotal = subtotal + deliveryCharge;
 
-  const handleQuantityChange = (productId: string, delta: number, current: number) => {
+  const handleQuantityChange = (
+    productId: string,
+    delta: number,
+    current: number,
+  ) => {
     const newQty = Math.max(1, current + delta);
     if (!isUsingMock) updateQuantity(productId, newQty);
   };
@@ -220,39 +252,48 @@ const getItemTotal = (item: CartItem) => {
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!fullName.trim()) errs.fullName = "Full name is required";
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Valid email is required";
-    if (!phone.trim() || phone.length < 10) errs.phone = "Valid phone number is required";
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      errs.email = "Valid email is required";
+    if (!phone.trim() || phone.length < 10)
+      errs.phone = "Valid phone number is required";
     if (!address.trim()) errs.address = "Address is required";
-    if (!pincode.trim() || pincode.length < 5) errs.pincode = "Valid pincode is required";
+    if (!pincode.trim() || pincode.length < 5)
+      errs.pincode = "Valid pincode is required";
     if (paymentMethod === "card") {
-      if (!cardNumber.trim() || cardNumber.replace(/\s/g, "").length < 16) errs.cardNumber = "Valid card number required";
+      if (!cardNumber.trim() || cardNumber.replace(/\s/g, "").length < 16)
+        errs.cardNumber = "Valid card number required";
       if (!cardExpiry.trim()) errs.cardExpiry = "Expiry date required";
-      if (!cardCvv.trim() || cardCvv.length < 3) errs.cardCvv = "Valid CVV required";
+      if (!cardCvv.trim() || cardCvv.length < 3)
+        errs.cardCvv = "Valid CVV required";
       if (!cardName.trim()) errs.cardName = "Name on card required";
     }
     if (paymentMethod === "upi") {
-      if (!upiId.trim() || !upiId.includes("@")) errs.upiId = "Valid UPI ID required";
+      if (!upiId.trim() || !upiId.includes("@"))
+        errs.upiId = "Valid UPI ID required";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-const handlePlaceOrder = () => {
-  if (!validate()) return;
+  const handlePlaceOrder = () => {
+    if (!validate()) return;
 
-  setIsProcessing(true);
+    setIsProcessing(true);
 
-  setTimeout(() => {
-    setIsProcessing(false);
+    setTimeout(() => {
+      setIsProcessing(false);
 
-    const quotation_id = localStorage.getItem("quotation_id");
+      const quotation_id = localStorage.getItem("quotation_id");
 
-    setOrderId(quotation_id || "NO-ID");
-    setOrderSuccess(true);
+      setOrderId(quotation_id || "NO-ID");
+      setOrderSuccess(true);
 
-    // ❌ DO NOT clear quotation_id (important for Option 2)
-  }, 1000);
-};
+      // ❌ DO NOT clear quotation_id (important for Option 2)
+    }, 1000);
+  };
+
+  console.log("displayItems in Cart:", displayItems);
+  
 
   if (orderSuccess) {
     return (
@@ -264,20 +305,44 @@ const handlePlaceOrder = () => {
               <CheckCircle2 className="w-12 h-12 text-green-600" />
             </div>
             <h1 className="text-3xl font-bold">Order Placed Successfully!</h1>
-            <p className="text-muted-foreground">Your order has been confirmed and is being processed.</p>
+            <p className="text-muted-foreground">
+              Your order has been confirmed and is being processed.
+            </p>
             <div className="bg-primary/10 rounded-xl p-4 space-y-2">
               <p className="text-sm text-muted-foreground">Order ID</p>
               <p className="text-2xl font-bold text-primary">{orderId}</p>
             </div>
             <div className="bg-muted rounded-xl p-4 text-left space-y-1">
               <p className="text-sm font-semibold">Order Summary</p>
-              <div className="flex justify-between text-sm"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-sm"><span>Delivery</span><span>{deliveryCharge === 0 ? "Free" : `₹${deliveryCharge.toFixed(2)}`}</span></div>
-              {subscriptionDiscount > 0 && <div className="flex justify-between text-sm text-green-600"><span>Subscription Savings</span><span>-₹{subscriptionDiscount.toFixed(2)}</span></div>}
+              <div className="flex justify-between text-sm">
+                <span>Subtotal</span>
+                <span>₹{subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Delivery</span>
+                <span>
+                  {deliveryCharge === 0
+                    ? "Free"
+                    : `₹${deliveryCharge.toFixed(2)}`}
+                </span>
+              </div>
+              {subscriptionDiscount > 0 && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Subscription Savings</span>
+                  <span>-₹{subscriptionDiscount.toFixed(2)}</span>
+                </div>
+              )}
               <Separator className="my-1" />
-              <div className="flex justify-between font-bold"><span>Grand Total</span><span className="text-primary">₹{grandTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between font-bold">
+                <span>Grand Total</span>
+                <span className="text-primary">₹{grandTotal.toFixed(2)}</span>
+              </div>
             </div>
-            <Button size="xl" className="w-full" onClick={() => navigate("/shop")}>
+            <Button
+              size="xl"
+              className="w-full"
+              onClick={() => navigate("/shop")}
+            >
               Continue Shopping
             </Button>
           </Card>
@@ -296,7 +361,9 @@ const handlePlaceOrder = () => {
             <ShoppingCart className="w-12 h-12 text-muted-foreground" />
           </div>
           <h1 className="text-3xl font-bold">Your Cart is Empty</h1>
-          <p className="text-muted-foreground">Looks like you haven't added any items yet.</p>
+          <p className="text-muted-foreground">
+            Looks like you haven't added any items yet.
+          </p>
           <Button size="lg" onClick={() => navigate("/shop")}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Browse Products
           </Button>
@@ -323,15 +390,25 @@ const handlePlaceOrder = () => {
             {displayItems.map((item, idx) => {
               const isSubscription = item.purchaseType === "subscription";
               const dayCount = getDeliveryDayCount(item);
-              const subscriptionPrice = (item.price * 0.84);
+              const subscriptionPrice = item.price * 0.84;
               const itemTotal = getItemTotal(item);
 
               return (
-                <Card key={`${item.productId}-${idx}`} className="p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                <Card
+                  key={`${item.productId}-${idx}`}
+                  className="p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+                >
                   <div className="flex flex-col sm:flex-row gap-5">
                     {/* Image */}
                     <img
-                      src={item.image || buffaloMeal}
+                      // src={item.image || buffaloMeal}
+                      src={
+                   item.image?.startsWith("http")
+  ? item.image
+  : item.image
+  ? `${BASE_URL}${item.image}`
+  : "/placeholder.png"
+                      }
                       alt={item.name}
                       className="w-full sm:w-32 h-32 object-cover rounded-xl"
                     />
@@ -342,7 +419,10 @@ const handlePlaceOrder = () => {
                         <div>
                           <h3 className="text-lg font-bold">{item.name}</h3>
                           <div className="flex gap-2 mt-1 flex-wrap">
-                            <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                            <Badge
+                              variant="outline"
+                              className="text-xs border-primary/30 text-primary"
+                            >
                               {item.category || "PET FOOD"}
                             </Badge>
                             <Badge
@@ -350,7 +430,7 @@ const handlePlaceOrder = () => {
                                 "text-xs",
                                 isSubscription
                                   ? "bg-primary/10 text-primary border-primary/30"
-                                  : "bg-muted text-muted-foreground"
+                                  : "bg-muted text-muted-foreground",
                               )}
                             >
                               {isSubscription ? "Subscription" : "One Time"}
@@ -368,61 +448,60 @@ const handlePlaceOrder = () => {
                       </div>
 
                       {/* Customization */}
-                   {item.customization && (
-  <div className="flex flex-wrap gap-2 text-xs">
-    
-    {item.customization.meatType && (
-      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-        🥩 {item.customization.meatType}
-      </span>
-    )}
+                      {item.customization && (
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          {item.customization.meatType && (
+                            <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+                              🥩 {item.customization.meatType}
+                            </span>
+                          )}
 
-    {item.customization.grainType && (
-      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-        🌾 {item.customization.grainType}
-      </span>
-    )}
+                          {item.customization.grainType && (
+                            <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+                              🌾 {item.customization.grainType}
+                            </span>
+                          )}
 
-    {item.customization.grainPercentage !== undefined && (
-      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-        📊 {item.customization.grainPercentage}%
-      </span>
-    )}
+                          {item.customization.grainPercentage !== undefined && (
+                            <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+                              📊 {item.customization.grainPercentage}%
+                            </span>
+                          )}
 
-    {item.customization.gpvRatio && (
-      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-        ⚖️ {item.customization.gpvRatio}
-      </span>
-    )}
+                          {item.customization.gpvRatio && (
+                            <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+                              ⚖️ {item.customization.gpvRatio}
+                            </span>
+                          )}
 
-    {item.customization.vegetables?.length > 0 && (
-      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-        🥕 {item.customization.vegetables.join(", ")}
-      </span>
-    )}
+                          {item.customization.vegetables?.length > 0 && (
+                            <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+                              🥕 {item.customization.vegetables.join(", ")}
+                            </span>
+                          )}
 
-      {item.customization.preparationInstructions && (
-      <div className="bg-muted/50 border rounded-lg px-3 py-2 text-sm text-muted-foreground">
-        <span className="font-semibold text-foreground">📝 Note:</span>{" "}
-        {item.customization.preparationInstructions}
-      </div>
-    )}
+                          {item.customization.preparationInstructions && (
+                            <div className="bg-muted/50 border rounded-lg px-3 py-2 text-sm text-muted-foreground">
+                              <span className="font-semibold text-foreground">
+                                📝 Note:
+                              </span>{" "}
+                              {item.customization.preparationInstructions}
+                            </div>
+                          )}
 
+                          {item.customization.freeSoup !== undefined && (
+                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-md">
+                              🎁 Free Soup: {item.customization.freeSoup}
+                            </span>
+                          )}
 
-{item.customization.freeSoup !== undefined && (
-  <span className="bg-green-100 text-green-700 px-2 py-1 rounded-md">
-    🎁 Free Soup: {item.customization.freeSoup}
-  </span>
-)}
-
-{item.customization.extraSoup > 0 && (
-  <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-md">
-    ➕ Extra Soup: {item.customization.extraSoup}
-  </span>
-)}
-
-  </div>
-)}
+                          {item.customization.extraSoup > 0 && (
+                            <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-md">
+                              ➕ Extra Soup: {item.customization.extraSoup}
+                            </span>
+                          )}
+                        </div>
+                      )}
 
                       {/* Delivery Info */}
                       {isSubscription && item.subscription ? (
@@ -430,17 +509,34 @@ const handlePlaceOrder = () => {
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <CalendarDays className="w-4 h-4 text-primary" />
                             <span>
-                              {item.subscription.startDate && format(item.subscription.startDate, "MMM d")} —{" "}
-                              {item.subscription.endDate && format(item.subscription.endDate, "MMM d, yyyy")}
+                              {item.subscription.startDate &&
+                                format(
+                                  item.subscription.startDate,
+                                  "MMM d",
+                                )}{" "}
+                              —{" "}
+                              {item.subscription.endDate &&
+                                format(
+                                  item.subscription.endDate,
+                                  "MMM d, yyyy",
+                                )}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Clock className="w-4 h-4 text-primary" />
-                            <span>{item.subscription.timeSlot ? timeSlotLabels[item.subscription.timeSlot] : "—"}</span>
+                            <span>
+                              {item.subscription.timeSlot
+                                ? timeSlotLabels[item.subscription.timeSlot]
+                                : "—"}
+                            </span>
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {item.subscription.deliveryDays?.map((d) => (
-                              <Badge key={d} variant="outline" className="text-xs bg-primary/10 border-primary/30 text-primary">
+                              <Badge
+                                key={d}
+                                variant="outline"
+                                className="text-xs bg-primary/10 border-primary/30 text-primary"
+                              >
                                 {d}
                               </Badge>
                             ))}
@@ -448,20 +544,34 @@ const handlePlaceOrder = () => {
                           <Separator />
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                             <div>
-                              <span className="text-muted-foreground">Delivery Days</span>
-                              <p className="font-bold text-primary">{dayCount}</p>
+                              <span className="text-muted-foreground">
+                                Delivery Days
+                              </span>
+                              <p className="font-bold text-primary">
+                                {dayCount}
+                              </p>
                             </div>
                             <div>
-                              <span className="text-muted-foreground">Daily Qty</span>
+                              <span className="text-muted-foreground">
+                                Daily Qty
+                              </span>
                               <p className="font-bold">{item.quantity}</p>
                             </div>
                             <div>
-                              <span className="text-muted-foreground">Total Qty</span>
-                              <p className="font-bold">{item.quantity * dayCount}</p>
+                              <span className="text-muted-foreground">
+                                Total Qty
+                              </span>
+                              <p className="font-bold">
+                                {item.quantity * dayCount}
+                              </p>
                             </div>
                             <div>
-                              <span className="text-muted-foreground">Price/Day</span>
-                              <p className="font-bold text-primary">₹{subscriptionPrice.toFixed(2)}</p>
+                              <span className="text-muted-foreground">
+                                Price/Day
+                              </span>
+                              <p className="font-bold text-primary">
+                                ₹{subscriptionPrice.toFixed(2)}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -469,11 +579,19 @@ const handlePlaceOrder = () => {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1.5">
                             <CalendarDays className="w-4 h-4 text-primary" />
-                            <span>{item.subscription?.date ? format(item.subscription.date, "MMM d, yyyy") : "—"}</span>
+                            <span>
+                              {item.subscription?.date
+                                ? format(item.subscription.date, "MMM d, yyyy")
+                                : "—"}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Clock className="w-4 h-4 text-primary" />
-                            <span>{item.subscription?.timeSlot ? timeSlotLabels[item.subscription.timeSlot] : "—"}</span>
+                            <span>
+                              {item.subscription?.timeSlot
+                                ? timeSlotLabels[item.subscription.timeSlot]
+                                : "—"}
+                            </span>
                           </div>
                         </div>
                       )}
@@ -485,28 +603,58 @@ const handlePlaceOrder = () => {
                             variant="outline"
                             size="icon"
                             className="h-8 w-8 rounded-lg"
-                            onClick={() => handleQuantityChange(item.productId, -1, item.quantity)}
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.productId,
+                                -1,
+                                item.quantity,
+                              )
+                            }
                           >
                             <Minus className="w-3 h-3" />
                           </Button>
-                          <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                          <span className="w-8 text-center font-semibold">
+                            {item.quantity}
+                          </span>
                           <Button
                             variant="outline"
                             size="icon"
                             className="h-8 w-8 rounded-lg"
-                            onClick={() => handleQuantityChange(item.productId, 1, item.quantity)}
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.productId,
+                                1,
+                                item.quantity,
+                              )
+                            }
                           >
                             <Plus className="w-3 h-3" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-primary ml-2" onClick={() => navigate(`/product/${item.productId}`)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary ml-2"
+                            onClick={() =>
+                              navigate(`/product/${item.productId}`)
+                            }
+                          >
                             <Edit className="w-3 h-3 mr-1" /> Edit
                           </Button>
                         </div>
                         <div className="text-right">
                           {isSubscription && (
-                            <p className="text-xs text-muted-foreground line-through">₹{(item.price * item.quantity * (dayCount || 1)).toFixed(2)}</p>
+                            <p className="text-xs text-muted-foreground line-through">
+                              ₹
+                              {(
+                                item.price *
+                                item.quantity *
+                                (dayCount || 1)
+                              ).toFixed(2)}
+                            </p>
                           )}
-                          <p className="text-lg font-bold text-primary">₹{itemTotal.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-primary">
+                            ₹{itemTotal.toFixed(2)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -527,19 +675,61 @@ const handlePlaceOrder = () => {
               {checkoutOpen ? "Hide Checkout" : "Proceed to Checkout"}
             </Button>
 
-            <div className={cn("lg:sticky lg:top-24 space-y-6", !checkoutOpen && "hidden lg:block")}>
+            <div
+              className={cn(
+                "lg:sticky lg:top-24 space-y-6",
+                !checkoutOpen && "hidden lg:block",
+              )}
+            >
               {/* Customer Details */}
               <Card className="p-6 rounded-2xl shadow-sm space-y-4">
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <Package className="w-5 h-5 text-primary" /> Delivery Details
                 </h3>
                 <div className="space-y-3">
-                  <FormField label="Full Name" value={fullName} onChange={setFullName} error={errors.fullName} placeholder="John Doe" />
-                  <FormField label="Email" value={email} onChange={setEmail} error={errors.email} placeholder="john@example.com" type="email" />
-                  <FormField label="Phone Number" value={phone} onChange={setPhone} error={errors.phone} placeholder="+1 555 000 0000" type="tel" />
-                  <FormField label="Delivery Address" value={address} onChange={setAddress} error={errors.address} placeholder="123 Main Street" />
-                  <FormField label="Landmark" value={landmark} onChange={setLandmark} placeholder="Near park" />
-                  <FormField label="Pincode" value={pincode} onChange={setPincode} error={errors.pincode} placeholder="97201" />
+                  <FormField
+                    label="Full Name"
+                    value={fullName}
+                    onChange={setFullName}
+                    error={errors.fullName}
+                    placeholder="John Doe"
+                  />
+                  <FormField
+                    label="Email"
+                    value={email}
+                    onChange={setEmail}
+                    error={errors.email}
+                    placeholder="john@example.com"
+                    type="email"
+                  />
+                  <FormField
+                    label="Phone Number"
+                    value={phone}
+                    onChange={setPhone}
+                    error={errors.phone}
+                    placeholder="+1 555 000 0000"
+                    type="tel"
+                  />
+                  <FormField
+                    label="Delivery Address"
+                    value={address}
+                    onChange={setAddress}
+                    error={errors.address}
+                    placeholder="123 Main Street"
+                  />
+                  <FormField
+                    label="Landmark"
+                    value={landmark}
+                    onChange={setLandmark}
+                    placeholder="Near park"
+                  />
+                  <FormField
+                    label="Pincode"
+                    value={pincode}
+                    onChange={setPincode}
+                    error={errors.pincode}
+                    placeholder="97201"
+                  />
                 </div>
               </Card>
 
@@ -548,38 +738,103 @@ const handlePlaceOrder = () => {
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-primary" /> Payment Method
                 </h3>
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-2">
-                  <label className={cn("flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all", paymentMethod === "card" && "bg-primary/10 border-primary/30")}>
-                    <RadioGroupItem value="card" className="border-primary text-primary" />
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={setPaymentMethod}
+                  className="space-y-2"
+                >
+                  <label
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                      paymentMethod === "card" &&
+                        "bg-primary/10 border-primary/30",
+                    )}
+                  >
+                    <RadioGroupItem
+                      value="card"
+                      className="border-primary text-primary"
+                    />
                     <CreditCard className="w-4 h-4 text-primary" />
-                    <span className="font-medium text-sm">Credit / Debit Card</span>
+                    <span className="font-medium text-sm">
+                      Credit / Debit Card
+                    </span>
                   </label>
-                  <label className={cn("flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all", paymentMethod === "upi" && "bg-primary/10 border-primary/30")}>
-                    <RadioGroupItem value="upi" className="border-primary text-primary" />
+                  <label
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                      paymentMethod === "upi" &&
+                        "bg-primary/10 border-primary/30",
+                    )}
+                  >
+                    <RadioGroupItem
+                      value="upi"
+                      className="border-primary text-primary"
+                    />
                     <Smartphone className="w-4 h-4 text-primary" />
                     <span className="font-medium text-sm">UPI</span>
                   </label>
-                  <label className={cn("flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all", paymentMethod === "cod" && "bg-primary/10 border-primary/30")}>
-                    <RadioGroupItem value="cod" className="border-primary text-primary" />
+                  <label
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                      paymentMethod === "cod" &&
+                        "bg-primary/10 border-primary/30",
+                    )}
+                  >
+                    <RadioGroupItem
+                      value="cod"
+                      className="border-primary text-primary"
+                    />
                     <Banknote className="w-4 h-4 text-primary" />
-                    <span className="font-medium text-sm">Cash on Delivery</span>
+                    <span className="font-medium text-sm">
+                      Cash on Delivery
+                    </span>
                   </label>
                 </RadioGroup>
 
                 {paymentMethod === "card" && (
                   <div className="space-y-3 pt-2">
-                    <FormField label="Card Number" value={cardNumber} onChange={setCardNumber} error={errors.cardNumber} placeholder="1234 5678 9012 3456" />
+                    <FormField
+                      label="Card Number"
+                      value={cardNumber}
+                      onChange={setCardNumber}
+                      error={errors.cardNumber}
+                      placeholder="1234 5678 9012 3456"
+                    />
                     <div className="grid grid-cols-2 gap-3">
-                      <FormField label="Expiry" value={cardExpiry} onChange={setCardExpiry} error={errors.cardExpiry} placeholder="MM/YY" />
-                      <FormField label="CVV" value={cardCvv} onChange={setCardCvv} error={errors.cardCvv} placeholder="123" />
+                      <FormField
+                        label="Expiry"
+                        value={cardExpiry}
+                        onChange={setCardExpiry}
+                        error={errors.cardExpiry}
+                        placeholder="MM/YY"
+                      />
+                      <FormField
+                        label="CVV"
+                        value={cardCvv}
+                        onChange={setCardCvv}
+                        error={errors.cardCvv}
+                        placeholder="123"
+                      />
                     </div>
-                    <FormField label="Name on Card" value={cardName} onChange={setCardName} error={errors.cardName} placeholder="John Doe" />
+                    <FormField
+                      label="Name on Card"
+                      value={cardName}
+                      onChange={setCardName}
+                      error={errors.cardName}
+                      placeholder="John Doe"
+                    />
                   </div>
                 )}
 
                 {paymentMethod === "upi" && (
                   <div className="pt-2">
-                    <FormField label="UPI ID" value={upiId} onChange={setUpiId} error={errors.upiId} placeholder="name@upi" />
+                    <FormField
+                      label="UPI ID"
+                      value={upiId}
+                      onChange={setUpiId}
+                      error={errors.upiId}
+                      placeholder="name@upi"
+                    />
                   </div>
                 )}
               </Card>
@@ -593,25 +848,38 @@ const handlePlaceOrder = () => {
                     <span className="font-medium">₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Delivery Charge</span>
-                    <span className="font-medium">{deliveryCharge === 0 ? <span className="text-green-600">Free</span> : `₹${deliveryCharge.toFixed(2)}`}</span>
+                    <span className="text-muted-foreground">
+                      Delivery Charge
+                    </span>
+                    <span className="font-medium">
+                      {deliveryCharge === 0 ? (
+                        <span className="text-green-600">Free</span>
+                      ) : (
+                        `₹${deliveryCharge.toFixed(2)}`
+                      )}
+                    </span>
                   </div>
                   {subscriptionDiscount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Subscription Savings</span>
-                      <span className="font-medium">-₹{subscriptionDiscount.toFixed(2)}</span>
+                      <span className="font-medium">
+                        -₹{subscriptionDiscount.toFixed(2)}
+                      </span>
                     </div>
                   )}
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Grand Total</span>
-                    <span className="text-primary">₹{grandTotal.toFixed(2)}</span>
+                    <span className="text-primary">
+                      ₹{grandTotal.toFixed(2)}
+                    </span>
                   </div>
                 </div>
                 {subscriptionDiscount > 0 && (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
                     <p className="text-sm text-green-700 font-semibold">
-                      🎉 You're saving ₹{subscriptionDiscount.toFixed(2)} with subscriptions!
+                      🎉 You're saving ₹{subscriptionDiscount.toFixed(2)} with
+                      subscriptions!
                     </p>
                   </div>
                 )}
@@ -669,7 +937,7 @@ function FormField({
         className={cn(
           "rounded-lg",
           value && "bg-primary/10 border-primary/30",
-          error && "border-destructive"
+          error && "border-destructive",
         )}
       />
       {error && <p className="text-xs text-destructive mt-1">{error}</p>}
