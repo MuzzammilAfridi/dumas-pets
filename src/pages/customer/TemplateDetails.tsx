@@ -1,6 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useEffect, useState } from "react";
+import Navigation from "@/components/Navigation";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
+import { getTemplateVariants } from "@/services/productService";
 
 const TemplateDetails = () => {
   const { itemCode } = useParams();
@@ -12,22 +16,18 @@ const TemplateDetails = () => {
   useEffect(() => {
     const fetchVariants = async () => {
       try {
-        const res = await axios.get("/api/resource/Item", {
-          params: {
-            fields: JSON.stringify([
-              "item_name",
-              "item_code",
-              "image",
-              "variant_of",
-              "item_group",
-            ]),
-            filters: JSON.stringify([["variant_of", "=", itemCode]]),
-          },
-        });
-        // console.log("Data in template details",res.data);
-        setVariants(res.data.data || []);
+        // 🔥 Using service instead of direct axios
+        const res = await getTemplateVariants(itemCode);
+
+        const rawData = Array.isArray(res.data?.data)
+          ? res.data.data
+          : [];
+
+        setVariants(rawData);
+
+        console.log("Data in template details:", rawData);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching variants:", err);
       }
     };
 
@@ -35,50 +35,122 @@ const TemplateDetails = () => {
   }, [itemCode]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-6">
-      <h2 className="text-3xl font-bold mb-8 text-center">
-        Choose Your Variant
-      </h2>
+    <>
+      <Navigation />
 
-      {variants.length === 0 ? (
-        <p className="text-center text-gray-500">No variants available</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {variants.map((v) => (
-            <div
-              key={v.item_code}
-              onClick={() => navigate(`/product/${v.item_code}`)}
-              className="cursor-pointer bg-white rounded-xl shadow hover:shadow-lg transition duration-300 overflow-hidden"
-            >
-              {/* 🖼 Image */}
-              <img
-                src={v.image ? `${BASE_URL}${v.image}` : "/placeholder.png"}
-                alt={v.item_name}
-                className="w-full h-48 object-cover"
-              />
+      <div className="min-h-screen bg-gray-50 py-10 px-6">
+        <h2 className="text-3xl font-bold mb-8 text-center">
+          Choose Your Variant
+        </h2>
 
-              {/* 📦 Content */}
-              <div className="p-4">
-                <h3 className="text-lg font-semibold">{v.item_name}</h3>
+        {variants.length === 0 ? (
+          <p className="text-center text-muted-foreground">
+            No variants available
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {variants.map((v) => (
+              <div
+                key={v.item_code}
+                onClick={() => navigate(`/product/${v.item_code}`)}
+                className="cursor-pointer"
+              >
+                <Card className="h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.01] border">
 
-                <p className="text-sm text-gray-500 mt-1">Variant Item</p>
+                  {/* Image */}
+                  <div className="relative w-full h-[180px] sm:h-[200px] overflow-hidden bg-gray-100">
+                    <img
+                      src={
+                        v.image
+                          ? `${BASE_URL}${v.image}`
+                          : "/placeholder.png"
+                      }
+                      alt={v.item_name}
+                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                  </div>
 
-                {/* 🔥 CTA */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // prevent card click double fire
-                    navigate(`/product/${v.item_code}`);
-                  }}
-                  className="mt-4 w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition"
-                >
-                  Customize & Add
-                </button>
+                  {/* Content */}
+                  <CardContent className="p-4 flex flex-col justify-between flex-1">
+                    <div className="space-y-2">
+                      <p className="text-xs sm:text-sm text-primary font-medium uppercase">
+                        {v.item_group || "Variant"}
+                      </p>
+
+                      <h3 className="font-semibold text-base sm:text-lg line-clamp-2 min-h-[48px]">
+                        {v.item_name}
+                      </h3>
+
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                        Premium healthy food template for your lovely pets.
+                      </p>
+                    </div>
+
+                    {/* Dynamic Buttons */}
+                    <div className="mt-4">
+                      {v.item_group?.toLowerCase().includes("meals") ||
+                      v.item_group
+                        ?.toLowerCase()
+                        .includes("all item groups") ? (
+
+                        /* Order + Subscribe */
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            className="w-full"
+                            size="default"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/product/${v.item_code}`);
+                            }}
+                          >
+                            <ShoppingCart className="w-4 h-4 mr-2" />
+                            Order
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            size="default"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/product/${v.item_code}`);
+                            }}
+                          >
+                            Subscribe
+                          </Button>
+                        </div>
+                      ) : (
+                        /* Only Order */
+                        <Button
+                          className="w-full"
+                          size="default"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/product/${v.item_code}`);
+                          }}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          Order
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        )}
+      </div>
+
+      <footer className="bg-foreground text-background py-6">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm">
+            © 2024 Dumas 'N' Bismi. All rights reserved. |
+            Premium Pet Nutrition Scheme
+          </p>
         </div>
-      )}
-    </div>
+      </footer>
+    </>
   );
 };
 

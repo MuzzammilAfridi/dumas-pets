@@ -8,3 +8,42 @@ export const getProducts = async () => {
         }
     );
 };
+
+
+export const getTemplateVariants = async (itemCode) => {
+  return axios.get("/api/resource/Item", {
+    params: {
+      fields: JSON.stringify([
+        "item_name",
+        "item_code",
+        "image",
+        "variant_of",
+        "item_group",
+      ]),
+      filters: JSON.stringify([
+        ["variant_of", "=", itemCode],
+      ]),
+    },
+    withCredentials: true,
+  });
+};
+
+
+export const getTemplates = async () => {
+  return axios.get("/api/resource/Item", {
+    params: {
+      fields: JSON.stringify([
+        "item_name",
+        "item_code",
+        "image",
+        "item_group",
+        "has_variants",
+      ]),
+      filters: JSON.stringify([
+        ["has_variants", "=", 1], // only templates
+      ]),
+    },
+    withCredentials: true,
+  });
+};
+

@@ -11,17 +11,17 @@ const Hero = () => {
     {
       title: "PET FOOD",
       image: product1,
-      route: "/category/pet-food",
+      route: "/category/pet-meals/all",
     },
     {
       title: "TREATS",
       image: product2,
-      route: "/category/treats",
+      route: "/category/desserts/all",
     },
     {
       title: "CAKES",
       image: product3,
-      route: "/category/cakes",
+      route: "/category/bakes/all",
     },
   ];
 

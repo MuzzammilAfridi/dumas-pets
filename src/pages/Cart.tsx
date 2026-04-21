@@ -145,8 +145,8 @@ const Cart = () => {
   const { toast } = useToast();
 
   // Use mock items if cart is empty for preview
-  const displayItems = cartItems.length > 0 ? cartItems : MOCK_CART_ITEMS;
-  const isUsingMock = cartItems.length === 0;
+const displayItems = cartItems;
+const isUsingMock = false;
 
   console.log("Cart item in Cart", cartItems);
   
@@ -236,18 +236,18 @@ const Cart = () => {
     }, 0);
   const grandTotal = subtotal + deliveryCharge;
 
-  const handleQuantityChange = (
-    productId: string,
-    delta: number,
-    current: number,
-  ) => {
-    const newQty = Math.max(1, current + delta);
-    if (!isUsingMock) updateQuantity(productId, newQty);
-  };
+ const handleQuantityChange = (
+  productId: string,
+  delta: number,
+  current: number,
+) => {
+  const newQty = Math.max(1, current + delta);
+  updateQuantity(productId, newQty);
+};
 
-  const handleRemove = (productId: string) => {
-    if (!isUsingMock) removeFromCart(productId);
-  };
+const handleRemove = (productId: string) => {
+  removeFromCart(productId);
+};
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -352,7 +352,7 @@ const Cart = () => {
   }
 
   // Empty cart state (only when actually empty and no mock)
-  if (cartItems.length === 0 && !isUsingMock) {
+if (cartItems.length === 0){
     return (
       <div className="min-h-screen">
         <Navigation />

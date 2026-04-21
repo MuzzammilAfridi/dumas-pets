@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
     target: "https://dumas.frappe.cloud",
     changeOrigin: true,
     secure: true,
-    cookieDomainRewrite: "localhost", // 🔥 IMPORTANT
+    cookieDomainRewrite: "localhost", 
   },
 },
 

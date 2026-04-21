@@ -16,8 +16,18 @@ import axios from "axios";
 
 
 
+// export const createCart = (payload) => {
+//   return axios.post("/api/resource/Quotation", { data: payload }, { withCredentials: true });
+// };
+
 export const createCart = (payload) => {
-  return axios.post("/api/resource/Quotation", { data: payload }, { withCredentials: true });
+  return axios.post(
+    "/api/resource/Quotation",
+    payload,
+    {
+      withCredentials: true,
+    }
+  );
 };
 
 export const updateCart = (id, payload) => {

@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, ShoppingCart, Star } from "lucide-react";
+import { Bolt, CalendarIcon, Gift, ShoppingCart, Soup, Sparkles, Star, Zap } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -182,44 +182,92 @@ const ProductDetail = () => {
     return { text: words.slice(0, maxWords).join(" "), truncated: true };
   };
 
-  const handleAddToCart = () => {
-    const cartItem = {
-      productId: product.item_code, // ✅ THIS IS item_code
-      name: product.item_name, // ✅ already mapped
-      price: product.standard_rate || 100,
-      category: product.item_group, // ✅ FIXED
-      quantity: isPetFood ? 1 : standardQuantity,
-      image: product.image,
+  // const handleAddToCart = () => {
+  //   const cartItem = {
+  //     productId: product.item_code, // ✅ THIS IS item_code
+  //     name: product.item_name, // ✅ already mapped
+  //     price: product.standard_rate || 100,
+  //     category: product.item_group, // ✅ FIXED
+  //     quantity: isPetFood ? 1 : standardQuantity,
+  //     image: product.image,
      
-      purchaseType: "onetime" as const,
-      subscription: {
-        frequency: "once",
-        date: deliveryDate,
-        timeSlot: deliveryTimeSlot,
-      },
-      ...(isPetFood && {
-        customization: {
-          meatType,
-          grainType,
-          grainPercentage,
-          gpvRatio,
-          freeSoup,
-          extraSoup,
-          vegetables: selectedVegetables,
-          ...(preparationInstructions && {
-            preparationInstructions,
-          }),
-        },
-      }),
-    };
+  //     purchaseType: "onetime" as const,
+  //     subscription: {
+  //       frequency: "once",
+  //       date: deliveryDate,
+  //       timeSlot: deliveryTimeSlot,
+  //     },
+  //     ...(isPetFood && {
+  //       customization: {
+  //         meatType,
+  //         grainType,
+  //         grainPercentage,
+  //         gpvRatio,
+  //         freeSoup,
+  //         extraSoup,
+  //         vegetables: selectedVegetables,
+  //         ...(preparationInstructions && {
+  //           preparationInstructions,
+  //         }),
+  //       },
+  //     }),
+  //   };
 
-    console.log("PRODUCT:", product);
-    // console.log("ADDING TO CART:", cartItem);
-    addToCart(cartItem);
-    navigate("/cart");
+  //   console.log("PRODUCT:", product);
+  //   // console.log("ADDING TO CART:", cartItem);
+  //   addToCart(cartItem);
+  //   navigate("/cart");
+  // };
+
+
+  const handleAddToCart = () => {
+  const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
+
+  const cartItem = {
+    productId: product.item_code,
+    name: product.item_name,
+    price: product.standard_rate || 100,
+    category: product.item_group,
+    quantity: isPetFood ? 1 : standardQuantity,
+    image: product.image,
+
+    purchaseType: "onetime" as const,
+    subscription: {
+      frequency: "once",
+      date: deliveryDate,
+      timeSlot: deliveryTimeSlot,
+    },
+
+    ...(isPetFood && {
+      customization: {
+        meatType,
+        grainType,
+        grainPercentage,
+        gpvRatio,
+
+        // ✅ FIX HERE
+        freeSoup: finalFreeSoup,
+
+        // if skipped, extra soup should also be 0
+        extraSoup: extraSoup === -1 ? 0 : extraSoup,
+
+        vegetables: selectedVegetables,
+
+        ...(preparationInstructions && {
+          preparationInstructions,
+        }),
+      },
+    }),
   };
 
+  console.log("ADDING TO CART:", cartItem);
+
+  addToCart(cartItem);
+  navigate("/cart");
+};
+
   const handleSubscribe = () => {
+    const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
     if (!subscriptionStartDate || !subscriptionEndDate) {
       toast({
         title: "Select Date Range",
@@ -259,8 +307,8 @@ const ProductDetail = () => {
           grainType,
           grainPercentage,
           gpvRatio,
-          freeSoup,
-          extraSoup,
+         freeSoup: finalFreeSoup,
+extraSoup: extraSoup === -1 ? 0 : extraSoup,
           vegetables: selectedVegetables,
           preparationInstructions,
         },
@@ -558,58 +606,96 @@ const ProductDetail = () => {
                       </Select>
                     </div>
 
-                    <div className="space-y-3">
-                      {/* 🎉 Free Soup Unlock Banner */}
+{/* ✅ Proper Working Skip Soup Checkbox */}
+{/* 🍲 Soup Add-on Section */}
+<div className="space-y-3">
+  <Label className="text-base font-semibold block">
+    <Soup className="inline-block mr-2" />
+    Soup Add-on
+  </Label>
 
-                      <Label className="text-base font-semibold block">
-                        🍲 Soup Add-on
-                      </Label>
+  {/* ✅ Free Soup Info (show only when not skipped) */}
+  {extraSoup !== -1 && showUnlockMessage && (
+    <div className="bg-green-100 border border-green-300 text-green-800 rounded-lg px-4 py-2 text-sm font-semibold">
+      <Gift className="inline-block h-4 w-4 mr-2" />
+      You unlocked <b>{freeSoup}</b> free soup
+      {freeSoup > 1 ? "s" : ""}!
+    </div>
+  )}
 
-                      {/* Free Soup Info */}
-                      {showUnlockMessage && (
-                        <div className="bg-green-100 border border-green-300 text-green-800 rounded-lg px-4 py-2 text-sm font-semibold">
-                          🎉 You unlocked <b>{freeSoup}</b> free soup
-                          {freeSoup > 1 ? "s" : ""}!
-                        </div>
-                      )}
+  {/* ✅ Upsell Message (show only when not skipped) */}
+  {extraSoup !== -1 && showUpsellMessage && (
+    <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg px-4 py-2 text-sm">
+      <Zap className="inline-block h-4 w-4 mr-2" />
+      Add <b>{remainingForNextSoup}g</b> more to unlock 1 free soup
+    </div>
+  )}
 
-                      {/* ⚡ Upsell Message */}
-                      {showUpsellMessage && (
-                        <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg px-4 py-2 text-sm">
-                          ⚡ Add <b>{remainingForNextSoup}g</b> more to unlock 1
-                          free soup
-                        </div>
-                      )}
+  {/* Skip Soup Option */}
+  <div
+    className={cn(
+      "flex items-center space-x-3 p-3 rounded-lg border transition",
+      extraSoup === -1
+        ? "bg-primary/10 border-primary/30"
+        : "border-border hover:bg-muted/50"
+    )}
+  >
+    <Checkbox
+      checked={extraSoup === -1}
+      onCheckedChange={(checked) => {
+        if (checked) {
+          setExtraSoup(-1); // skip soup
+        } else {
+          setExtraSoup(0); // restore normal soup flow
+        }
+      }}
+      className="border-primary data-[state=checked]:bg-primary"
+    />
 
-                      {/* Extra Soup Controls */}
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm">Add extra soup:</span>
+    <span
+      onClick={() =>
+        setExtraSoup((prev) => (prev === -1 ? 0 : -1))
+      }
+      className={cn(
+        "text-sm font-medium cursor-pointer",
+        extraSoup === -1 && "text-primary"
+      )}
+    >
+      Skip Soup
+    </span>
+  </div>
 
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() =>
-                            setExtraSoup((prev) => Math.max(0, prev - 1))
-                          }
-                        >
-                          -
-                        </Button>
+  {/* Extra Soup Controls */}
+  {extraSoup !== -1 && (
+    <div className="flex items-center gap-3">
+      <span className="text-sm">Add extra soup:</span>
 
-                        <span className="font-semibold">{extraSoup}</span>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() =>
+          setExtraSoup((prev) => Math.max(0, prev - 1))
+        }
+      >
+        -
+      </Button>
 
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setExtraSoup((prev) => prev + 1)}
-                        >
-                          +
-                        </Button>
+      <span className="font-semibold">{extraSoup}</span>
 
-                        <span className="text-xs text-muted-foreground">
-                          (₹10 per soup)
-                        </span>
-                      </div>
-                    </div>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setExtraSoup((prev) => prev + 1)}
+      >
+        +
+      </Button>
+
+      <span className="text-xs text-muted-foreground">
+        (₹10 per soup)
+      </span>
+    </div>
+  )}
+</div>
 
                     {/* Preparation Instructions - Full Width */}
                     <div>

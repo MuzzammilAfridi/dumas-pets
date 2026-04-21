@@ -1,6 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import ProductGrid from "@/components/ProductGrid";
+import { useNavigate } from "react-router-dom";
+import { getTemplates } from "@/services/productService";
 
 import { useState, useEffect } from "react";
 import {
@@ -11,19 +13,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Filter, ArrowUpDown } from "lucide-react";
+import { ChevronRight, Filter, ArrowUpDown, ShoppingCart } from "lucide-react";
 
 import { useProducts } from "@/hooks/useProducts";
+import axios from "axios";
+import { useCategories } from "@/hooks/useCategories";
+import { Card, CardContent } from "@/components/ui/card";
 
 const PRODUCTS_PER_PAGE = 18;
 
 const AllProducts = () => {
-  const { products, loading } = useProducts();
-  const { category } = useParams<{ category: string }>();
+  // const { products, loading } = useProducts();
+  // const { category } = useParams<{ category: string }>();
+
+  const categories = useCategories();
+  const { category } = useParams();
+
+  const [templates, setTemplates] = useState([]);
+const [loading, setLoading] = useState(true);
 
   const [sortBy, setSortBy] = useState<string>("name");
   const [displayCount, setDisplayCount] = useState(PRODUCTS_PER_PAGE);
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   // console.log("produts in all products", products);
 
@@ -34,23 +47,89 @@ const AllProducts = () => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  let filteredProducts = products.filter((p: any) =>
-    p.category?.toLowerCase().includes(decodedCategory || ""),
+const normalize = (str = "") =>
+  str.toLowerCase().trim().replace(/\s+/g, "-");
+
+let filteredTemplates = templates.filter(
+  (item) => item.item_group !== "All Item Groups"
+);
+
+if (category) {
+  filteredTemplates = filteredTemplates.filter(
+    (item) => normalize(item.item_group) === category
   );
+}
+
+// useEffect(() => {
+//   const fetchTemplates = async () => {
+//     try {
+//       const res = await axios.get("/api/resource/Item", {
+//         params: {
+//           fields: JSON.stringify([
+//             "item_name",
+//             "item_code",
+//             "image",
+//             "item_group",
+//             "has_variants"
+//           ]),
+//           filters: JSON.stringify([
+//             ["has_variants", "=", 1]
+//           ]),
+
+// //                    filters: JSON.stringify([
+// //   ["has_variants", "=", 1],
+// //   ["item_group", "in", ["All Item Groups","Street Dog Meals", "Bakes", "Desserts"]],
+// // ])
+//         },
+//       });
+
+//       setTemplates(res.data.data || []);
+//       console.log("Templates in all products", res.data.data);
+      
+//     } catch (err) {
+//       console.error(err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   fetchTemplates();
+// }, []);
+
+// Replace your useEffect fetchTemplates block with this
+
+useEffect(() => {
+  const fetchTemplates = async () => {
+    try {
+      //  Using productService
+      const res = await getTemplates();
+
+      const rawData = Array.isArray(res.data?.data)
+        ? res.data.data
+        : [];
+
+      setTemplates(rawData);
+
+      console.log("Templates in all products:", rawData);
+    } catch (err) {
+      console.error("Error fetching templates:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchTemplates();
+}, []);
 
   // Sort products
-  if (sortBy === "price-low") {
-    filteredProducts = [...filteredProducts].sort((a, b) => a.price - b.price);
-  } else if (sortBy === "price-high") {
-    filteredProducts = [...filteredProducts].sort((a, b) => b.price - a.price);
-  } else {
-    filteredProducts = [...filteredProducts].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
-  }
+ if (sortBy === "name") {
+  filteredTemplates = [...filteredTemplates].sort((a, b) =>
+    a.item_name.localeCompare(b.item_name)
+  );
+}
 
-  const displayedProducts = filteredProducts.slice(0, displayCount);
-  const hasMore = displayCount < filteredProducts.length;
+const displayedTemplates = filteredTemplates.slice(0, displayCount);
+const hasMore = displayCount < filteredTemplates.length;
 
   const loadMore = () => {
     setIsLoading(true);
@@ -65,11 +144,18 @@ const AllProducts = () => {
     setDisplayCount(PRODUCTS_PER_PAGE);
   }, [category]);
 
-  const categories = [
-    { name: "PET FOOD", slug: "pet-meals" },
-    { name: "TREATS", slug: "treats" },
-    { name: "CAKES", slug: "cakes" },
-  ];
+  // const categories = [
+  //   { name: "PET FOOD", slug: "pet-meals" },
+  //   { name: "TREATS", slug: "treats" },
+  //   { name: "CAKES", slug: "cakes" },
+  // ];
+
+const groupedTemplates = filteredTemplates.reduce((acc, item) => {
+  const group = item.item_group || "Others";
+  if (!acc[group]) acc[group] = [];
+  acc[group].push(item);
+  return acc;
+}, {});
 
   if (loading) return <p className="text-center py-10">Loading...</p>;
 
@@ -103,20 +189,24 @@ const AllProducts = () => {
                     Categories
                   </h3>
                   <nav className="space-y-2">
-                    {categories.map((cat) => (
-                      <Link
-                        key={cat.slug}
-                        to={`/category/${cat.slug}/all`}
-                        className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-                          cat.slug === category
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted"
-                        }`}
-                      >
-                        <span className="font-medium">{cat.name}</span>
-                        <ChevronRight className="w-4 h-4" />
-                      </Link>
-                    ))}
+                  {categories.map((cat) => {
+  const slug = cat.name.toLowerCase().replace(/\s+/g, "-");
+
+  return (
+    <Link
+      key={cat.name}
+      to={`/category/${slug}/all`}
+      className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+        slug === category
+          ? "bg-primary text-primary-foreground"
+          : "hover:bg-muted"
+      }`}
+    >
+      <span className="font-medium">{cat.name}</span>
+      <ChevronRight className="w-4 h-4" />
+    </Link>
+  );
+})}
                   </nav>
                 </div>
 
@@ -155,40 +245,95 @@ const AllProducts = () => {
             </aside>
 
             {/* Products Area */}
-            <div className="flex-1">
-              {/* Product Count */}
-              <div className="flex justify-between items-center mb-6">
-                <p className="text-muted-foreground">
-                  Showing {displayedProducts.length} of{" "}
-                  {filteredProducts.length}
-                </p>
-              </div>
+<div className="flex-1 overflow-x-hidden">
 
-              {/* Product Grid */}
-              <ProductGrid products={displayedProducts} />
+  {/* Count */}
+  <div className="flex justify-between items-center mb-6">
+    <p className="text-muted-foreground">
+     Showing {filteredTemplates.length} templates
+    </p>
+  </div>
 
-              {/* Load More Button */}
-              {hasMore && (
-                <div className="text-center mt-12">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={loadMore}
-                    disabled={isLoading}
-                    className="px-12"
-                  >
-                    {isLoading ? (
-                      <span className="flex items-center gap-2">
-                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
-                        Loading...
-                      </span>
-                    ) : (
-                      "Load More Products"
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
+  {/* 🔥 Grouped Horizontal Sections */}
+  <div className="space-y-12">
+    {Object.entries(groupedTemplates).map(([group, items]) => (
+      <div key={group}>
+
+        {/* 🔥 Header */}
+        {/* <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">{group}</h2>
+          <span
+            onClick={() =>
+              navigate(`/category/${group.toLowerCase().replace(/\s+/g, "-")}/all`)
+            }
+            className="text-sm text-primary cursor-pointer hover:underline"
+          >
+            View All →
+          </span>
+        </div> */}
+
+{/* 👉 Responsive + Reduced Height Card UI */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 p-3">
+  {items.map((item) => (
+    <div
+      key={item.item_code}
+      onClick={() => navigate(`/template/${item.item_code}`)}
+      className="cursor-pointer"
+    >
+      {/* <Card className="h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.01] border"> */}
+             <Card className="h-full flex flex-col overflow-hidden hover:shadow-xl transition-all hover:scale-[1.02] border-2">
+        
+        {/* Image - Reduced Height */}
+            <div className="relative w-full aspect-video overflow-hidden bg-gray-100">
+          <img
+            src={
+              item.image
+                ? `https://dumas.frappe.cloud${item.image}`
+                : "/placeholder.png"
+            }
+            alt={item.item_name}
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          />
+        </div>
+
+        {/* Content */}
+       <CardContent className="p-4 space-y-3 flex flex-col justify-between flex-1">
+          <div className="">
+            <p className="text-xs sm:text-sm text-primary font-medium uppercase">
+              {group}
+            </p>
+
+            <h3 className="font-semibold text-base sm:text-lg line-clamp-2 min-h-[48px]">
+              {item.item_name}
+            </h3>
+
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+              Premium healthy food template for your lovely pets.
+            </p>
+          </div>
+
+          <Button
+            className="w-full mt-4"
+            size="default"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/template/${item.item_code}`);
+            }}
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            View Variant
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  ))}
+</div>
+
+      </div>
+    ))}
+  </div>
+
+</div>
           </div>
         </div>
       </section>

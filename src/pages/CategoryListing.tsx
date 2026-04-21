@@ -73,7 +73,7 @@ const CategoryListing = () => {
         <div className="container mx-auto px-4 text-center">
           <Button
             size="xl"
-            onClick={() => navigate(`/category/${category}/all`)}
+            onClick={() => navigate(`/category/${category?.trim().replace(/\s+/g, "-").toLowerCase()}/all`)}
             className="text-lg px-12"
           >
             List More Products

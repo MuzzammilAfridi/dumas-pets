@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,10 +9,11 @@ import { Plus, Pencil, Trash2, MapPin } from 'lucide-react';
 import { mockAddresses, Address } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { createAddress, getAddresses, deleteAddress } from "@/services/addressService";
 
 const AddressManagement = () => {
   const { user } = useAuth();
-  const [addresses, setAddresses] = useState<Address[]>(mockAddresses.filter(a => a.customerId === user?.id));
+  const [addresses, setAddresses] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editAddr, setEditAddr] = useState<Address | null>(null);
   const [form, setForm] = useState({ label: '', street: '', city: '', state: '', zip: '', isDefault: false });
@@ -30,38 +31,93 @@ const AddressManagement = () => {
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
-    if (!form.street.trim() || !form.city.trim()) {
-      toast({ title: 'Error', description: 'Street and city are required.', variant: 'destructive' });
-      return;
-    }
-    if (editAddr) {
-      setAddresses(prev => prev.map(a => {
-        if (a.id === editAddr.id) return { ...a, ...form };
-        if (form.isDefault) return { ...a, isDefault: false };
-        return a;
-      }));
-      toast({ title: 'Updated', description: 'Address updated.' });
-    } else {
-      const newAddr: Address = { id: `a${Date.now()}`, customerId: user?.id || '', ...form };
-      setAddresses(prev => {
-        if (form.isDefault) return [...prev.map(a => ({ ...a, isDefault: false })), newAddr];
-        return [...prev, newAddr];
-      });
-      toast({ title: 'Added', description: 'Address added.' });
-    }
-    setDialogOpen(false);
-  };
 
-  const handleDelete = (id: string) => {
+
+const handleSave = async () => {
+  if (!form.street.trim() || !form.city.trim()) {
+    toast({ title: "Error", description: "Street and city are required.", variant: "destructive" });
+    return;
+  }
+
+  console.log("user", user);
+  
+
+  try {
+  const payload = {
+  address_title: "John Doe",
+  address_type: "Shipping", 
+  address_line1: "Street 1",
+  city: "Kozhikode",
+  state: "Kerala",
+  country: "India",
+  pincode: "673001",
+  links: [
+    {
+      link_doctype: "Customer",
+      link_name: "John Doe", 
+    },
+  ],
+};
+
+    console.log("payload of Address", payload);
+    
+    await createAddress(payload);
+
+    toast({ title: "Success", description: "Address saved!" });
+
+    setDialogOpen(false);
+
+    // 🔥 Reload addresses
+    window.location.reload();
+
+  } catch (err) {
+    console.error(err);
+    toast({ title: "Error", description: "Failed to save address", variant: "destructive" });
+  }
+};
+
+
+const handleDelete = async (id) => {
+  try {
+    await deleteAddress(id);
+
     setAddresses(prev => prev.filter(a => a.id !== id));
-    toast({ title: 'Removed', description: 'Address removed.' });
-  };
+
+    toast({ title: "Removed", description: "Address removed." });
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const setDefault = (id: string) => {
     setAddresses(prev => prev.map(a => ({ ...a, isDefault: a.id === id })));
     toast({ title: 'Updated', description: 'Default address changed.' });
   };
+
+
+
+
+useEffect(() => {
+  if (!user?.name) return;
+
+const fetchAddresses = async () => {
+  const res = await getAddresses("John Doe");
+
+  const mapped = res.data.data.map((a) => ({
+    id: a.name,
+    label: a.address_title,
+    street: a.address_line1,
+    city: a.city,
+    state: a.state,
+    zip: a.pincode,
+    isDefault: false,
+  }));
+
+  setAddresses(mapped);
+};
+
+  fetchAddresses();
+}, [user]);
 
   return (
     <div className="space-y-4">
