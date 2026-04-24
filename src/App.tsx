@@ -33,13 +33,16 @@ import AddressManagement from "./pages/customer/AddressManagement";
 import NutritionPlan from "./pages/NutritionPlan";
 import NotFound from "./pages/NotFound";
 import TemplateDetails from "./pages/customer/TemplateDetails";
+import { SalesProvider } from "./contexts/SalesContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+  
       <CartProvider>
+            <SalesProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -96,7 +99,9 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
+          </SalesProvider>
       </CartProvider>
+    
     </AuthProvider>
   </QueryClientProvider>
 );

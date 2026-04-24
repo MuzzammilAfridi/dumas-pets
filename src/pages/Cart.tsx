@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import { useCart, CartItem } from "@/contexts/CartContext";
+import { useCart, CartItem, } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getAddresses } from "@/services/addressService";
+import ConfirmDialog from "@/components/ConfirmDialog";
+
+import { useSales } from "@/contexts/SalesContext";
 import {
   ShoppingCart,
   Trash2,
@@ -30,78 +34,78 @@ import { useToast } from "@/hooks/use-toast";
 import buffaloMeal from "@/assets/buffalo-meal.webp";
 
 // Mock cart items for UI preview
-const MOCK_CART_ITEMS: CartItem[] = [
-  {
-    productId: "pf1",
-    name: "Premium Chicken & Rice",
-    price: 24.99,
-    image: buffaloMeal,
-    category: "PET FOOD",
-    quantity: 1,
-    purchaseType: "subscription",
-    customization: {
-      meatType: "Chicken",
-      grainType: "Rice",
-      vegetables: ["Carrot"],
-    },
-    subscription: {
-      frequency: "weekly",
-      startDate: new Date("2026-03-15"),
-      endDate: new Date("2026-04-15"),
-      timeSlot: "morning",
-      deliveryDays: ["Mon", "Wed", "Fri"],
-    },
-  },
-  {
-    productId: "tr1",
-    name: "Crunchy Chicken Bites",
-    price: 12.99,
-    image: buffaloMeal,
-    category: "TREATS",
-    quantity: 2,
-    purchaseType: "onetime",
-    subscription: {
-      frequency: "once",
-      date: new Date("2026-03-20"),
-      timeSlot: "noon",
-    },
-  },
-  {
-    productId: "ck1",
-    name: "Birthday Celebration Cake",
-    price: 34.99,
-    image: buffaloMeal,
-    category: "CAKES",
-    quantity: 1,
-    purchaseType: "onetime",
-    subscription: {
-      frequency: "once",
-      date: new Date("2026-03-22"),
-      timeSlot: "evening",
-    },
-  },
-  {
-    productId: "pf3",
-    name: "Fish & Vegetable Delight",
-    price: 26.99,
-    image: buffaloMeal,
-    category: "PET FOOD",
-    quantity: 1,
-    purchaseType: "subscription",
-    customization: {
-      meatType: "Fish",
-      grainType: "No grain",
-      vegetables: ["Sweet Potato"],
-    },
-    subscription: {
-      frequency: "weekly",
-      startDate: new Date("2026-03-16"),
-      endDate: new Date("2026-04-10"),
-      timeSlot: "evening",
-      deliveryDays: ["Tue", "Thu", "Sat"],
-    },
-  },
-];
+// const MOCK_CART_ITEMS: CartItem[] = [
+//   {
+//     productId: "pf1",
+//     name: "Premium Chicken & Rice",
+//     price: 24.99,
+//     image: buffaloMeal,
+//     category: "PET FOOD",
+//     quantity: 1,
+//     purchaseType: "subscription",
+//     customization: {
+//       meatType: "Chicken",
+//       grainType: "Rice",
+//       vegetables: ["Carrot"],
+//     },
+//     subscription: {
+//       frequency: "weekly",
+//       startDate: new Date("2026-03-15"),
+//       endDate: new Date("2026-04-15"),
+//       timeSlot: "morning",
+//       deliveryDays: ["Mon", "Wed", "Fri"],
+//     },
+//   },
+//   {
+//     productId: "tr1",
+//     name: "Crunchy Chicken Bites",
+//     price: 12.99,
+//     image: buffaloMeal,
+//     category: "TREATS",
+//     quantity: 2,
+//     purchaseType: "onetime",
+//     subscription: {
+//       frequency: "once",
+//       date: new Date("2026-03-20"),
+//       timeSlot: "noon",
+//     },
+//   },
+//   {
+//     productId: "ck1",
+//     name: "Birthday Celebration Cake",
+//     price: 34.99,
+//     image: buffaloMeal,
+//     category: "CAKES",
+//     quantity: 1,
+//     purchaseType: "onetime",
+//     subscription: {
+//       frequency: "once",
+//       date: new Date("2026-03-22"),
+//       timeSlot: "evening",
+//     },
+//   },
+//   {
+//     productId: "pf3",
+//     name: "Fish & Vegetable Delight",
+//     price: 26.99,
+//     image: buffaloMeal,
+//     category: "PET FOOD",
+//     quantity: 1,
+//     purchaseType: "subscription",
+//     customization: {
+//       meatType: "Fish",
+//       grainType: "No grain",
+//       vegetables: ["Sweet Potato"],
+//     },
+//     subscription: {
+//       frequency: "weekly",
+//       startDate: new Date("2026-03-16"),
+//       endDate: new Date("2026-04-10"),
+//       timeSlot: "evening",
+//       deliveryDays: ["Tue", "Thu", "Sat"],
+//     },
+//   },
+// ];
 
 const timeSlotLabels: Record<string, string> = {
   morning: "Morning (8AM - 12PM)",
@@ -134,13 +138,27 @@ function countDeliveryDaysInRange(
 }
 
 const Cart = () => {
-  const {
-    items: cartItems,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    getItemCount,
-  } = useCart();
+  // const {
+  //   items: cartItems,
+  //   removeFromCart,
+  //   updateQuantity,
+  //   clearCart,
+  //   getItemCount,
+  //   quotationId
+  // } = useCart();
+
+    const {
+  items: cartItems,
+  removeFromCart,
+  updateQuantity,
+  clearCart,
+  getItemCount,
+} = useCart();
+
+const {
+  placeOrder,
+  salesOrderId,
+} = useSales();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -158,6 +176,8 @@ const isUsingMock = false;
   const [address, setAddress] = useState("");
   const [landmark, setLandmark] = useState("");
   const [pincode, setPincode] = useState("");
+
+  const [removeProductId, setRemoveProductId] = useState<string | null>(null);
 
   // Payment
   const [paymentMethod, setPaymentMethod] = useState("card");
@@ -208,6 +228,55 @@ const isUsingMock = false;
     return base;
   };
 
+
+  useEffect(() => {
+  const storedUser = localStorage.getItem("dumas_user");
+
+  if (storedUser) {
+    const userData = JSON.parse(storedUser);
+
+    setFullName(userData.name || "");
+    setEmail(userData.email || "");
+    setPhone(userData.phone || "");
+  }
+}, []);
+
+
+useEffect(() => {
+  const storedUser = localStorage.getItem("dumas_user");
+
+  if (!storedUser) return;
+
+  const userData = JSON.parse(storedUser);
+
+  const fetchCustomerAddress = async () => {
+    try {
+      const res = await getAddresses(userData.name);
+
+      if (res?.data?.data?.length > 0) {
+        const defaultAddress = res.data.data[0];
+
+        const fullAddress = [
+          defaultAddress.address_line1,
+          defaultAddress.city,
+          defaultAddress.state,
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        setAddress(fullAddress);
+        setPincode(defaultAddress.pincode || "");
+      }
+    } catch (error) {
+      console.error("Failed to fetch customer address", error);
+    }
+  };
+
+  fetchCustomerAddress();
+}, []);
+
+
+
   const getDeliveryDayCount = (item: CartItem) => {
     if (
       item.subscription?.startDate &&
@@ -222,6 +291,8 @@ const isUsingMock = false;
     }
     return 0;
   };
+
+  
 
   const subtotal = displayItems.reduce(
     (sum, item) => sum + getItemTotal(item),
@@ -245,8 +316,17 @@ const isUsingMock = false;
   updateQuantity(productId, newQty);
 };
 
-const handleRemove = (productId: string) => {
-  removeFromCart(productId);
+const handleRemove = () => {
+  if (!removeProductId) return;
+
+  removeFromCart(removeProductId);
+
+  toast({
+    title: "Removed",
+    description: "Item removed from cart successfully",
+  });
+
+  setRemoveProductId(null);
 };
 
   const validate = () => {
@@ -275,22 +355,51 @@ const handleRemove = (productId: string) => {
     return Object.keys(errs).length === 0;
   };
 
-  const handlePlaceOrder = () => {
-    if (!validate()) return;
+const handlePlaceOrder = async () => {
+  if (!validate()) return;
 
+  try {
     setIsProcessing(true);
 
-    setTimeout(() => {
-      setIsProcessing(false);
+    console.log(
+      "ACTIVE SALES ORDER:",
+      salesOrderId
+    );
 
-      const quotation_id = localStorage.getItem("quotation_id");
+    const result = await placeOrder();
 
-      setOrderId(quotation_id || "NO-ID");
-      setOrderSuccess(true);
+    console.log(
+      "FINAL ORDER RESULT:",
+      result
+    );
 
-      // ❌ DO NOT clear quotation_id (important for Option 2)
-    }, 1000);
-  };
+    const finalOrderId =
+      result?.salesOrderId || "ORDER-CREATED";
+
+    setOrderId(finalOrderId);
+    setOrderSuccess(true);
+
+    clearCart();
+
+    toast({
+      title: "Order placed successfully",
+      description: `Order ID: ${finalOrderId}`,
+    });
+  } catch (err: any) {
+    console.error(
+      "PLACE ORDER FAILED:",
+      err?.response?.data || err
+    );
+
+    toast({
+      title: "Order failed",
+      description: "Something went wrong",
+      variant: "destructive",
+    });
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
   console.log("displayItems in Cart:", displayItems);
   
@@ -441,7 +550,7 @@ if (cartItems.length === 0){
                           variant="ghost"
                           size="icon"
                           className="text-destructive hover:bg-destructive/10 shrink-0"
-                          onClick={() => handleRemove(item.productId)}
+                          onClick={() => setRemoveProductId(item.productId)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -906,6 +1015,15 @@ if (cartItems.length === 0){
           </div>
         </div>
       </div>
+      <ConfirmDialog
+  open={!!removeProductId}
+  onClose={() => setRemoveProductId(null)}
+  onConfirm={handleRemove}
+  title="Remove Item"
+  description="Are you sure you want to remove this item from your cart?"
+  confirmText="Remove"
+  cancelText="Cancel"
+/>
     </div>
   );
 };

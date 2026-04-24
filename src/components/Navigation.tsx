@@ -6,6 +6,7 @@ import { useCart } from "@/contexts/CartContext";
 import { Badge } from "./ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "./ui/sheet";
 import { useState } from "react";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const Navigation = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -14,6 +15,7 @@ const Navigation = () => {
   const location = useLocation();
   const itemCount = getItemCount();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -28,7 +30,11 @@ const Navigation = () => {
     { name: "Contact", href: "/contact" },
   ];
 
-  const handleLogout = () => { logout(); navigate('/'); };
+ const handleLogout = () => {
+  logout();
+  setLogoutOpen(false);
+  navigate("/");
+};
 
   const isActive = (href: string) => {
     if (href === "/") return location.pathname === "/";
@@ -85,9 +91,14 @@ const Navigation = () => {
                     <User className="w-5 h-5" />
                   </Button>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={handleLogout} className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-all">
-                  <LogOut className="w-5 h-5" />
-                </Button>
+               <Button
+  variant="ghost"
+  size="icon"
+  onClick={() => setLogoutOpen(true)}
+  className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-all"
+>
+  <LogOut className="w-5 h-5" />
+</Button>
               </>
             ) : (
               <Link to="/login">
@@ -137,6 +148,15 @@ const Navigation = () => {
           </div>
         </div>
       </div>
+      <ConfirmDialog
+  open={logoutOpen}
+  onClose={() => setLogoutOpen(false)}
+  onConfirm={handleLogout}
+  title="Logout"
+  description="Are you sure you want to logout from your account?"
+  confirmText="Logout"
+  cancelText="Cancel"
+/>
     </nav>
   );
 };

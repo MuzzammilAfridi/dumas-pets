@@ -19,6 +19,7 @@ export const getTemplateVariants = async (itemCode) => {
         "image",
         "variant_of",
         "item_group",
+        "standard_rate",
       ]),
       filters: JSON.stringify([
         ["variant_of", "=", itemCode],

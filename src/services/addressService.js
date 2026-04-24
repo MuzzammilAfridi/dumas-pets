@@ -25,7 +25,8 @@ export const getAddresses = (customerName) =>
   });
 
 // DELETE
-export const deleteAddress = (name) =>
-  axios.delete(`/api/resource/Address/${name}`, {
-    withCredentials: true, // ✅ ADD THIS
+export const deleteAddress = async (name) => {
+  return axios.delete(`/api/resource/Address/${encodeURIComponent(name)}`, {
+    withCredentials: true,
   });
+};

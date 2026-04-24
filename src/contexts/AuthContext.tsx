@@ -5,6 +5,7 @@ import {
   logoutAPI,
   registerUserAPI,
 } from "@/services/authService";
+import axios from "axios";
 
 export type UserRole = "admin" | "customer";
 
@@ -88,29 +89,81 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, []);
 
-  const loginWithAPI = useCallback(async () => {
-    try {
-      const res = await getLoggedUser();
-      const email = res.data.message;
+const loginWithAPI = useCallback(async () => {
+  try {
+    /*
+    -----------------------------------
+    Step 1 → Get logged in user email
+    -----------------------------------
+    */
+    const loggedUserRes = await getLoggedUser();
+    const email = loggedUserRes.data.message;
 
-      const role = email === "Administrator" ? "admin" : "customer";
+    /*
+    -----------------------------------
+    Step 2 → Get full user details
+    GET /api/resource/User/:email
+    -----------------------------------
+    */
+    const userDetailsRes = await axios.get(
+      `/api/resource/User/${email}`,
+      {
+        withCredentials: true,
+      }
+    );
 
-      const user = {
-        id: email,
-        name: email.includes("@") ? email.split("@")[0] : email,
-        email,
-        role,
-      };
+    const userData = userDetailsRes.data.data;
 
-      setUser(user);
-      localStorage.setItem("dumas_user", JSON.stringify(user));
+    /*
+    -----------------------------------
+    Build full frontend user object
+    -----------------------------------
+    */
+    const role =
+      email === "Administrator"
+        ? "admin"
+        : "customer";
 
-      return user; // ✅ MUST return
-    } catch (err) {
-      console.error("Error fetching user:", err);
-      throw err;
-    }
-  }, []);
+    const user = {
+      id: userData.name,
+      name:
+        userData.full_name ||
+        userData.first_name ||
+        email.split("@")[0],
+
+      email: userData.email,
+      role,
+
+      phone: userData.mobile_no || "",
+      avatar: userData.user_image || "",
+
+      username: userData.username || "",
+      lastLogin: userData.last_login || "",
+      timeZone: userData.time_zone || "",
+      language: userData.language || "",
+      enabled: userData.enabled || 0,
+    };
+
+    console.log(
+      "FULL LOGGED USER DATA:",
+      user
+    );
+
+    setUser(user);
+    localStorage.setItem(
+      "dumas_user",
+      JSON.stringify(user)
+    );
+
+    return user;
+  } catch (err) {
+    console.error(
+      "Error fetching full user:",
+      err
+    );
+    throw err;
+  }
+}, []);
 
   const login = useCallback(
     async (email: string, password: string): Promise<boolean> => {

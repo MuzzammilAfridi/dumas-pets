@@ -10,12 +10,14 @@ import { mockAddresses, Address } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { createAddress, getAddresses, deleteAddress } from "@/services/addressService";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const AddressManagement = () => {
   const { user } = useAuth();
   const [addresses, setAddresses] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editAddr, setEditAddr] = useState<Address | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ label: '', street: '', city: '', state: '', zip: '', isDefault: false });
   const { toast } = useToast();
 
@@ -34,27 +36,49 @@ const AddressManagement = () => {
 
 
 const handleSave = async () => {
-  if (!form.street.trim() || !form.city.trim()) {
-    toast({ title: "Error", description: "Street and city are required.", variant: "destructive" });
-    return;
-  }
+ 
+
+  if (
+  !form.street.trim() ||
+  !form.city.trim() ||
+  !form.state.trim() ||
+  !form.zip.trim()
+) {
+  toast({
+    title: "Error",
+    description: "All address fields are required.",
+    variant: "destructive",
+  });
+  return;
+}
+
+if (!/^[1-9][0-9]{5}$/.test(form.zip)) {
+  toast({
+    title: "Invalid Pincode",
+    description: "Pincode must be exactly 6 digits and cannot start with 0",
+    variant: "destructive",
+  });
+  return;
+}
 
   console.log("user", user);
   
 
   try {
-  const payload = {
-  address_title: "John Doe",
-  address_type: "Shipping", 
-  address_line1: "Street 1",
-  city: "Kozhikode",
-  state: "Kerala",
+const payload = {
+  address_title: form.label || user?.name || "Address",
+  address_type: "Shipping",
+
+  address_line1: form.street,
+  city: form.city,
+  state: form.state,
   country: "India",
-  pincode: "673001",
+  pincode: form.zip,
+
   links: [
     {
       link_doctype: "Customer",
-      link_name: "John Doe", 
+      link_name: user?.name,
     },
   ],
 };
@@ -77,15 +101,33 @@ const handleSave = async () => {
 };
 
 
-const handleDelete = async (id) => {
+const handleDelete = async () => {
+  if (!deleteId) return;
+
   try {
-    await deleteAddress(id);
+    await deleteAddress(deleteId);
 
-    setAddresses(prev => prev.filter(a => a.id !== id));
+    setAddresses((prev) =>
+      prev.filter((addr) => addr.id !== deleteId)
+    );
 
-    toast({ title: "Removed", description: "Address removed." });
-  } catch (err) {
+    toast({
+      title: "Success",
+      description: "Address deleted successfully",
+    });
+
+    setDeleteId(null);
+  } catch (err: any) {
     console.error(err);
+
+    toast({
+      title: "Delete Failed",
+      description:
+        "You do not have permission to delete this address",
+      variant: "destructive",
+    });
+
+    setDeleteId(null);
   }
 };
 
@@ -100,21 +142,25 @@ const handleDelete = async (id) => {
 useEffect(() => {
   if (!user?.name) return;
 
-const fetchAddresses = async () => {
-  const res = await getAddresses("John Doe");
+  const fetchAddresses = async () => {
+    const res = await getAddresses(user?.name);
 
-  const mapped = res.data.data.map((a) => ({
-    id: a.name,
-    label: a.address_title,
-    street: a.address_line1,
-    city: a.city,
-    state: a.state,
-    zip: a.pincode,
-    isDefault: false,
-  }));
+    const mapped = res.data.data.map((a) => ({
+      id: a.name,
+      label: a.address_title,
 
-  setAddresses(mapped);
-};
+      street: `${a.address_line1 || ""} ${a.address_line2 || ""}`.trim(),
+
+      city: a.city || "",
+      state: a.state || "",
+      zip: a.pincode || "",
+      country: a.country || "India",
+
+      isDefault: false,
+    }));
+
+    setAddresses(mapped);
+  };
 
   fetchAddresses();
 }, [user]);
@@ -166,12 +212,29 @@ const fetchAddresses = async () => {
             <div className="flex gap-1">
               {!addr.isDefault && <Button variant="ghost" size="sm" className="text-xs" onClick={() => setDefault(addr.id)}>Set Default</Button>}
               <Button variant="ghost" size="icon" onClick={() => openEdit(addr)}><Pencil className="w-4 h-4" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => handleDelete(addr.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+             <Button
+  variant="ghost"
+  size="icon"
+  onClick={() => setDeleteId(addr.id)}
+>
+  <Trash2 className="w-4 h-4 text-destructive" />
+</Button>
             </div>
           </CardContent>
         </Card>
       ))}
+
+<ConfirmDialog
+  open={!!deleteId}
+  onClose={() => setDeleteId(null)}
+  onConfirm={handleDelete}
+  title="Delete Address"
+  description="Are you sure you want to delete this address? This action cannot be undone."
+  confirmText="Delete"
+/>
     </div>
+
+    
   );
 };
 

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LayoutDashboard, ShoppingBag, PawPrint, User, MapPin, LogOut, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const navItems = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -18,8 +19,13 @@ const CustomerLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
-  const handleLogout = () => { logout(); navigate('/'); };
+ const handleLogout = () => {
+    logout();
+    setLogoutOpen(false);
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-muted flex">
@@ -57,8 +63,13 @@ const CustomerLayout = () => {
           <Link to="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted mb-1">
             Back to Shop
           </Link>
-          <Button variant="ghost" className="w-full justify-start gap-3 text-destructive" onClick={handleLogout}>
-            <LogOut className="w-4 h-4" /> Logout
+         <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 text-destructive"
+            onClick={() => setLogoutOpen(true)}
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
           </Button>
         </div>
       </aside>
@@ -74,6 +85,15 @@ const CustomerLayout = () => {
           <Outlet />
         </main>
       </div>
+         <ConfirmDialog
+        open={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+        onConfirm={handleLogout}
+        title="Logout"
+        description="Are you sure you want to logout from your account?"
+        confirmText="Logout"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

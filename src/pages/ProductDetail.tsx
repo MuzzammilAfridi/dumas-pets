@@ -31,7 +31,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import axios from "axios";
 import { useEffect } from "react";
 
-import { createCart, updateCart } from "@/services/cartService";
+
 
 const VEGETABLE_OPTIONS = [
   { label: "Carrot", value: "carrot" },
@@ -220,18 +220,22 @@ const ProductDetail = () => {
   // };
 
 
-  const handleAddToCart = () => {
+const handleAddToCart = () => {
   const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
   const cartItem = {
     productId: product.item_code,
     name: product.item_name,
-    price: product.standard_rate || 100,
+
+    // IMPORTANT FIX → ensure price goes to cart
+    price: Number(product.standard_rate || 100),
+
     category: product.item_group,
     quantity: isPetFood ? 1 : standardQuantity,
     image: product.image,
 
     purchaseType: "onetime" as const,
+
     subscription: {
       frequency: "once",
       date: deliveryDate,
@@ -245,10 +249,8 @@ const ProductDetail = () => {
         grainPercentage,
         gpvRatio,
 
-        // ✅ FIX HERE
+        // soup logic
         freeSoup: finalFreeSoup,
-
-        // if skipped, extra soup should also be 0
         extraSoup: extraSoup === -1 ? 0 : extraSoup,
 
         vegetables: selectedVegetables,
@@ -260,64 +262,75 @@ const ProductDetail = () => {
     }),
   };
 
-  console.log("ADDING TO CART:", cartItem);
+  console.log("ADDING TO CART:", cartItem); // :contentReference[oaicite:0]{index=0}
 
   addToCart(cartItem);
   navigate("/cart");
 };
 
-  const handleSubscribe = () => {
-    const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
-    if (!subscriptionStartDate || !subscriptionEndDate) {
-      toast({
-        title: "Select Date Range",
-        description:
-          "Please select a delivery date range for your subscription.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (selectedDays.length === 0) {
-      toast({
-        title: "Select Delivery Days",
-        description: "Please select at least one delivery day.",
-        variant: "destructive",
-      });
-      return;
-    }
+ const handleSubscribe = () => {
+  const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
-    const cartItem = {
-      productId: product.item_code,
-      name: product.item_name,
-      price: product.standard_rate,
-      quantity: isPetFood ? 1 : standardQuantity,
-      image: product.image,
-      category: product.item_group,
-      purchaseType: "subscription" as const,
-      subscription: {
-        frequency: "weekly",
-        startDate: subscriptionStartDate,
-        endDate: subscriptionEndDate,
-        timeSlot: subscriptionTimeSlot,
-        deliveryDays: selectedDays,
+  if (!subscriptionStartDate || !subscriptionEndDate) {
+    toast({
+      title: "Select Date Range",
+      description:
+        "Please select a delivery date range for your subscription.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  if (selectedDays.length === 0) {
+    toast({
+      title: "Select Delivery Days",
+      description:
+        "Please select at least one delivery day.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  const cartItem = {
+    productId: product.item_code,
+    name: product.item_name,
+
+    // IMPORTANT FIX → ensure price goes to cart
+    price: Number(product.standard_rate || 100),
+
+    quantity: isPetFood ? 1 : standardQuantity,
+    image: product.image,
+    category: product.item_group,
+
+    purchaseType: "subscription" as const,
+
+    subscription: {
+      frequency: "weekly",
+      startDate: subscriptionStartDate,
+      endDate: subscriptionEndDate,
+      timeSlot: subscriptionTimeSlot,
+      deliveryDays: selectedDays,
+    },
+
+    ...(isPetFood && {
+      customization: {
+        meatType,
+        grainType,
+        grainPercentage,
+        gpvRatio,
+        freeSoup: finalFreeSoup,
+        extraSoup: extraSoup === -1 ? 0 : extraSoup,
+        vegetables: selectedVegetables,
+        preparationInstructions,
       },
-      ...(isPetFood && {
-        customization: {
-          meatType,
-          grainType,
-          grainPercentage,
-          gpvRatio,
-         freeSoup: finalFreeSoup,
-extraSoup: extraSoup === -1 ? 0 : extraSoup,
-          vegetables: selectedVegetables,
-          preparationInstructions,
-        },
-      }),
-    };
-
-    addToCart(cartItem);
-    navigate("/cart");
+    }),
   };
+
+  console.log("SUBSCRIPTION CART ITEM:", cartItem);
+
+  addToCart(cartItem);
+  navigate("/cart");
+};
 
   const toggleDay = (day: string) => {
     setSelectedDays((prev) =>
