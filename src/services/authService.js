@@ -21,12 +21,7 @@ export const loginUser = async (data) => {
 };
 
 // GET LOGGED USER (using token auth)
-export const getLoggedUser = async () => {
-  return axios.get(
-    `${API}/api/method/frappe.auth.get_logged_user`,
-    authHeaders
-  );
-};
+
 
 // LOGOUT
 export const logoutAPI = () => {

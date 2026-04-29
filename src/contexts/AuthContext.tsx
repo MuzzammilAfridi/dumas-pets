@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import {
-  getLoggedUser,
+
   loginUser,
   logoutAPI,
   registerUserAPI,
 } from "@/services/authService";
-import axios from "axios";
 
-const API = import.meta.env.VITE_API_URL;
+
+
 
 export type UserRole = "admin" | "customer";
 
@@ -27,7 +27,7 @@ interface AuthContextType {
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   updateProfile: (updates: Partial<User>) => void;
-  loginWithAPI: () => Promise<void>;
+ 
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -91,81 +91,81 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, []);
 
-const loginWithAPI = useCallback(async () => {
-  try {
-    /*
-    -----------------------------------
-    Step 1 → Get logged in user email
-    -----------------------------------
-    */
-    const loggedUserRes = await getLoggedUser();
-    const email = loggedUserRes.data.message;
+// const loginWithAPI = useCallback(async () => {
+//   try {
+//     /*
+//     -----------------------------------
+//     Step 1 → Get logged in user email
+//     -----------------------------------
+//     */
+//     const loggedUserRes = await getLoggedUser();
+//     const email = loggedUserRes.data.message;
 
-    /*
-    -----------------------------------
-    Step 2 → Get full user details
-    GET /api/resource/User/:email
-    -----------------------------------
-    */
-    const userDetailsRes = await axios.get(
-      `${API}/api/resource/User/${email}`,
-      {
-        withCredentials: true,
-      }
-    );
+//     /*
+//     -----------------------------------
+//     Step 2 → Get full user details
+//     GET /api/resource/User/:email
+//     -----------------------------------
+//     */
+//     const userDetailsRes = await axios.get(
+//       `${API}/api/resource/User/${email}`,
+//       {
+//         withCredentials: true,
+//       }
+//     );
 
-    const userData = userDetailsRes.data.data;
+//     const userData = userDetailsRes.data.data;
 
-    /*
-    -----------------------------------
-    Build full frontend user object
-    -----------------------------------
-    */
-    const role =
-      email === "Administrator"
-        ? "admin"
-        : "customer";
+//     /*
+//     -----------------------------------
+//     Build full frontend user object
+//     -----------------------------------
+//     */
+//     const role =
+//       email === "Administrator"
+//         ? "admin"
+//         : "customer";
 
-    const user = {
-      id: userData.name,
-      name:
-        userData.full_name ||
-        userData.first_name ||
-        email.split("@")[0],
+//     const user = {
+//       id: userData.name,
+//       name:
+//         userData.full_name ||
+//         userData.first_name ||
+//         email.split("@")[0],
 
-      email: userData.email,
-      role,
+//       email: userData.email,
+//       role,
 
-      phone: userData.mobile_no || "",
-      avatar: userData.user_image || "",
+//       phone: userData.mobile_no || "",
+//       avatar: userData.user_image || "",
 
-      username: userData.username || "",
-      lastLogin: userData.last_login || "",
-      timeZone: userData.time_zone || "",
-      language: userData.language || "",
-      enabled: userData.enabled || 0,
-    };
+//       username: userData.username || "",
+//       lastLogin: userData.last_login || "",
+//       timeZone: userData.time_zone || "",
+//       language: userData.language || "",
+//       enabled: userData.enabled || 0,
+//     };
 
-    console.log(
-      "FULL LOGGED USER DATA:",
-      user
-    );
+//     console.log(
+//       "FULL LOGGED USER DATA:",
+//       user
+//     );
 
-    setUser(user);
-    localStorage.setItem(
-      "dumas_user",
-      JSON.stringify(user)
-    );
+//     setUser(user);
+//     localStorage.setItem(
+//       "dumas_user",
+//       JSON.stringify(user)
+//     );
 
-    return user;
-  } catch (err) {
-    console.error(
-      "Error fetching full user:",
-      err
-    );
-    throw err;
-  }
-}, []);
+//     return user;
+//   } catch (err) {
+//     console.error(
+//       "Error fetching full user:",
+//       err
+//     );
+//     throw err;
+//   }
+// }, []);
 
   // const login = useCallback(
   //   async (email: string, password: string): Promise<boolean> => {
@@ -254,7 +254,7 @@ const login = useCallback(
         logout,
         register,
         updateProfile,
-        loginWithAPI,
+        
       }}
     >
       {children}

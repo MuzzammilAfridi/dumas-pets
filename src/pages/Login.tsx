@@ -29,7 +29,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { login, loginWithAPI, register } = useAuth();
+  const { login, register } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
