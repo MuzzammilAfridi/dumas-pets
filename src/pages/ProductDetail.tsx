@@ -30,7 +30,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import axios from "axios";
 import { useEffect } from "react";
-
+const API = import.meta.env.VITE_API_URL;
 
 
 const VEGETABLE_OPTIONS = [
@@ -55,7 +55,7 @@ const ProductDetail = () => {
       try {
         const decodedId = decodeURIComponent(id);
 
-        const res = await axios.get(`/api/resource/Item/${decodedId}`);
+        const res = await axios.get(`${API}/api/resource/Item/${decodedId}`);
 
         setProduct(res.data.data);
         console.log("PRODUCT DATA:", res.data.data);

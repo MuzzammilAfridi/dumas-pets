@@ -6,9 +6,34 @@ import { ShoppingBag, PawPrint, MapPin, User, Package } from 'lucide-react';
 import { mockOrders } from '@/data/mockData';
 import { Badge } from '@/components/ui/badge';
 
+import { useEffect, useState } from "react";
+import { getSalesOrders } from "@/services/orderService";
+
 const CustomerDashboard = () => {
   const { user } = useAuth();
-  const recentOrders = mockOrders.filter(o => o.customerId === user?.id).slice(0, 3);
+  
+  const [recentOrders, setRecentOrders] = useState([]);
+
+useEffect(() => {
+  if (!user?.name) return;
+
+  const fetchOrders = async () => {
+    try {
+      const res = await getSalesOrders(user.name);
+
+      const orders = res.data.data.slice(0, 3);
+
+      setRecentOrders(orders);
+    } catch (error) {
+      console.error("Failed to fetch orders", error);
+    }
+  };
+
+  fetchOrders();
+}, [user]);
+
+console.log("Recent order" ,recentOrders);
+
 
   const quickActions = [
     { label: 'View Orders', icon: ShoppingBag, path: '/dashboard/orders' },
@@ -47,24 +72,44 @@ const CustomerDashboard = () => {
           <Link to="/dashboard/orders"><Button variant="outline" size="sm">View All</Button></Link>
         </CardHeader>
         <CardContent>
-          {recentOrders.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Package className="w-10 h-10 mx-auto mb-2 opacity-50" />
-              <p>No orders yet. Start shopping!</p>
-              <Link to="/shop"><Button className="mt-3" size="sm">Browse Products</Button></Link>
-            </div>
-          ) : recentOrders.map(order => (
-            <div key={order.id} className="flex justify-between items-center py-3 border-b border-border last:border-0">
-              <div>
-                <p className="font-medium text-sm text-foreground">{order.id}</p>
-                <p className="text-xs text-muted-foreground">{order.date} • {order.items.length} items</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-sm">${order.total.toFixed(2)}</span>
-                <Badge variant="outline">{order.status}</Badge>
-              </div>
-            </div>
-          ))}
+{recentOrders.length === 0 ? (
+  <div className="text-center py-8 text-muted-foreground">
+    <Package className="w-10 h-10 mx-auto mb-2 opacity-50" />
+    <p>No orders yet. Start shopping!</p>
+    <Link to="/shop">
+      <Button className="mt-3" size="sm">
+        Browse Products
+      </Button>
+    </Link>
+  </div>
+) : (
+  recentOrders.map((order) => (
+    <div
+      key={order.name}
+      className="flex justify-between items-center py-3 border-b border-border last:border-0"
+    >
+      <div>
+        <p className="font-medium text-sm text-foreground">
+          {order.name}
+        </p>
+
+        <p className="text-xs text-muted-foreground">
+          {order.transaction_date} • {order.total_qty || 0} items
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <span className="font-semibold text-sm">
+          ₹{Number(order.grand_total || 0).toFixed(2)}
+        </span>
+
+        <Badge variant="outline">
+          {order.status || "Draft"}
+        </Badge>
+      </div>
+    </div>
+  ))
+)}
         </CardContent>
       </Card>
     </div>

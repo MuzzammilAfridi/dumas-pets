@@ -7,6 +7,8 @@ import {
 } from "@/services/authService";
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_URL;
+
 export type UserRole = "admin" | "customer";
 
 export interface User {
@@ -106,7 +108,7 @@ const loginWithAPI = useCallback(async () => {
     -----------------------------------
     */
     const userDetailsRes = await axios.get(
-      `/api/resource/User/${email}`,
+      `${API}/api/resource/User/${email}`,
       {
         withCredentials: true,
       }
@@ -165,24 +167,65 @@ const loginWithAPI = useCallback(async () => {
   }
 }, []);
 
-  const login = useCallback(
-    async (email: string, password: string): Promise<boolean> => {
-      try {
-        await loginUser({
-          usr: email,
-          pwd: password,
-        });
+  // const login = useCallback(
+  //   async (email: string, password: string): Promise<boolean> => {
+  //     try {
+  //       await loginUser({
+  //         usr: email,
+  //         pwd: password,
+  //       });
 
-        await loginWithAPI(); // fetch logged user
+  //       await loginWithAPI(); // fetch logged user
 
-        return true;
-      } catch (err) {
-        console.error("Login failed", err);
-        return false;
-      }
-    },
-    [loginWithAPI],
-  );
+  //       return true;
+  //     } catch (err) {
+  //       console.error("Login failed", err);
+  //       return false;
+  //     }
+  //   },
+  //   [loginWithAPI],
+  // );
+
+
+const login = useCallback(
+  async (email: string, password: string): Promise<boolean> => {
+    try {
+      // Step 1: Login request
+      const response = await loginUser({
+        usr: email,
+        pwd: password,
+      });
+
+      // Step 2: Read login response
+      const { full_name, home_page } = response.data;
+
+      // Step 3: Detect role
+      const isAdmin =
+        email.toLowerCase() === "administrator" ||
+        home_page === "/app";
+
+      // Step 4: Save frontend user
+      const userData = {
+        id: email,
+        name: full_name || email.split("@")[0],
+        email,
+        role: isAdmin ? "admin" : "customer",
+      };
+
+      setUser(userData);
+      localStorage.setItem(
+        "dumas_user",
+        JSON.stringify(userData)
+      );
+
+      return true;
+    } catch (err) {
+      console.error("Login failed", err);
+      return false;
+    }
+  },
+  []
+);
 
   const register = useCallback(
     async (name: string, email: string, password: string): Promise<boolean> => {

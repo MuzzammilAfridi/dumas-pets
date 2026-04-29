@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_URL;
+
 export const getProducts = async () => {
     return axios.get(
-        '/api/resource/Item?fields=["item_code","name","item_name","standard_rate","item_group","image"]',
+        `${API}/api/resource/Item?fields=["item_code","name","item_name","standard_rate","item_group","image"]`,
         {
             withCredentials: true,
         }
@@ -11,7 +13,7 @@ export const getProducts = async () => {
 
 
 export const getTemplateVariants = async (itemCode) => {
-  return axios.get("/api/resource/Item", {
+  return axios.get(`${API}/api/resource/Item`, {
     params: {
       fields: JSON.stringify([
         "item_name",
@@ -31,7 +33,7 @@ export const getTemplateVariants = async (itemCode) => {
 
 
 export const getTemplates = async () => {
-  return axios.get("/api/resource/Item", {
+  return axios.get(`${API}/api/resource/Item`, {
     params: {
       fields: JSON.stringify([
         "item_name",

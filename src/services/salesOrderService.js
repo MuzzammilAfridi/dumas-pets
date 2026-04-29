@@ -1,5 +1,15 @@
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_URL;
+const API_KEY = import.meta.env.VITE_FRAPPE_API_KEY;
+const API_SECRET = import.meta.env.VITE_FRAPPE_API_SECRET;
+
+const authHeaders = {
+  headers: {
+    Authorization: `token ${API_KEY}:${API_SECRET}`,
+  },
+};
+
 /*
 ========================================
 SALES ORDER SERVICE (Direct Sales Order Flow)
@@ -19,11 +29,9 @@ POST /api/resource/Sales Order
 ----------------------------------- */
 export const createSalesOrder = (payload) => {
   return axios.post(
-    "/api/resource/Sales Order",
+    `${API}/api/resource/Sales Order`,
     payload,
-    {
-      withCredentials: true,
-    }
+    authHeaders
   );
 };
 
@@ -33,11 +41,9 @@ PUT /api/resource/Sales Order/:id
 ----------------------------------- */
 export const updateSalesOrder = (id, payload) => {
   return axios.put(
-    `/api/resource/Sales Order/${id}`,
+    `${API}/api/resource/Sales Order/${id}`,
     payload,
-    {
-      withCredentials: true,
-    }
+    authHeaders
   );
 };
 
@@ -47,19 +53,15 @@ GET /api/resource/Sales Order/:id
 ----------------------------------- */
 export const getSalesOrder = (id) => {
   return axios.get(
-    `/api/resource/Sales Order/${id}`,
-    {
-      withCredentials: true,
-    }
+    `${API}/api/resource/Sales Order/${id}`,
+    authHeaders
   );
 };
 
 export const getAllSalesOrders = (customerName) => {
   return axios.get(
-    `/api/resource/Sales Order?fields=["*"]&filters=[["customer","=","${customerName}"]]&order_by=creation desc`,
-    {
-      withCredentials: true,
-    }
+    `${API}/api/resource/Sales Order?fields=["*"]&filters=[["customer","=","${customerName}"]]&order_by=creation desc`,
+    authHeaders
   );
 };
 
@@ -69,10 +71,8 @@ export const getAllSalesOrders = (customerName) => {
 ----------------------------------- */
 export const getLatestSalesOrderByCustomer = (customerName) => {
   return axios.get(
-    `/api/resource/Sales Order?fields=["name","customer","transaction_date","grand_total","status"]&filters=[["customer","=","${customerName}"],["docstatus","=",0]]&order_by=creation desc&limit_page_length=1`,
-    {
-      withCredentials: true,
-    }
+    `${API}/api/resource/Sales Order?fields=["name","customer","transaction_date","grand_total","status"]&filters=[["customer","=","${customerName}"],["docstatus","=",0]]&order_by=creation desc&limit_page_length=1`,
+    authHeaders
   );
 };
 
@@ -83,10 +83,8 @@ POST /api/method/frappe.client.submit
 export const submitSalesOrder = async (salesOrderId) => {
   // Always fetch latest doc first
   const latestRes = await axios.get(
-    `/api/resource/Sales Order/${salesOrderId}`,
-    {
-      withCredentials: true,
-    }
+    `${API}/api/resource/Sales Order/${salesOrderId}`,
+    authHeaders
   );
 
   const latestSalesOrder = latestRes.data.data;
@@ -103,13 +101,11 @@ export const submitSalesOrder = async (salesOrderId) => {
   }
 
   return axios.post(
-    "/api/method/frappe.client.submit",
+    `${API}/api/method/frappe.client.submit`,
     {
       doc: latestSalesOrder,
     },
-    {
-      withCredentials: true,
-    }
+    authHeaders
   );
 };
 
@@ -119,15 +115,13 @@ POST /api/method/frappe.model.mapper.make_mapped_doc
 ----------------------------------- */
 export const createSalesInvoiceFromOrder = (salesOrderId) => {
   return axios.post(
-    "/api/method/frappe.model.mapper.make_mapped_doc",
+    `${API}/api/method/frappe.model.mapper.make_mapped_doc`,
     {
       method:
         "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
       source_name: salesOrderId,
     },
-    {
-      withCredentials: true,
-    }
+    authHeaders
   );
 };
 
@@ -137,10 +131,8 @@ POST /api/resource/Sales Invoice
 ----------------------------------- */
 export const saveSalesInvoice = (invoicePayload) => {
   return axios.post(
-    "/api/resource/Sales Invoice",
+    `${API}/api/resource/Sales Invoice`,
     invoicePayload,
-    {
-      withCredentials: true,
-    }
+    authHeaders
   );
 };

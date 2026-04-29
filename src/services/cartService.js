@@ -1,6 +1,6 @@
 import axios from "axios";
 
-
+const API = import.meta.env.VITE_API_URL;
 
 // ✅ Create quotation (cart)
 // export const createCart = (payload) => {
@@ -22,7 +22,7 @@ import axios from "axios";
 
 export const createCart = (payload) => {
   return axios.post(
-    "/api/resource/Quotation",
+    `${API}/api/resource/Quotation`,
     payload,
     {
       withCredentials: true,
@@ -31,11 +31,11 @@ export const createCart = (payload) => {
 };
 
 export const updateCart = (id, payload) => {
-  return axios.put(`/api/resource/Quotation/${id}`, { data: payload }, { withCredentials: true });
+  return axios.put(`${API}/api/resource/Quotation/${id}`, { data: payload }, { withCredentials: true });
 };
 
 export const getCart = (id) => {
-  return axios.get(`/api/resource/Quotation/${id}`, { withCredentials: true });
+  return axios.get(`${API}/api/resource/Quotation/${id}`, { withCredentials: true });
 };
 
 
@@ -44,7 +44,7 @@ export const getCart = (id) => {
 
 export const getAllCarts = (customerName) => {
   return axios.get(
-    `/api/resource/Quotation?fields=["name","party_name","transaction_date","grand_total","status"]&filters=[["party_name","=","${customerName}"]]`,
+    `${API}/api/resource/Quotation?fields=["name","party_name","transaction_date","grand_total","status"]&filters=[["party_name","=","${customerName}"]]`,
     {
       withCredentials: true,
     }
@@ -53,7 +53,7 @@ export const getAllCarts = (customerName) => {
 
 export const getLatestCartByCustomer = (customerName) => {
   return axios.get(
-    `/api/resource/Quotation?fields=["name"]&filters=[
+    `${API}/api/resource/Quotation?fields=["name"]&filters=[
       ["party_name","=","${customerName}"],
       ["docstatus","=",0]
     ]&order_by=creation desc&limit_page_length=1`,
@@ -67,7 +67,7 @@ export const getLatestCartByCustomer = (customerName) => {
 export const submitQuotation = async (quotationId) => {
   // always fetch latest document first
   const latestRes = await axios.get(
-    `/api/resource/Quotation/${quotationId}`,
+    `${API}/api/resource/Quotation/${quotationId}`,
     {
       withCredentials: true,
     }
@@ -87,7 +87,7 @@ export const submitQuotation = async (quotationId) => {
   }
 
   return axios.post(
-    "/api/method/frappe.client.submit",
+    `${API}/api/method/frappe.client.submit`,
     {
       doc: latestQuotation,
     },
@@ -102,7 +102,7 @@ export const convertQuotationToSalesOrder = (
   customerName
 ) => {
   return axios.post(
-    "/api/method/frappe.model.mapper.make_mapped_doc",
+    `${API}/api/method/frappe.model.mapper.make_mapped_doc`,
     {
       method:
         "erpnext.selling.doctype.quotation.quotation.make_sales_order",
@@ -120,7 +120,7 @@ export const convertQuotationToSalesOrder = (
 
 export const deleteCart = (quotationId) => {
   return axios.delete(
-    `/api/resource/Quotation/${quotationId}`,
+    `${API}/api/resource/Quotation/${quotationId}`,
     {
       withCredentials: true,
     }
