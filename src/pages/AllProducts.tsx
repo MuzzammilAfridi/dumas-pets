@@ -60,43 +60,6 @@ if (category) {
   );
 }
 
-// useEffect(() => {
-//   const fetchTemplates = async () => {
-//     try {
-//       const res = await axios.get("/api/resource/Item", {
-//         params: {
-//           fields: JSON.stringify([
-//             "item_name",
-//             "item_code",
-//             "image",
-//             "item_group",
-//             "has_variants"
-//           ]),
-//           filters: JSON.stringify([
-//             ["has_variants", "=", 1]
-//           ]),
-
-// //                    filters: JSON.stringify([
-// //   ["has_variants", "=", 1],
-// //   ["item_group", "in", ["All Item Groups","Street Dog Meals", "Bakes", "Desserts"]],
-// // ])
-//         },
-//       });
-
-//       setTemplates(res.data.data || []);
-//       console.log("Templates in all products", res.data.data);
-      
-//     } catch (err) {
-//       console.error(err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   fetchTemplates();
-// }, []);
-
-// Replace your useEffect fetchTemplates block with this
 
 useEffect(() => {
   const fetchTemplates = async () => {

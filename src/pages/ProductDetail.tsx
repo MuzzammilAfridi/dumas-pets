@@ -231,6 +231,19 @@ const ProductDetail = () => {
 
 
 const handleAddToCart = () => {
+
+  const user = localStorage.getItem("dumas_user");
+
+if (!user) {
+  toast({
+    title: "Login Required",
+    description: "Please login first to subscribe.",
+    variant: "destructive",
+  });
+
+  navigate("/login");
+  return;
+}
   const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
   const cartItem = {

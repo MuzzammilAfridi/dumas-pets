@@ -228,6 +228,20 @@ const isUsingMock = false;
     return base;
   };
 
+  useEffect(() => {
+  const storedUser = localStorage.getItem("dumas_user");
+
+  if (!storedUser) {
+    toast({
+      title: "Login Required",
+      description: "Please login first to access your cart.",
+      variant: "destructive",
+    });
+
+    navigate("/login");
+  }
+}, []);
+
 
   useEffect(() => {
   const storedUser = localStorage.getItem("dumas_user");
