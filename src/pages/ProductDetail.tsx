@@ -28,6 +28,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+const API_KEY = import.meta.env.VITE_FRAPPE_API_KEY;
+const API_SECRET = import.meta.env.VITE_FRAPPE_API_SECRET;
+
 import axios from "axios";
 import { useEffect } from "react";
 const API = import.meta.env.VITE_API_URL;
@@ -55,7 +58,14 @@ const ProductDetail = () => {
       try {
         const decodedId = decodeURIComponent(id);
 
-        const res = await axios.get(`${API}/api/resource/Item/${decodedId}`);
+       const res = await axios.get(
+  `${API}/api/resource/Item/${decodedId}`,
+  {
+    headers: {
+      Authorization: `token ${API_KEY}:${API_SECRET}`,
+    },
+  }
+);
 
         setProduct(res.data.data);
         console.log("PRODUCT DATA:", res.data.data);
