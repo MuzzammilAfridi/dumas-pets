@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Clock, CheckCircle, Users, Package } from "lucide-react";
 import { mockOrders, mockCustomers } from "@/data/mockData";
 import { products } from "@/data/products";
+import { getAllSalesOrdersAdmin } from "@/services/salesOrderService";
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -50,30 +52,35 @@ const chartData = [
 ];
 
 const AdminDashboard = () => {
-  const pending = mockOrders.filter((o) => o.status === "Pending").length;
-  const completed = mockOrders.filter((o) => o.status === "Delivered").length;
+
 
   const { customers, loading } = useCustomers();
   const { products } = useProducts();
+  const [orders, setOrders] = useState<any[]>([]);
+const [loadingOrders, setLoadingOrders] = useState(true);
 
   const navigate = useNavigate();
 
   // console.log("products in admin dashboard", products);
 
+  const pending = orders.filter((o) => o.status === "Pending").length;
+const completed = orders.filter((o) => o.status === "Delivered").length;
+
   const stats = [
     {
       label: "Total Orders",
-      value: mockOrders.length,
+      value: orders.length,
       icon: ShoppingBag,
       color: "text-primary",
       route: "/admin/orders",
     },
-    { label: "Pending", value: pending, icon: Clock, color: "text-secondary" },
+    { label: "Pending", value: pending, icon: Clock, color: "text-secondary" , route: "/admin/orders?status=Pending",},
     {
       label: "Completed",
       value: completed,
       icon: CheckCircle,
       color: "text-primary",
+          route: "/admin/orders?status=Delivered",
     },
     {
       label: "Customers",
@@ -91,7 +98,44 @@ const AdminDashboard = () => {
     },
   ];
 
-  if (loading) return <p>Loading dashboard...</p>;
+const mapERPStatus = (order) => {
+  if (order.docstatus === 2) return "Cancelled";
+
+  if (order.per_billed === 100) return "Delivered";
+
+  // ✅ NEW: Pending logic
+  if (order.status === "To Deliver and Bill") return "Pending";
+
+  // Processing
+  if (order.status === "To Deliver") return "Processing";
+
+  return "Processing";
+};
+
+  useEffect(() => {
+  fetchOrders();
+}, []);
+
+const fetchOrders = async () => {
+  try {
+    const res = await getAllSalesOrdersAdmin();
+
+    const formatted = res.data.data.map((o: any) => ({
+      id: o.name,
+      customerName: o.customer,
+      total: o.grand_total || 0,
+      status: mapERPStatus(o),
+    }));
+
+    setOrders(formatted);
+  } catch (err) {
+    console.error("Dashboard orders error", err);
+  } finally {
+    setLoadingOrders(false);
+  }
+};
+
+if (loading || loadingOrders) return <p>Loading dashboard...</p>;
 
   return (
     <div className="space-y-6">
@@ -159,7 +203,7 @@ const AdminDashboard = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockOrders.slice(0, 5).map((order) => (
+                {orders.slice(0, 5).map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">{order.id}</TableCell>
                     <TableCell>{order.customerName}</TableCell>

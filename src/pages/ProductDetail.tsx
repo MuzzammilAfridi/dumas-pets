@@ -19,7 +19,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Bolt, CalendarIcon, Gift, ShoppingCart, Soup, Sparkles, Star, Zap } from "lucide-react";
+import {
+  Bolt,
+  CalendarIcon,
+  Gift,
+  ShoppingCart,
+  Soup,
+  Sparkles,
+  Star,
+  Zap,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -34,7 +43,6 @@ const API_SECRET = import.meta.env.VITE_FRAPPE_API_SECRET;
 import axios from "axios";
 import { useEffect } from "react";
 const API = import.meta.env.VITE_API_URL;
-
 
 const VEGETABLE_OPTIONS = [
   { label: "Carrot", value: "carrot" },
@@ -58,14 +66,11 @@ const ProductDetail = () => {
       try {
         const decodedId = decodeURIComponent(id);
 
-       const res = await axios.get(
-  `${API}/api/resource/Item/${decodedId}`,
-  {
-    headers: {
-      Authorization: `token ${API_KEY}:${API_SECRET}`,
-    },
-  }
-);
+        const res = await axios.get(`${API}/api/resource/Item/${decodedId}`, {
+          headers: {
+            Authorization: `token ${API_KEY}:${API_SECRET}`,
+          },
+        });
 
         setProduct(res.data.data);
         console.log("PRODUCT DATA:", res.data.data);
@@ -132,7 +137,7 @@ const ProductDetail = () => {
     return parseInt(q);
   };
 
-  const freeSoup = Math.floor(getQuantityInGrams(quantity) / 250);
+  const freeSoup = Math.floor(getQuantityInGrams(quantity) / 250) + 1;
 
   const remainingForNextSoup = 250 - (getQuantityInGrams(quantity) % 250);
 
@@ -200,7 +205,7 @@ const ProductDetail = () => {
   //     category: product.item_group, // ✅ FIXED
   //     quantity: isPetFood ? 1 : standardQuantity,
   //     image: product.image,
-     
+
   //     purchaseType: "onetime" as const,
   //     subscription: {
   //       frequency: "once",
@@ -229,131 +234,147 @@ const ProductDetail = () => {
   //   navigate("/cart");
   // };
 
+  const handleAddToCart = () => {
+    const user = localStorage.getItem("dumas_user");
 
-const handleAddToCart = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login first to subscribe.",
+        variant: "destructive",
+      });
 
-  const user = localStorage.getItem("dumas_user");
+      navigate("/login");
+      return;
+    }
+    // ✅ FIX 1: Validate date
+    if (!deliveryDate) {
+      toast({
+        title: "Select Delivery Date",
+        description: "Please select a delivery date.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-if (!user) {
-  toast({
-    title: "Login Required",
-    description: "Please login first to subscribe.",
-    variant: "destructive",
-  });
+    // ✅ FIX 2: Validate time slot
+    if (!deliveryTimeSlot) {
+      toast({
+        title: "Select Time Slot",
+        description: "Please select a delivery time slot.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
-  navigate("/login");
-  return;
-}
-  const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
+    const cartItem = {
+      productId: product.item_code,
+      name: product.item_name,
 
-  const cartItem = {
-    productId: product.item_code,
-    name: product.item_name,
+      // IMPORTANT FIX → ensure price goes to cart
+      price: Number(product.standard_rate || 100),
 
-    // IMPORTANT FIX → ensure price goes to cart
-    price: Number(product.standard_rate || 100),
+      category: product.item_group,
+      quantity: isPetFood ? 1 : standardQuantity,
+      image: product.image,
 
-    category: product.item_group,
-    quantity: isPetFood ? 1 : standardQuantity,
-    image: product.image,
+      purchaseType: "onetime" as const,
 
-    purchaseType: "onetime" as const,
+      subscription: {
+        frequency: "once",
+        date: deliveryDate,
+        timeSlot: deliveryTimeSlot,
+      },
 
-    subscription: {
-      frequency: "once",
-      date: deliveryDate,
-      timeSlot: deliveryTimeSlot,
-    },
+      ...(isPetFood && {
+        customization: {
+          meatType,
+          grainType,
+          grainPercentage,
+          gpvRatio,
 
-    ...(isPetFood && {
-      customization: {
-        meatType,
-        grainType,
-        grainPercentage,
-        gpvRatio,
+          // soup logic
+          freeSoup: finalFreeSoup,
+          extraSoup: extraSoup === -1 ? 0 : extraSoup,
 
-        // soup logic
-        freeSoup: finalFreeSoup,
-        extraSoup: extraSoup === -1 ? 0 : extraSoup,
+          vegetables: selectedVegetables,
 
-        vegetables: selectedVegetables,
+          ...(preparationInstructions && {
+            preparationInstructions,
+          }),
+        },
+      }),
+    };
 
-        ...(preparationInstructions && {
+    console.log("ADDING TO CART:", cartItem); // :contentReference[oaicite:0]{index=0}
+
+    addToCart(cartItem);
+    navigate("/cart");
+  };
+
+  const handleSubscribe = () => {
+    const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
+
+    if (!subscriptionStartDate || !subscriptionEndDate) {
+      toast({
+        title: "Select Date Range",
+        description:
+          "Please select a delivery date range for your subscription.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedDays.length === 0) {
+      toast({
+        title: "Select Delivery Days",
+        description: "Please select at least one delivery day.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const cartItem = {
+      productId: product.item_code,
+      name: product.item_name,
+
+      // IMPORTANT FIX → ensure price goes to cart
+      price: Number(product.standard_rate || 100),
+
+      quantity: isPetFood ? 1 : standardQuantity,
+      image: product.image,
+      category: product.item_group,
+
+      purchaseType: "subscription" as const,
+
+      subscription: {
+        frequency: "weekly",
+        startDate: subscriptionStartDate,
+        endDate: subscriptionEndDate,
+        timeSlot: subscriptionTimeSlot,
+        deliveryDays: selectedDays,
+      },
+
+      ...(isPetFood && {
+        customization: {
+          meatType,
+          grainType,
+          grainPercentage,
+          gpvRatio,
+          freeSoup: finalFreeSoup,
+          extraSoup: extraSoup === -1 ? 0 : extraSoup,
+          vegetables: selectedVegetables,
           preparationInstructions,
-        }),
-      },
-    }),
+        },
+      }),
+    };
+
+    console.log("SUBSCRIPTION CART ITEM:", cartItem);
+
+    addToCart(cartItem);
+    navigate("/cart");
   };
-
-  console.log("ADDING TO CART:", cartItem); // :contentReference[oaicite:0]{index=0}
-
-  addToCart(cartItem);
-  navigate("/cart");
-};
-
- const handleSubscribe = () => {
-  const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
-
-  if (!subscriptionStartDate || !subscriptionEndDate) {
-    toast({
-      title: "Select Date Range",
-      description:
-        "Please select a delivery date range for your subscription.",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  if (selectedDays.length === 0) {
-    toast({
-      title: "Select Delivery Days",
-      description:
-        "Please select at least one delivery day.",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  const cartItem = {
-    productId: product.item_code,
-    name: product.item_name,
-
-    // IMPORTANT FIX → ensure price goes to cart
-    price: Number(product.standard_rate || 100),
-
-    quantity: isPetFood ? 1 : standardQuantity,
-    image: product.image,
-    category: product.item_group,
-
-    purchaseType: "subscription" as const,
-
-    subscription: {
-      frequency: "weekly",
-      startDate: subscriptionStartDate,
-      endDate: subscriptionEndDate,
-      timeSlot: subscriptionTimeSlot,
-      deliveryDays: selectedDays,
-    },
-
-    ...(isPetFood && {
-      customization: {
-        meatType,
-        grainType,
-        grainPercentage,
-        gpvRatio,
-        freeSoup: finalFreeSoup,
-        extraSoup: extraSoup === -1 ? 0 : extraSoup,
-        vegetables: selectedVegetables,
-        preparationInstructions,
-      },
-    }),
-  };
-
-  console.log("SUBSCRIPTION CART ITEM:", cartItem);
-
-  addToCart(cartItem);
-  navigate("/cart");
-};
 
   const toggleDay = (day: string) => {
     setSelectedDays((prev) =>
@@ -642,96 +663,97 @@ if (!user) {
                       </Select>
                     </div>
 
-{/* ✅ Proper Working Skip Soup Checkbox */}
-{/* 🍲 Soup Add-on Section */}
-<div className="space-y-3">
-  <Label className="text-base font-semibold block">
-    <Soup className="inline-block mr-2" />
-    Soup Add-on
-  </Label>
+                    {/* ✅ Proper Working Skip Soup Checkbox */}
+                    {/* 🍲 Soup Add-on Section */}
+                    <div className="space-y-3">
+                      <Label className="text-base font-semibold block">
+                        <Soup className="inline-block mr-2" />
+                        Soup Add-on
+                      </Label>
 
-  {/* ✅ Free Soup Info (show only when not skipped) */}
-  {extraSoup !== -1 && showUnlockMessage && (
-    <div className="bg-green-100 border border-green-300 text-green-800 rounded-lg px-4 py-2 text-sm font-semibold">
-      <Gift className="inline-block h-4 w-4 mr-2" />
-      You unlocked <b>{freeSoup}</b> free soup
-      {freeSoup > 1 ? "s" : ""}!
-    </div>
-  )}
+                      {/* ✅ Free Soup Info (show only when not skipped) */}
+                      {extraSoup !== -1 && showUnlockMessage && (
+                        <div className="bg-green-100 border border-green-300 text-green-800 rounded-lg px-4 py-2 text-sm font-semibold">
+                          <Gift className="inline-block h-4 w-4 mr-2" />
+                          You unlocked <b>{freeSoup}</b> free soup
+                          {freeSoup > 1 ? "s" : ""}!
+                        </div>
+                      )}
 
-  {/* ✅ Upsell Message (show only when not skipped) */}
-  {extraSoup !== -1 && showUpsellMessage && (
-    <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg px-4 py-2 text-sm">
-      <Zap className="inline-block h-4 w-4 mr-2" />
-      Add <b>{remainingForNextSoup}g</b> more to unlock 1 free soup
-    </div>
-  )}
+                      {/* ✅ Upsell Message (show only when not skipped) */}
+                      {extraSoup !== -1 && showUpsellMessage && (
+                        <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg px-4 py-2 text-sm">
+                          <Zap className="inline-block h-4 w-4 mr-2" />
+                          Add <b>{remainingForNextSoup}g</b> more to unlock 1
+                          free soup
+                        </div>
+                      )}
 
-  {/* Skip Soup Option */}
-  <div
-    className={cn(
-      "flex items-center space-x-3 p-3 rounded-lg border transition",
-      extraSoup === -1
-        ? "bg-primary/10 border-primary/30"
-        : "border-border hover:bg-muted/50"
-    )}
-  >
-    <Checkbox
-      checked={extraSoup === -1}
-      onCheckedChange={(checked) => {
-        if (checked) {
-          setExtraSoup(-1); // skip soup
-        } else {
-          setExtraSoup(0); // restore normal soup flow
-        }
-      }}
-      className="border-primary data-[state=checked]:bg-primary"
-    />
+                      {/* Skip Soup Option */}
+                      <div
+                        className={cn(
+                          "flex items-center space-x-3 p-3 rounded-lg border transition",
+                          extraSoup === -1
+                            ? "bg-primary/10 border-primary/30"
+                            : "border-border hover:bg-muted/50",
+                        )}
+                      >
+                        <Checkbox
+                          checked={extraSoup === -1}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setExtraSoup(-1); // skip soup
+                            } else {
+                              setExtraSoup(0); // restore normal soup flow
+                            }
+                          }}
+                          className="border-primary data-[state=checked]:bg-primary"
+                        />
 
-    <span
-      onClick={() =>
-        setExtraSoup((prev) => (prev === -1 ? 0 : -1))
-      }
-      className={cn(
-        "text-sm font-medium cursor-pointer",
-        extraSoup === -1 && "text-primary"
-      )}
-    >
-      Skip Soup
-    </span>
-  </div>
+                        <span
+                          onClick={() =>
+                            setExtraSoup((prev) => (prev === -1 ? 0 : -1))
+                          }
+                          className={cn(
+                            "text-sm font-medium cursor-pointer",
+                            extraSoup === -1 && "text-primary",
+                          )}
+                        >
+                          Skip Soup
+                        </span>
+                      </div>
 
-  {/* Extra Soup Controls */}
-  {extraSoup !== -1 && (
-    <div className="flex items-center gap-3">
-      <span className="text-sm">Add extra soup:</span>
+                      {/* Extra Soup Controls */}
+                      {extraSoup !== -1 && (
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm">Add extra soup:</span>
 
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() =>
-          setExtraSoup((prev) => Math.max(0, prev - 1))
-        }
-      >
-        -
-      </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() =>
+                              setExtraSoup((prev) => Math.max(0, prev - 1))
+                            }
+                          >
+                            -
+                          </Button>
 
-      <span className="font-semibold">{extraSoup}</span>
+                          <span className="font-semibold">{extraSoup}</span>
 
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => setExtraSoup((prev) => prev + 1)}
-      >
-        +
-      </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setExtraSoup((prev) => prev + 1)}
+                          >
+                            +
+                          </Button>
 
-      <span className="text-xs text-muted-foreground">
-        (₹10 per soup)
-      </span>
-    </div>
-  )}
-</div>
+                          <span className="text-xs text-muted-foreground">
+                            (₹10 per soup)
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Preparation Instructions - Full Width */}
                     <div>
@@ -837,6 +859,9 @@ if (!user) {
                         selected={deliveryDate}
                         onSelect={setDeliveryDate}
                         initialFocus
+                        disabled={(date) =>
+                          date < new Date(new Date().setHours(20, 0, 0, 0))
+                        }
                         className="pointer-events-auto"
                       />
                     </PopoverContent>

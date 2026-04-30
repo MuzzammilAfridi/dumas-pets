@@ -14,10 +14,12 @@ export const useOrders = () => {
         const parsedUser = storedUser ? JSON.parse(storedUser) : null;
 
         console.log("storeduser in useOrder", storedUser)
+        console.log("Parsed User:", parsedUser);
         
         // ERP Customer name
         // const customerName = parsedUser?.name || "Customer Test";
-        const customerName =  "Customer Test";
+        // const customerName =  "Customer Test";
+        const customerName = parsedUser?.customer_name || parsedUser?.name;
 
         console.log("LOGGED IN CUSTOMER:", customerName);
 
