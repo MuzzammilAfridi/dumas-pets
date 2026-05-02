@@ -24,6 +24,34 @@ const MyOrders = () => {
   console.log("orders in my order", orders);
   
 
+  const mapERPStatus = (order: any) => {
+  if (order.docstatus === 0) return "Pending";
+  if (order.docstatus === 2) return "Cancelled";
+
+  if (order.per_billed === 100) return "Delivered";
+
+  if (
+    order.status === "To Deliver" ||
+    order.status === "To Deliver and Bill"
+  ) return "Processing";
+
+  return "Processing";
+};
+
+const statusColor = (s: string) => {
+  switch (s) {
+    case "Delivered":
+      return "default";     // green / success
+    case "Processing":
+      return "secondary";   // blue / in-progress
+    case "Pending":
+      return "outline";     // gray
+    case "Cancelled":
+      return "destructive"; // red
+    default:
+      return "outline";
+  }
+};
   
 
   // ERP Sales Orders → UI Order History Format
@@ -32,12 +60,7 @@ const MyOrders = () => {
   date: o.transaction_date,
   total: o.grand_total || 0,
 
-  status:
-    o.status === "Completed"
-      ? "Delivered"
-      : o.status === "To Deliver and Bill"
-      ? "Processing"
-      : o.status || "Pending",
+status: mapERPStatus(o),
 
   items:
     o.items?.map((item: any) => ({
@@ -129,7 +152,9 @@ const MyOrders = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">{order.status}</Badge>
+                 <Badge variant={statusColor(order.status) as any}>
+  {order.status}
+</Badge>
                   <span className="font-bold">
                     ₹{Number(order.total).toFixed(2)}
                   </span>
@@ -151,9 +176,11 @@ const MyOrders = () => {
                       >
                         <div
                           className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            done
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-muted-foreground"
+                           done
+  ? order.status === "Delivered"
+    ? "bg-green-500 text-white"
+    : "bg-blue-500 text-white"
+  : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {i + 1}

@@ -14,6 +14,35 @@ const CustomerDashboard = () => {
   
   const [recentOrders, setRecentOrders] = useState([]);
 
+  const mapERPStatus = (order: any) => {
+  if (order.docstatus === 0) return "Pending";
+  if (order.docstatus === 2) return "Cancelled";
+
+  if (order.per_billed === 100) return "Delivered";
+
+  if (
+    order.status === "To Deliver" ||
+    order.status === "To Deliver and Bill"
+  ) return "Processing";
+
+  return "Processing";
+};
+
+const statusColor = (s: string) => {
+  switch (s) {
+    case "Delivered":
+      return "default";     // green
+    case "Processing":
+      return "secondary";   // blue
+    case "Pending":
+      return "outline";     // gray
+    case "Cancelled":
+      return "destructive"; // red
+    default:
+      return "outline";
+  }
+};
+
 useEffect(() => {
   if (!user?.name) return;
 
@@ -33,6 +62,8 @@ useEffect(() => {
 }, [user]);
 
 console.log("Recent order" ,recentOrders);
+
+const uiStatus = mapERPStatus(recentOrders);
 
 
   const quickActions = [
@@ -83,7 +114,10 @@ console.log("Recent order" ,recentOrders);
     </Link>
   </div>
 ) : (
-  recentOrders.map((order) => (
+ recentOrders.map((order) => {
+  const uiStatus = mapERPStatus(order);
+
+  return (
     <div
       key={order.name}
       className="flex justify-between items-center py-3 border-b border-border last:border-0"
@@ -103,12 +137,13 @@ console.log("Recent order" ,recentOrders);
           ₹{Number(order.grand_total || 0).toFixed(2)}
         </span>
 
-        <Badge variant="outline">
-          {order.status || "Draft"}
+        <Badge variant={statusColor(uiStatus) as any}>
+          {uiStatus}
         </Badge>
       </div>
     </div>
-  ))
+  );
+})
 )}
         </CardContent>
       </Card>
