@@ -244,7 +244,7 @@ const ProductDetail = () => {
         variant: "destructive",
       });
 
-      navigate("/login");
+     navigate("/login", { state: { from: location.pathname } });
       return;
     }
     // ✅ FIX 1: Validate date
@@ -402,7 +402,21 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen">
       <Navigation />
-
+      <div className="container mx-auto px-4 pt-8">
+        <Button
+          variant="outline"
+          className="whitespace-nowrap"
+          onClick={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate("/shop");
+            }
+          }}
+        >
+          Continue Shopping
+        </Button>
+</div>
       {/* Product Header - White Background */}
       <section className="bg-background py-12">
         <div className="container mx-auto px-4">

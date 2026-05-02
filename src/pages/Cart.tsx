@@ -422,6 +422,7 @@ const handlePlaceOrder = async () => {
     return (
       <div className="min-h-screen">
         <Navigation />
+   
         <div className="container mx-auto px-4 py-16 flex items-center justify-center">
           <Card className="max-w-lg w-full p-10 text-center space-y-6 shadow-xl rounded-2xl">
             <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
@@ -499,13 +500,47 @@ if (cartItems.length === 0){
     <div className="min-h-screen bg-muted/30">
       <Navigation />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-          <ShoppingCart className="w-8 h-8 text-primary" />
-          Shopping Cart
-          <Badge variant="secondary" className="text-base px-3 py-1">
-            {displayItems.length} {displayItems.length === 1 ? "item" : "items"}
-          </Badge>
-        </h1>
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
+  
+  {/* LEFT: Title */}
+  <h1 className="text-3xl font-bold flex items-center gap-3">
+    <ShoppingCart className="w-8 h-8 text-primary" />
+    Shopping Cart
+    <Badge variant="secondary" className="text-base px-3 py-1">
+      {displayItems.length} {displayItems.length === 1 ? "item" : "items"}
+    </Badge>
+  </h1>
+
+  {/* RIGHT: Continue Shopping */}
+  <Button
+    variant="outline"
+    className="whitespace-nowrap"
+    onClick={() => {
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate("/shop");
+      }
+    }}
+  >
+    Continue Shopping
+  </Button>
+
+</div>
+
+{/* <Button
+    variant="outline"
+    onClick={() => {
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate("/shop");
+      }
+    }}
+  >
+    ← Continue Shopping
+  </Button> */}
+        
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* LEFT — Cart Items (2/3 width) */}

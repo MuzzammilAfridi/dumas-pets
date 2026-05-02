@@ -86,3 +86,19 @@ export const getTemplates = async () => {
     }
   );
 };
+
+export const getItemGroups = async () => {
+  return axios.get(
+    `${API}/api/resource/Item Group`,
+    {
+      ...authHeaders,
+      params: {
+        fields: JSON.stringify([
+          "name",
+          "parent_item_group"
+        ]),
+        limit_page_length: 1000, // IMPORTANT (get all)
+      },
+    }
+  );
+};

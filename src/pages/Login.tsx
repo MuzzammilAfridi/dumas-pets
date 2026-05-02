@@ -16,6 +16,7 @@ import { ShieldCheck, User, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { loginUser } from "@/services/authService";
+import { useLocation } from "react-router-dom";
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState<"customer" | "admin">("customer");
@@ -28,7 +29,7 @@ const Login = () => {
   // const { loginWithAPI, register } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-
+const location = useLocation();
   const { login, register } = useAuth();
 
   const handleLogin = async (e) => {
@@ -60,12 +61,18 @@ const Login = () => {
         title: `Welcome ${userData.role === "admin" ? "Admin" : "Customer"}!`,
       });
 
-      // ✅ ROLE BASED REDIRECT
-      if (userData.role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
+      const redirectPath = location.state?.from;
+
+if (redirectPath) {
+  navigate(redirectPath, { replace: true });
+} else {
+  // fallback
+  if (userData.role === "admin") {
+    navigate("/admin", { replace: true });
+  } else {
+    navigate("/dashboard", { replace: true });
+  }
+}
     } catch (err) {
       console.error(err);
 

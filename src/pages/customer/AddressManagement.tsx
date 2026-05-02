@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createAddress, getAddresses, deleteAddress } from "@/services/addressService";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
+
 const AddressManagement = () => {
   const { user } = useAuth();
   const [addresses, setAddresses] = useState([]);
@@ -20,6 +21,7 @@ const AddressManagement = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ label: '', street: '', city: '', state: '', zip: '', isDefault: false });
   const { toast } = useToast();
+  
 
   const openAdd = () => {
     setEditAddr(null);

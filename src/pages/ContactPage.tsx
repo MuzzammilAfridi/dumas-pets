@@ -3,8 +3,67 @@ import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { findLeadByEmail, createLead, updateLead, getLeadByName, addCommunication } from "@/services/leadService";
+
+import { useState } from "react";
+
 
 const ContactPage = () => {
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await findLeadByEmail(form.email);
+    const leads = res.data.data;
+
+    let leadName;
+
+    if (leads.length > 0) {
+      // 🔄 Existing lead
+      leadName = leads[0].name;
+
+      await updateLead(leadName, form);
+    } else {
+      // ➕ New lead
+      const newLead = await createLead(form);
+      leadName = newLead.data.data.name;
+    }
+
+    // 💬 Always add communication (history)
+    await addCommunication(leadName, form);
+
+    alert("Message sent successfully ✅");
+
+    setForm({
+      name: "",
+      phone: "",
+      email: "",
+      subject: "",
+      message: "",
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    if (error.response?.data?.exc_type === "DuplicateEntryError") {
+      alert("This email already exists ⚠️");
+    } else {
+      alert("Something went wrong ❌");
+    }
+  }
+};
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -82,28 +141,55 @@ const ContactPage = () => {
             {/* Contact Form */}
             <div className="bg-card rounded-2xl p-8 shadow-lg">
               <h2 className="text-2xl font-bold text-foreground mb-6">Send Us a Message</h2>
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">Your Name</label>
-                    <Input placeholder="John Doe" className="rounded-xl" />
+                    <Input
+                      placeholder="John Doe"
+                      className="rounded-xl"
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
-                    <Input placeholder="+91 98765 43210" className="rounded-xl" />
+                    <Input
+  name="phone"
+  value={form.phone}
+  onChange={handleChange}
+  placeholder="+91 98765 43210"
+/>
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Email Address</label>
-                  <Input type="email" placeholder="john@example.com" className="rounded-xl" />
+                <Input
+  type="email"
+  name="email"
+  value={form.email}
+  onChange={handleChange}
+  placeholder="john@example.com"
+/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Subject</label>
-                  <Input placeholder="How can we help you?" className="rounded-xl" />
+              <Input
+  name="subject"
+  value={form.subject}
+  onChange={handleChange}
+  placeholder="How can we help you?"
+/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Message</label>
-                  <Textarea placeholder="Tell us about your pet's needs..." rows={4} className="rounded-xl" />
+                <Textarea
+  name="message"
+  value={form.message}
+  onChange={handleChange}
+  placeholder="Tell us about your pet's needs..."
+/>
                 </div>
                 <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full py-6 text-lg font-semibold">
                   Send Message

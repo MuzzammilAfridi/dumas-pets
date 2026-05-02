@@ -1,8 +1,9 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import ProductGrid from "@/components/ProductGrid";
 import { useNavigate } from "react-router-dom";
-import { getTemplates } from "@/services/productService";
+import { getTemplates, getItemGroups } from "@/services/productService";
+import CategorySidebar from "@/components/CategorySidebar";
 
 import { useState, useEffect } from "react";
 import {
@@ -25,9 +26,16 @@ const PRODUCTS_PER_PAGE = 18;
 const AllProducts = () => {
   // const { products, loading } = useProducts();
   // const { category } = useParams<{ category: string }>();
+  const location = useLocation();
+
+const activeTemplate = location.pathname.includes("/template/")
+  ? location.pathname.split("/template/")[1]
+  : undefined;
 
   const categories = useCategories();
   const { category } = useParams();
+
+  const [openCategory, setOpenCategory] = useState(null);
 
   const [templates, setTemplates] = useState([]);
 const [loading, setLoading] = useState(true);
@@ -36,7 +44,96 @@ const [loading, setLoading] = useState(true);
   const [displayCount, setDisplayCount] = useState(PRODUCTS_PER_PAGE);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [categoryTree, setCategoryTree] = useState([]);
+
   const navigate = useNavigate();
+
+
+  const buildTree = (data) => {
+  const map = {};
+  const roots = [];
+
+  data.forEach((item) => {
+    map[item.name] = { ...item, children: [] };
+  });
+
+  data.forEach((item) => {
+    if (item.parent_item_group && map[item.parent_item_group]) {
+      map[item.parent_item_group].children.push(map[item.name]);
+    } else {
+      roots.push(map[item.name]);
+    }
+  });
+
+  return roots;
+};
+
+useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await getItemGroups();
+      const tree = buildTree(res.data.data);
+
+// ❗ remove "All Item Groups" wrapper
+const filteredTree = tree.find(
+  (item) => item.name === "All Item Groups"
+)?.children || [];
+
+setCategoryTree(filteredTree);
+   
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchCategories();
+}, []);
+
+useEffect(() => {
+  const findParent = (nodes) => {
+    for (let node of nodes) {
+      if (node.children?.some(
+        (child) =>
+          child.name.toLowerCase().replace(/\s+/g, "-") === category
+      )) {
+        return node.name.toLowerCase().replace(/\s+/g, "-");
+      }
+    }
+  };
+
+  const parentSlug = findParent(categoryTree);
+  setOpenCategory(parentSlug || category);
+}, [category, categoryTree]);
+  
+
+const getAllChildGroups = (tree, parentSlug) => {
+  const result = [];
+
+  const findNode = (nodes) => {
+    for (let node of nodes) {
+      const slug = node.name.toLowerCase().replace(/\s+/g, "-");
+
+      if (slug === parentSlug) {
+        collect(node);
+        return true;
+      }
+
+      if (node.children && findNode(node.children)) return true;
+    }
+  };
+
+  const collect = (node) => {
+    result.push(node.name);
+
+    if (node.children) {
+      node.children.forEach(collect);
+    }
+  };
+
+  findNode(tree);
+
+  return result;
+};
 
   // console.log("produts in all products", products);
 
@@ -54,9 +151,11 @@ let filteredTemplates = templates.filter(
   (item) => item.item_group !== "All Item Groups"
 );
 
-if (category) {
-  filteredTemplates = filteredTemplates.filter(
-    (item) => normalize(item.item_group) === category
+if (category && categoryTree.length > 0) {
+  const groups = getAllChildGroups(categoryTree, category);
+
+  filteredTemplates = filteredTemplates.filter((item) =>
+    groups.includes(item.item_group)
   );
 }
 
@@ -84,6 +183,19 @@ useEffect(() => {
   fetchTemplates();
 }, []);
 
+const attachTemplatesToCategories = (tree, templates) => {
+  return tree.map((cat) => {
+    const childrenTemplates = templates.filter(
+      (t) => t.item_group === cat.name
+    );
+
+    return {
+      ...cat,
+      templates: childrenTemplates
+    };
+  });
+};
+
   // Sort products
  if (sortBy === "name") {
   filteredTemplates = [...filteredTemplates].sort((a, b) =>
@@ -106,6 +218,10 @@ const hasMore = displayCount < filteredTemplates.length;
   useEffect(() => {
     setDisplayCount(PRODUCTS_PER_PAGE);
   }, [category]);
+
+  useEffect(() => {
+  setOpenCategory(category);
+}, [category]);
 
   // const categories = [
   //   { name: "PET FOOD", slug: "pet-meals" },
@@ -144,68 +260,15 @@ const groupedTemplates = filteredTemplates.reduce((acc, item) => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Sidebar */}
             <aside className="lg:w-64 shrink-0">
-              <div className="bg-card rounded-lg border border-border p-6 sticky top-24 space-y-6">
-                {/* Categories */}
-                <div>
-                  <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
-                    <Filter className="w-5 h-5" />
-                    Categories
-                  </h3>
-                  <nav className="space-y-2">
-                  {categories.map((cat) => {
-  const slug = cat.name.toLowerCase().replace(/\s+/g, "-");
-
-  return (
-    <Link
-      key={cat.name}
-      to={`/category/${slug}/all`}
-      className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-        slug === category
-          ? "bg-primary text-primary-foreground"
-          : "hover:bg-muted"
-      }`}
-    >
-      <span className="font-medium">{cat.name}</span>
-      <ChevronRight className="w-4 h-4" />
-    </Link>
-  );
-})}
-                  </nav>
-                </div>
-
-                {/* Sort Options */}
-                <div>
-                  <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
-                    <ArrowUpDown className="w-5 h-5" />
-                    Sort By
-                  </h3>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">Name (A-Z)</SelectItem>
-                      <SelectItem value="price-low">
-                        Price: Low to High
-                      </SelectItem>
-                      <SelectItem value="price-high">
-                        Price: High to Low
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Quick Links */}
-                <div className="pt-4 border-t border-border">
-                  <Link
-                    to="/shop"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    ← Back to Shop
-                  </Link>
-                </div>
-              </div>
-            </aside>
+ <CategorySidebar
+  categoryTree={attachTemplatesToCategories(categoryTree, templates)}
+  openCategory={openCategory}
+  setOpenCategory={setOpenCategory}
+  activeCategory={category}
+  activeTemplate={activeTemplate} 
+  
+/>
+</aside>
 
             {/* Products Area */}
 <div className="flex-1 overflow-x-hidden">
@@ -240,27 +303,30 @@ const groupedTemplates = filteredTemplates.reduce((acc, item) => {
   {items.map((item) => (
     <div
       key={item.item_code}
-      onClick={() => navigate(`/template/${item.item_code}`)}
+      onClick={() =>
+       navigate(`/template/${item.item_code}`, {
+  state: { name: item.item_name }
+})
+        }
       className="cursor-pointer"
     >
       {/* <Card className="h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.01] border"> */}
-             <Card className="h-full flex flex-col overflow-hidden hover:shadow-xl transition-all hover:scale-[1.02] border-2">
+             <Card className="h-full flex flex-col justify-between min-h-[320px] overflow-hidden hover:shadow-xl transition-all hover:scale-[1.02] border-2">
         
         {/* Image - Reduced Height */}
-            <div className="relative w-full aspect-video overflow-hidden bg-gray-100">
-          <img
-            src={
-              item.image
-                ? `https://dumas.frappe.cloud${item.image}`
-                : "/placeholder.png"
-            }
-            alt={item.item_name}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-          />
-        </div>
+          <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+  {item.image ? (
+    <img
+      src={`https://dumas.frappe.cloud${item.image}`}
+      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+    />
+  ) : (
+    <span className="text-sm text-gray-400">No Image</span>
+  )}
+</div>
 
         {/* Content */}
-       <CardContent className="p-4 space-y-3 flex flex-col justify-between flex-1">
+       <CardContent className="p-4 flex flex-col justify-between flex-1">
           <div className="">
             <p className="text-xs sm:text-sm text-primary font-medium uppercase">
               {group}
