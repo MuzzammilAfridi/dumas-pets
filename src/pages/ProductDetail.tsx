@@ -1,9 +1,9 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate,  } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import { useProducts } from "@/hooks/useProducts";
+
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { useState, useRef } from "react";
+import { useState, useRef,useEffect, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -41,7 +41,7 @@ const API_KEY = import.meta.env.VITE_FRAPPE_API_KEY;
 const API_SECRET = import.meta.env.VITE_FRAPPE_API_SECRET;
 
 import axios from "axios";
-import { useEffect } from "react";
+
 const API = import.meta.env.VITE_API_URL;
 
 const VEGETABLE_OPTIONS = [
@@ -52,14 +52,17 @@ const VEGETABLE_OPTIONS = [
 ];
 
 const ProductDetail = () => {
-  // const { id } = useParams<{ id: string }>();
-  // const { products, loading } = useProducts();
+  
 
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+    const [meatPercentage, setMeatPercentage] = useState<number>(0);
+    const [grainPercentage, setGrainPercentage] = useState<number>(0);
 
   const BASE_URL = "https://dumas.frappe.cloud";
+
+ 
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -84,16 +87,16 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
-  // const { id } = useParams();
+    useEffect(() => {
+  if (grainPercentage + meatPercentage <= 100) {
+    const veg = 100 - (grainPercentage + meatPercentage);
+    setGpvRatio(`${grainPercentage}-${meatPercentage}-${veg}`);
+  }
+}, [grainPercentage, meatPercentage]);
 
-  const createSlug = (str) => {
-    return str
-      ?.trim()
-      .replace(/\//g, "-")
-      .replace(/%/g, "percent")
-      .replace(/[^a-zA-Z0-9]+/g, "-")
-      .toLowerCase();
-  };
+
+
+ 
 
   const { addToCart } = useCart();
   const { toast } = useToast();
@@ -114,7 +117,7 @@ const ProductDetail = () => {
 
   // One-Time Purchase States
   const [deliveryDate, setDeliveryDate] = useState<Date>();
-  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState<string>("");
+
 
   // Subscription States
   const [subscriptionStartDate, setSubscriptionStartDate] = useState<Date>();
@@ -122,15 +125,20 @@ const ProductDetail = () => {
   const [subscriptionTimeSlot, setSubscriptionTimeSlot] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
 
+  const [purchaseType, setPurchaseType] = useState<"onetime" | "subscription">("onetime");
+
+
   // Review States
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
 
-  const [grainPercentage, setGrainPercentage] = useState<number>(0);
+
   const [gpvRatio, setGpvRatio] = useState<string>("");
 
   const [extraSoup, setExtraSoup] = useState<number>(0);
+
+  const [deliveryTime, setDeliveryTime] = useState<string>("");
 
   const getQuantityInGrams = (q: string) => {
     if (q.includes("kg")) return parseInt(q) * 1000;
@@ -140,6 +148,23 @@ const ProductDetail = () => {
   const freeSoup = Math.floor(getQuantityInGrams(quantity) / 250) + 1;
 
   const remainingForNextSoup = 250 - (getQuantityInGrams(quantity) % 250);
+
+const isValidCustomTime = (date: Date, time: string) => {
+  if (!date || !time) return false;
+
+  const now = new Date();
+
+  const [hour, minute] = time.split(":").map(Number);
+
+  const delivery = new Date(date);
+  delivery.setHours(hour, minute, 0, 0);
+
+  const diff =
+    (delivery.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+  return diff >= 12;
+};
+  
 
   const showUnlockMessage = freeSoup > 0;
   const showUpsellMessage =
@@ -164,6 +189,31 @@ const ProductDetail = () => {
     });
   };
 
+const generateTimeOptions = () => {
+  const times = [];
+
+  for (let hour = 8; hour <= 20; hour++) {
+    const h = hour.toString().padStart(2, "0");
+    times.push(`${h}:00`);
+  }
+
+  return times;
+};
+
+   const availableTimes = useMemo(() => {
+  if (!deliveryDate) return [];
+
+  return generateTimeOptions().filter((time) =>
+    isValidCustomTime(deliveryDate, time)
+  );
+}, [deliveryDate]);
+
+
+
+
+
+
+
   if (loading) {
     return <p className="text-center py-10">Loading...</p>;
   }
@@ -178,6 +228,11 @@ const ProductDetail = () => {
       </div>
     );
   }
+
+
+
+
+  
 
   const isPetFood = true;
 
@@ -234,6 +289,13 @@ const ProductDetail = () => {
   //   navigate("/cart");
   // };
 
+
+
+
+
+
+
+
   const handleAddToCart = () => {
     const user = localStorage.getItem("dumas_user");
 
@@ -258,14 +320,24 @@ const ProductDetail = () => {
     }
 
     // ✅ FIX 2: Validate time slot
-    if (!deliveryTimeSlot) {
-      toast({
-        title: "Select Time Slot",
-        description: "Please select a delivery time slot.",
-        variant: "destructive",
-      });
-      return;
-    }
+   if (!deliveryTime) {
+  toast({
+    title: "Select Time",
+    description: "Please select a delivery time.",
+    variant: "destructive",
+  });
+  return;
+}
+
+  if (!isValidCustomTime(deliveryDate, deliveryTime)) {
+  toast({
+    title: "Invalid Time",
+    description: "Minimum 12 hours gap required.",
+    variant: "destructive",
+  });
+  return;
+}
+
     const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
     const cartItem = {
@@ -284,7 +356,7 @@ const ProductDetail = () => {
       subscription: {
         frequency: "once",
         date: deliveryDate,
-        timeSlot: deliveryTimeSlot,
+        timeSlot: deliveryTime,
       },
 
       ...(isPetFood && {
@@ -293,6 +365,7 @@ const ProductDetail = () => {
           grainType,
           grainPercentage,
           gpvRatio,
+            meatPercentage,
 
           // soup logic
           freeSoup: finalFreeSoup,
@@ -312,6 +385,8 @@ const ProductDetail = () => {
     addToCart(cartItem);
     navigate("/cart");
   };
+
+  
 
   const handleSubscribe = () => {
     const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
@@ -361,6 +436,7 @@ const ProductDetail = () => {
           meatType,
           grainType,
           grainPercentage,
+            meatPercentage,
           gpvRatio,
           freeSoup: finalFreeSoup,
           extraSoup: extraSoup === -1 ? 0 : extraSoup,
@@ -375,6 +451,16 @@ const ProductDetail = () => {
     addToCart(cartItem);
     navigate("/cart");
   };
+
+  const formatTime = (time: string) => {
+  const [h, m] = time.split(":");
+  const hour = Number(h);
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+
+  return `${displayHour}:${m} ${ampm}`;
+};
 
   const toggleDay = (day: string) => {
     setSelectedDays((prev) =>
@@ -398,6 +484,10 @@ const ProductDetail = () => {
   const { text: descriptionText, truncated: isDescriptionTruncated } =
     truncateDescription(product.description);
   const subscriptionPrice = (product.standard_rate * 0.84).toFixed(2); // ~16% discount for 7+ days
+
+
+ 
+
 
   return (
     <div className="min-h-screen">
@@ -480,7 +570,7 @@ const ProductDetail = () => {
                             htmlFor="meat-type"
                             className="text-base font-semibold mb-2 block"
                           >
-                            Meat Type *
+                            Food Type *
                           </Label>
                           <Select value={meatType} onValueChange={setMeatType}>
                             <SelectTrigger
@@ -489,13 +579,14 @@ const ProductDetail = () => {
                                 meatType && "bg-primary/10 border-primary/30",
                               )}
                             >
-                              <SelectValue placeholder="Chicken" />
+                              <SelectValue placeholder="Default" />
                             </SelectTrigger>
                             <SelectContent className="bg-background">
-                              <SelectItem value="Chicken">Chicken</SelectItem>
-                              <SelectItem value="Buffalo">Buffalo</SelectItem>
-                              <SelectItem value="Mutton">Mutton</SelectItem>
-                              <SelectItem value="Fish">Fish</SelectItem>
+                              <SelectItem value="Chicken">Default</SelectItem>
+                              <SelectItem value="Buffalo">Paste</SelectItem>
+                              <SelectItem value="Mutton">Big Piece</SelectItem>
+                              <SelectItem value="Fish">Small Piece</SelectItem>
+                              <SelectItem value="Fish">Powder</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -615,66 +706,61 @@ const ProductDetail = () => {
                         Grain Percentage (%)
                       </Label>
 
-                      <Select
-                        value={grainPercentage.toString()}
-                        onValueChange={(val) => setGrainPercentage(Number(val))}
-                      >
-                        <SelectTrigger
-                          className={cn(
-                            grainPercentage &&
-                              "bg-primary/10 border-primary/30",
-                          )}
-                        >
-                          <SelectValue placeholder="Select grain %" />
-                        </SelectTrigger>
+                     <Select
+  value={grainPercentage.toString()}
+  onValueChange={(val) => setGrainPercentage(Number(val))}
+>
+  <SelectTrigger>
+    <SelectValue placeholder="Select grain %" />
+  </SelectTrigger>
 
-                        <SelectContent className="bg-background">
-                          {[0, 5, 10, 15, 20, 25, 30].map((val) => (
-                            <SelectItem key={val} value={val.toString()}>
-                              {val}%
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+  <SelectContent>
+    {[0, 5, 10, 15, 20, 25, 30].map((val) => (
+      val <= 100 - meatPercentage && (
+        <SelectItem key={val} value={val.toString()}>
+          {val}%
+        </SelectItem>
+      )
+    ))}
+  </SelectContent>
+</Select>
                     </div>
+
+                    <div>
+  <Label className="text-base font-semibold mb-2 block">
+    Meat Percentage (%)
+  </Label>
+
+<Select
+  value={meatPercentage.toString()}
+  onValueChange={(val) => setMeatPercentage(Number(val))}
+>
+  <SelectTrigger>
+    <SelectValue placeholder="Select meat %" />
+  </SelectTrigger>
+
+  <SelectContent>
+    {[50, 60, 70, 75, 80, 85, 90].map((val) => (
+      val <= 100 - grainPercentage && (
+        <SelectItem key={val} value={val.toString()}>
+          {val}%
+        </SelectItem>
+      )
+    ))}
+  </SelectContent>
+</Select>
+</div>
 
                     <div>
                       <Label className="text-base font-semibold mb-2 block">
                         GPV Ratio (Grain : Protein : Veg)
                       </Label>
 
-                      <Select
-                        value={gpvRatio}
-                        onValueChange={(val) => {
-                          setGpvRatio(val);
-
-                          const [grain] = val.split("-");
-                          setGrainPercentage(Number(grain));
-                        }}
-                      >
-                        <SelectTrigger
-                          className={cn(
-                            gpvRatio && "bg-primary/10 border-primary/30",
-                          )}
-                        >
-                          <SelectValue placeholder="Select ratio" />
-                        </SelectTrigger>
-
-                        <SelectContent className="bg-background">
-                          <SelectItem value="10-80-10">
-                            10% : 80% : 10%
-                          </SelectItem>
-                          <SelectItem value="15-75-10">
-                            15% : 75% : 10%
-                          </SelectItem>
-                          <SelectItem value="20-70-10">
-                            20% : 70% : 10%
-                          </SelectItem>
-                          <SelectItem value="0-90-10">
-                            0% : 90% : 10%
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                     <div className="p-3 rounded-lg border bg-muted">
+  <p className="text-sm font-semibold">
+    {gpvRatio || "0-0-100"}
+  </p>
+</div>
                     </div>
 
                     {/* ✅ Proper Working Skip Soup Checkbox */}
@@ -832,15 +918,39 @@ const ProductDetail = () => {
                 )}
               </div>
             </div>
+            
           </div>
+          
         </div>
+        
       </section>
+
+      
 
       {/* Purchase Options - Orange Background */}
       <section className="bg-primary/10 py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8">
+                  <div className="mb-8 max-w-sm">
+  <Label className="text-base font-semibold mb-2 block">
+    Purchase Type
+  </Label>
+
+  <Select value={purchaseType} onValueChange={(val: any) => setPurchaseType(val)}>
+    <SelectTrigger className="bg-background">
+      <SelectValue placeholder="Select purchase type" />
+    </SelectTrigger>
+
+    <SelectContent>
+      <SelectItem value="onetime">One-Time Purchase</SelectItem>
+      <SelectItem value="subscription">Subscription</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+      
             {/* One-Time Purchase */}
+
+            {purchaseType === "onetime" && (
             <div className="bg-background p-8 rounded-2xl shadow-lg flex flex-col min-h-[320px]">
               <h3 className="text-2xl font-bold mb-6">One-Time Purchase</h3>
               <div className="space-y-4 flex-1">
@@ -873,9 +983,20 @@ const ProductDetail = () => {
                         selected={deliveryDate}
                         onSelect={setDeliveryDate}
                         initialFocus
-                        disabled={(date) =>
-                          date < new Date(new Date().setHours(20, 0, 0, 0))
-                        }
+                        // disabled={(date) =>
+                        //   date < new Date(new Date().setHours(20, 0, 0, 0))
+                        // }
+
+                    disabled={(date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const selected = new Date(date);
+  selected.setHours(0, 0, 0, 0);
+
+  // ❌ block today + past
+  return selected <= today;
+}}
                         className="pointer-events-auto"
                       />
                     </PopoverContent>
@@ -886,27 +1007,21 @@ const ProductDetail = () => {
                   <Label className="text-sm font-semibold mb-2 block">
                     Time Slot
                   </Label>
-                  <Select
-                    value={deliveryTimeSlot}
-                    onValueChange={setDeliveryTimeSlot}
-                  >
-                    <SelectTrigger
-                      className={cn(
-                        deliveryTimeSlot && "bg-primary/10 border-primary/30",
-                      )}
-                    >
-                      <SelectValue placeholder="Select time slot" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background">
-                      <SelectItem value="morning">
-                        Morning (8AM - 12PM)
-                      </SelectItem>
-                      <SelectItem value="noon">Noon (12PM - 4PM)</SelectItem>
-                      <SelectItem value="evening">
-                        Evening (4PM - 8PM)
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                <Select value={deliveryTime} onValueChange={setDeliveryTime}>
+  <SelectTrigger>
+    <SelectValue placeholder="Select delivery time" />
+  </SelectTrigger>
+
+<SelectContent className="max-h-60 overflow-y-auto">
+    {availableTimes.map((time) => (
+      <SelectItem key={time} value={time}>
+        {formatTime(time)}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
+
                 </div>
               </div>
               <Button
@@ -919,10 +1034,13 @@ const ProductDetail = () => {
               </Button>
             </div>
 
+)}
+
             {/* Subscribe & Save */}
+            {purchaseType === "subscription" && (
             <div className="bg-background p-8 rounded-2xl shadow-lg flex flex-col min-h-[320px]">
               <h3 className="text-2xl font-bold mb-6">Subscribe & Save</h3>
-              <div className="grid md:grid-cols-2 gap-6 flex-1">
+              <div className="grid md:grid-cols-1 gap-6 flex-1">
                 {/* Left Column */}
                 <div className="space-y-4">
                   <div>
@@ -1043,6 +1161,7 @@ const ProductDetail = () => {
                 Subscribe for 7+ days
               </Button>
             </div>
+)}
           </div>
         </div>
       </section>

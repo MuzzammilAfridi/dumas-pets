@@ -375,6 +375,16 @@ const handlePlaceOrder = async () => {
   try {
     setIsProcessing(true);
 
+     if (grandTotal < 250) {
+    toast({
+      title: "Minimum Order Required",
+      description: "Only orders above ₹250 can be processed.",
+      variant: "destructive",
+    });
+
+    return;
+  }
+
     console.log(
       "ACTIVE SALES ORDER:",
       salesOrderId
@@ -931,6 +941,8 @@ if (cartItems.length === 0){
                     <Smartphone className="w-4 h-4 text-primary" />
                     <span className="font-medium text-sm">UPI</span>
                   </label>
+
+                  {/* Commenting out COD option for now, can be re-enabled later if needed */}
                   <label
                     className={cn(
                       "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
