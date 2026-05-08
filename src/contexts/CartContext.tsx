@@ -39,6 +39,11 @@ interface CartContextType {
   clearCart: () => void;
   getTotalPrice: () => number;
   getItemCount: () => number;
+  updateCartItem: (
+  index: number,
+  item: CartItem
+) => void;
+  
 
   // ✅ ADD THIS
   getERPItems: () => {
@@ -114,6 +119,17 @@ const addToCart = (item) => {
   });
 };
 
+const updateCartItem = (
+  index: number,
+  updatedItem: CartItem
+) => {
+  setItems((prev) =>
+    prev.map((item, i) =>
+      i === index ? updatedItem : item
+    )
+  );
+};
+
   const removeFromCart = (productId: string) => {
     setItems((prev) => {
       const updated = prev
@@ -158,6 +174,7 @@ const addToCart = (item) => {
         items,
    
         addToCart,
+        updateCartItem,
         removeFromCart,
         updateQuantity,
         clearCart,

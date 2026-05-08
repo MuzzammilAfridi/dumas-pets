@@ -73,12 +73,14 @@ export const getTemplates = async () => {
       ...authHeaders,
       params: {
         fields: JSON.stringify([
-          "item_name",
-          "item_code",
-          "image",
-          "item_group",
-          "has_variants",
-        ]),
+  "item_name",
+  "item_code",
+  "image",
+  "item_group",
+  "has_variants",
+  "is_stock_item",
+  "variant_of",
+]),
         filters: JSON.stringify([
           ["has_variants", "=", 1],
         ]),

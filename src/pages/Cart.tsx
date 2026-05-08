@@ -12,6 +12,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getAddresses } from "@/services/addressService";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
+import {
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+} from "@/services/paymentService";
+
 import { useSales } from "@/contexts/SalesContext";
 import {
   ShoppingCart,
@@ -180,18 +185,24 @@ const isUsingMock = false;
   const [removeProductId, setRemoveProductId] = useState<string | null>(null);
 
   // Payment
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [upiId, setUpiId] = useState("");
+  // const [paymentMethod, setPaymentMethod] = useState("card");
+  // const [cardNumber, setCardNumber] = useState("");
+  // const [cardExpiry, setCardExpiry] = useState("");
+  // const [cardCvv, setCardCvv] = useState("");
+  // const [cardName, setCardName] = useState("");
+  // const [upiId, setUpiId] = useState("");
 
   // State
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+
+  const [finalSubtotal, setFinalSubtotal] = useState(0);
+const [finalGrandTotal, setFinalGrandTotal] = useState(0);
+const [finalDeliveryCharge, setFinalDeliveryCharge] = useState(0);
+const [finalSubscriptionDiscount, setFinalSubscriptionDiscount] = useState(0);
 
   // Checkout mobile collapse
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -353,78 +364,266 @@ const handleRemove = () => {
     if (!address.trim()) errs.address = "Address is required";
     if (!pincode.trim() || pincode.length < 5)
       errs.pincode = "Valid pincode is required";
-    if (paymentMethod === "card") {
-      if (!cardNumber.trim() || cardNumber.replace(/\s/g, "").length < 16)
-        errs.cardNumber = "Valid card number required";
-      if (!cardExpiry.trim()) errs.cardExpiry = "Expiry date required";
-      if (!cardCvv.trim() || cardCvv.length < 3)
-        errs.cardCvv = "Valid CVV required";
-      if (!cardName.trim()) errs.cardName = "Name on card required";
-    }
-    if (paymentMethod === "upi") {
-      if (!upiId.trim() || !upiId.includes("@"))
-        errs.upiId = "Valid UPI ID required";
-    }
+    // if (paymentMethod === "card") {
+    //   if (!cardNumber.trim() || cardNumber.replace(/\s/g, "").length < 16)
+    //     errs.cardNumber = "Valid card number required";
+    //   if (!cardExpiry.trim()) errs.cardExpiry = "Expiry date required";
+    //   if (!cardCvv.trim() || cardCvv.length < 3)
+    //     errs.cardCvv = "Valid CVV required";
+    //   if (!cardName.trim()) errs.cardName = "Name on card required";
+    // }
+    // if (paymentMethod === "upi") {
+    //   if (!upiId.trim() || !upiId.includes("@"))
+    //     errs.upiId = "Valid UPI ID required";
+    // }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
+  
+
+// const handlePlaceOrder = async () => {
+//   if (!validate()) return;
+
+//   try {
+//     setIsProcessing(true);
+
+//      if (grandTotal < 250) {
+//     toast({
+//       title: "Minimum Order Required",
+//       description: "Only orders above ₹250 can be processed.",
+//       variant: "destructive",
+//     });
+
+//     return;
+//   }
+
+//     console.log(
+//       "ACTIVE SALES ORDER:",
+//       salesOrderId
+//     );
+
+//     const result = await placeOrder();
+
+//     console.log(
+//       "FINAL ORDER RESULT:",
+//       result
+//     );
+
+//     const finalOrderId =
+//       result?.salesOrderId || "ORDER-CREATED";
+
+//     setOrderId(finalOrderId);
+//     setOrderSuccess(true);
+
+//     setFinalSubtotal(subtotal);
+// setFinalGrandTotal(grandTotal);
+// setFinalDeliveryCharge(deliveryCharge);
+// setFinalSubscriptionDiscount(subscriptionDiscount);
+
+//     clearCart();
+
+//     toast({
+//       title: "Order placed successfully",
+//       description: `Order ID: ${finalOrderId}`,
+//     });
+//   } catch (err: any) {
+//     console.error(
+//       "PLACE ORDER FAILED:",
+//       err?.response?.data || err
+//     );
+
+//     toast({
+//       title: "Order failed",
+//       description: "Something went wrong",
+//       variant: "destructive",
+//     });
+//   } finally {
+//     setIsProcessing(false);
+//   }
+// };
+
+
+const formatTime = (time: string) => {
+  if (!time.includes(":")) {
+    return timeSlotLabels[time] || time;
+  }
+
+  const [h, m] = time.split(":");
+
+  const hour = Number(h);
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+
+  const displayHour = hour % 12 || 12;
+
+  return `${displayHour}:${m} ${ampm}`;
+};
+
 const handlePlaceOrder = async () => {
+
   if (!validate()) return;
 
   try {
+
     setIsProcessing(true);
 
-     if (grandTotal < 250) {
-    toast({
-      title: "Minimum Order Required",
-      description: "Only orders above ₹250 can be processed.",
-      variant: "destructive",
-    });
+    if (grandTotal < 250) {
 
-    return;
-  }
+      toast({
+        title: "Minimum Order Required",
+        description: "Only orders above ₹250 can be processed.",
+        variant: "destructive",
+      });
 
-    console.log(
-      "ACTIVE SALES ORDER:",
-      salesOrderId
+      return;
+    }
+
+    // STEP 1 — CREATE ORDER
+
+    const data = await createRazorpayOrder(grandTotal);
+
+    // STEP 2 — OPEN RAZORPAY
+
+    const options = {
+
+      key: data.key,
+
+      amount: data.amount,
+
+      currency: data.currency,
+
+      order_id: data.order_id,
+
+      name: "Dumas",
+
+      description: "Order Payment",
+
+      method: {
+        upi: true,
+        card: true,
+        netbanking: true,
+        wallet: true,
+      },
+
+      handler: async function (response: any) {
+
+        try {
+
+          console.log(
+            "PAYMENT SUCCESS:",
+            response
+          );
+
+          // STEP 3 — VERIFY PAYMENT
+
+          await verifyRazorpayPayment(response);
+
+          // STEP 4 — PLACE ERP ORDER
+
+          const result = await placeOrder();
+
+          const finalOrderId =
+            result?.salesOrderId || "ORDER-CREATED";
+
+          setOrderId(finalOrderId);
+
+          setOrderSuccess(true);
+
+          setFinalSubtotal(subtotal);
+
+          setFinalGrandTotal(grandTotal);
+
+          setFinalDeliveryCharge(deliveryCharge);
+
+          setFinalSubscriptionDiscount(
+            subscriptionDiscount
+          );
+
+          clearCart();
+
+          toast({
+            title: "Payment Successful",
+            description: `Order ID: ${finalOrderId}`,
+          });
+
+        } catch (err) {
+
+          console.error(err);
+
+          toast({
+            title: "Verification Failed",
+            description:
+              "Payment verification failed",
+            variant: "destructive",
+          });
+
+        } finally {
+
+          setIsProcessing(false);
+        }
+      },
+
+      prefill: {
+        name: fullName,
+        email,
+        contact: phone,
+      },
+
+      theme: {
+        color: "#06b6d4",
+      },
+    };
+
+    if (!window.Razorpay) {
+
+      toast({
+        title: "Razorpay SDK Missing",
+        description: "Payment gateway not loaded",
+        variant: "destructive",
+      });
+
+      return;
+    }
+
+    const razorpay = new window.Razorpay(options);
+
+    razorpay.on(
+      "payment.failed",
+      function (response: any) {
+
+        console.log(
+          "PAYMENT FAILED:",
+          response
+        );
+
+        toast({
+          title: "Payment Failed",
+          description:
+            response?.error?.description ||
+            "Transaction failed",
+          variant: "destructive",
+        });
+
+        setIsProcessing(false);
+      }
     );
 
-    const result = await placeOrder();
+    razorpay.open();
 
-    console.log(
-      "FINAL ORDER RESULT:",
-      result
-    );
-
-    const finalOrderId =
-      result?.salesOrderId || "ORDER-CREATED";
-
-    setOrderId(finalOrderId);
-    setOrderSuccess(true);
-
-    clearCart();
-
-    toast({
-      title: "Order placed successfully",
-      description: `Order ID: ${finalOrderId}`,
-    });
   } catch (err: any) {
-    console.error(
-      "PLACE ORDER FAILED:",
-      err?.response?.data || err
-    );
+
+    console.error(err);
 
     toast({
-      title: "Order failed",
+      title: "Payment Failed",
       description: "Something went wrong",
       variant: "destructive",
     });
-  } finally {
+
     setIsProcessing(false);
   }
 };
-
   console.log("displayItems in Cart:", displayItems);
   
 
@@ -450,26 +649,26 @@ const handlePlaceOrder = async () => {
               <p className="text-sm font-semibold">Order Summary</p>
               <div className="flex justify-between text-sm">
                 <span>Subtotal</span>
-                <span>₹{subtotal.toFixed(2)}</span>
+                <span>₹{finalSubtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Delivery</span>
                 <span>
-                  {deliveryCharge === 0
+                  {finalDeliveryCharge === 0
                     ? "Free"
-                    : `₹${deliveryCharge.toFixed(2)}`}
+                    : `₹${finalDeliveryCharge.toFixed(2)}`}
                 </span>
               </div>
-              {subscriptionDiscount > 0 && (
+              {finalSubscriptionDiscount > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
                   <span>Subscription Savings</span>
-                  <span>-₹{subscriptionDiscount.toFixed(2)}</span>
+                  <span>-₹{finalSubscriptionDiscount.toFixed(2)}</span>
                 </div>
               )}
               <Separator className="my-1" />
               <div className="flex justify-between font-bold">
                 <span>Grand Total</span>
-                <span className="text-primary">₹{grandTotal.toFixed(2)}</span>
+                <span className="text-primary">₹{finalGrandTotal.toFixed(2)}</span>
               </div>
             </div>
             <Button
@@ -756,9 +955,9 @@ if (cartItems.length === 0){
                           <div className="flex items-center gap-1.5">
                             <Clock className="w-4 h-4 text-primary" />
                             <span>
-                              {item.subscription?.timeSlot
-                                ? timeSlotLabels[item.subscription.timeSlot]
-                                : "—"}
+                          {item.subscription?.timeSlot
+  ? formatTime(item.subscription.timeSlot)
+  : "—"}
                             </span>
                           </div>
                         </div>
@@ -802,9 +1001,15 @@ if (cartItems.length === 0){
                             variant="ghost"
                             size="sm"
                             className="text-primary ml-2"
-                            onClick={() =>
-                              navigate(`/product/${item.productId}`)
-                            }
+                          onClick={() =>
+  navigate(`/product/${item.productId}`, {
+    state: {
+      editMode: true,
+      cartIndex: idx,
+      cartItem: item,
+    },
+  })
+}
                           >
                             <Edit className="w-3 h-3 mr-1" /> Edit
                           </Button>
@@ -902,7 +1107,7 @@ if (cartItems.length === 0){
               </Card>
 
               {/* Payment Method */}
-              <Card className="p-6 rounded-2xl shadow-sm space-y-4">
+             {/*    <Card className="p-6 rounded-2xl shadow-sm space-y-4">
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-primary" /> Payment Method
                 </h3>
@@ -942,7 +1147,7 @@ if (cartItems.length === 0){
                     <span className="font-medium text-sm">UPI</span>
                   </label>
 
-                  {/* Commenting out COD option for now, can be re-enabled later if needed */}
+                 
                   <label
                     className={cn(
                       "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
@@ -1008,7 +1213,7 @@ if (cartItems.length === 0){
                   </div>
                 )}
               </Card>
-
+ */}
               {/* Order Summary */}
               <Card className="p-6 rounded-2xl shadow-sm space-y-4">
                 <h3 className="text-lg font-bold">Order Summary</h3>

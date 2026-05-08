@@ -1,4 +1,4 @@
-import { useParams, useNavigate,  } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,12 @@ const VEGETABLE_OPTIONS = [
 ];
 
 const ProductDetail = () => {
+
+  const location = useLocation();
+
+const editMode = location.state?.editMode;
+const cartIndex = location.state?.cartIndex;
+const cartItem = location.state?.cartItem;
   
 
   const { id } = useParams();
@@ -94,11 +100,64 @@ const ProductDetail = () => {
   }
 }, [grainPercentage, meatPercentage]);
 
+useEffect(() => {
+  if (editMode && cartItem) {
+    setMeatType(cartItem.customization?.meatType || "");
+    setGrainType(cartItem.customization?.grainType || "");
+    setGrainPercentage(
+      cartItem.customization?.grainPercentage || 0
+    );
+
+    setMeatPercentage(
+      cartItem.customization?.meatPercentage || 0
+    );
+
+    setSelectedVegetables(
+      cartItem.customization?.vegetables || []
+    );
+
+    setPreparationInstructions(
+      cartItem.customization?.preparationInstructions || ""
+    );
+
+    setExtraSoup(
+      cartItem.customization?.extraSoup || 0
+    );
+
+    setPurchaseType(cartItem.purchaseType);
+
+    // one time
+    if (cartItem.purchaseType === "onetime") {
+      setDeliveryDate(cartItem.subscription?.date);
+      setDeliveryTime(cartItem.subscription?.timeSlot || "");
+    }
+
+    // subscription
+    if (cartItem.purchaseType === "subscription") {
+      setSubscriptionStartDate(
+        cartItem.subscription?.startDate
+      );
+
+      setSubscriptionEndDate(
+        cartItem.subscription?.endDate
+      );
+
+      setSubscriptionTimeSlot(
+        cartItem.subscription?.timeSlot || ""
+      );
+
+      setSelectedDays(
+        cartItem.subscription?.deliveryDays || []
+      );
+    }
+  }
+}, []);
+
 
 
  
 
-  const { addToCart } = useCart();
+  const { addToCart, updateCartItem } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
   const descriptionTabRef = useRef<HTMLButtonElement>(null);
@@ -340,7 +399,7 @@ const generateTimeOptions = () => {
 
     const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
-    const cartItem = {
+    const newCartItem = {
       productId: product.item_code,
       name: product.item_name,
 
@@ -348,7 +407,11 @@ const generateTimeOptions = () => {
       price: Number(product.standard_rate || 100),
 
       category: product.item_group,
-      quantity: isPetFood ? 1 : standardQuantity,
+    quantity: editMode
+  ? cartItem?.quantity || 1
+  : isPetFood
+  ? 1
+  : standardQuantity,
       image: product.image,
 
       purchaseType: "onetime" as const,
@@ -380,10 +443,16 @@ const generateTimeOptions = () => {
       }),
     };
 
-    console.log("ADDING TO CART:", cartItem); // :contentReference[oaicite:0]{index=0}
+    console.log("ADDING TO CART:", newCartItem); // :contentReference[oaicite:0]{index=0}
 
-    addToCart(cartItem);
-    navigate("/cart");
+  
+   if (editMode) {
+  updateCartItem(cartIndex, newCartItem);
+} else {
+  addToCart(newCartItem);
+}
+
+navigate("/cart");
   };
 
   
@@ -410,14 +479,18 @@ const generateTimeOptions = () => {
       return;
     }
 
-    const cartItem = {
+    const newCartItem = {
       productId: product.item_code,
       name: product.item_name,
 
       // IMPORTANT FIX → ensure price goes to cart
       price: Number(product.standard_rate || 100),
 
-      quantity: isPetFood ? 1 : standardQuantity,
+ quantity: editMode
+  ? cartItem?.quantity || 1
+  : isPetFood
+  ? 1
+  : standardQuantity,
       image: product.image,
       category: product.item_group,
 
@@ -446,10 +519,16 @@ const generateTimeOptions = () => {
       }),
     };
 
-    console.log("SUBSCRIPTION CART ITEM:", cartItem);
+    console.log("SUBSCRIPTION CART ITEM:", newCartItem);
 
-    addToCart(cartItem);
-    navigate("/cart");
+   
+  if (editMode) {
+  updateCartItem(cartIndex, newCartItem);
+} else {
+  addToCart(newCartItem);
+}
+
+navigate("/cart");
   };
 
   const formatTime = (time: string) => {

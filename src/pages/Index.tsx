@@ -6,6 +6,7 @@ import Testimonials from "@/components/Testimonials";
 import Resources from "@/components/Resources";
 import Contact from "@/components/Contact";
 import Templates from "@/components/Templates";
+import TrendingItems from "@/components/TrendingItems";
 
 const Index = () => {
   return (
@@ -14,7 +15,7 @@ const Index = () => {
       <Hero />
       {/* <FeaturedProducts /> */}
       <Templates />
-      <About />
+      <TrendingItems/>
       <Testimonials />
       <Resources />
       <Contact />

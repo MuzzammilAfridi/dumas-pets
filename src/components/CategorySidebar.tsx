@@ -13,6 +13,8 @@ type Props = {
   setOpenCategory: (val: string | null) => void;
   activeCategory: string | undefined;
   activeTemplate?: string;
+  selectedSubCategory?: string;
+  setSelectedSubCategory?: (val: string) => void;
 };
 
 const CategorySidebar = ({
@@ -21,6 +23,8 @@ const CategorySidebar = ({
   setOpenCategory,
   activeCategory,
   activeTemplate,
+  selectedSubCategory,
+  setSelectedSubCategory,
 }: Props) => {
   const navigate = useNavigate();
 
@@ -64,23 +68,25 @@ const CategorySidebar = ({
                 {isOpen && (
                   <div className="ml-4 mt-2 space-y-2">
                     {/* 🔹 Child Categories */}
-                    {cat.children?.map((child) => {
-                      const childSlug = getSlug(child.name);
+                  {cat.children?.map((child) => {
+  const childSlug = getSlug(child.name);
 
-                      return (
-                        <div
-                          key={child.name}
-                          onClick={() => navigate(`/category/${childSlug}/all`)}
-                          className={`p-2 rounded-md cursor-pointer text-sm transition ${
-                            childSlug === activeCategory
-                              ? "bg-primary text-white"
-                              : "hover:bg-muted"
-                          }`}
-                        >
-                          {child.name}
-                        </div>
-                      );
-                    })}
+  return (
+    <div
+      key={child.name}
+      onClick={() => {
+        setSelectedSubCategory?.(child.name);
+      }}
+      className={`p-2 rounded-md cursor-pointer text-sm transition ${
+        selectedSubCategory === child.name
+          ? "bg-primary text-white"
+          : "hover:bg-muted"
+      }`}
+    >
+      {child.name}
+    </div>
+  );
+})}
 
                     {/* 🔥 Templates (YOUR FIX) */}
                     {cat.templates?.map((template) => {

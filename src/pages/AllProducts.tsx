@@ -35,6 +35,8 @@ const activeTemplate = location.pathname.includes("/template/")
   const categories = useCategories();
   const { category } = useParams();
 
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
+
   const [openCategory, setOpenCategory] = useState(null);
 
   const [templates, setTemplates] = useState([]);
@@ -147,10 +149,13 @@ const getAllChildGroups = (tree, parentSlug) => {
 const normalize = (str = "") =>
   str.toLowerCase().trim().replace(/\s+/g, "-");
 
+
+
 let filteredTemplates = templates.filter(
   (item) => item.item_group !== "All Item Groups"
 );
 
+// MAIN CATEGORY FILTER
 if (category && categoryTree.length > 0) {
   const groups = getAllChildGroups(categoryTree, category);
 
@@ -159,6 +164,12 @@ if (category && categoryTree.length > 0) {
   );
 }
 
+// SUB CATEGORY FILTER
+if (selectedSubCategory) {
+  filteredTemplates = filteredTemplates.filter(
+    (item) => item.item_group === selectedSubCategory
+  );
+}
 
 useEffect(() => {
   const fetchTemplates = async () => {
@@ -260,13 +271,14 @@ const groupedTemplates = filteredTemplates.reduce((acc, item) => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Sidebar */}
             <aside className="lg:w-64 shrink-0">
- <CategorySidebar
+<CategorySidebar
   categoryTree={attachTemplatesToCategories(categoryTree, templates)}
   openCategory={openCategory}
   setOpenCategory={setOpenCategory}
   activeCategory={category}
-  activeTemplate={activeTemplate} 
-  
+  activeTemplate={activeTemplate}
+  selectedSubCategory={selectedSubCategory}
+  setSelectedSubCategory={setSelectedSubCategory}
 />
 </aside>
 
@@ -344,13 +356,20 @@ const groupedTemplates = filteredTemplates.reduce((acc, item) => {
           <Button
             className="w-full mt-4"
             size="default"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/template/${item.item_code}`);
-            }}
+         onClick={(e) => {
+  e.stopPropagation();
+
+  if (item.has_variants) {
+    navigate(`/template/${item.item_code}`);
+  } else {
+    navigate(`/product/${item.item_code}`);
+  }
+}}
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
-            View Variant
+           {item.has_variants
+  ? "Customize & Order"
+  : "Buy Now"}
           </Button>
         </CardContent>
       </Card>
