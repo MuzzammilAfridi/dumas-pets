@@ -80,72 +80,103 @@ const Navigation = () => {
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-1.5">
-            <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
-              <Search className="w-5 h-5" />
-            </Button>
-            {isAuthenticated ? (
-              <>
-                <Link to={user?.role === 'admin' ? '/admin' : '/dashboard'}>
-                  <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
-                    <User className="w-5 h-5" />
-                  </Button>
-                </Link>
-               <Button
-  variant="ghost"
-  size="icon"
-  onClick={() => setLogoutOpen(true)}
-  className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-all"
->
-  <LogOut className="w-5 h-5" />
-</Button>
-              </>
-            ) : (
-              <Link to="/login">
-                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
-                  <User className="w-5 h-5" />
-                </Button>
-              </Link>
-            )}
-            <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
-                <ShoppingCart className="w-5 h-5" />
-              </Button>
-              {itemCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/30 animate-in zoom-in-50">
-                  {itemCount}
-                </Badge>
-              )}
-            </Link>
+          {/* Right Actions */}
+<div className="flex items-center gap-1 sm:gap-1.5">
+  {/* Hide search on very small screens */}
+  <Button
+    variant="ghost"
+    size="icon"
+    className="hidden sm:flex rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+  >
+    <Search className="w-5 h-5" />
+  </Button>
 
-            {/* Mobile Menu */}
-            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger asChild className="lg:hidden">
-                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10">
-                  <Menu className="w-5 h-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-72 pt-12">
-                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                <div className="flex flex-col gap-1">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.name}
-                      to={link.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`px-4 py-3 rounded-xl text-base font-semibold transition-all ${
-                        isActive(link.href)
-                          ? "text-primary bg-primary/10"
-                          : "text-foreground/70 hover:text-primary hover:bg-primary/5"
-                      }`}
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+  {isAuthenticated ? (
+    <>
+      <Link to={user?.role === "admin" ? "/admin" : "/dashboard"}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+        >
+          <User className="w-5 h-5" />
+        </Button>
+      </Link>
+
+      {/* Hide logout text on mobile */}
+      <Button
+        variant="ghost"
+        onClick={() => setLogoutOpen(true)}
+        className="rounded-xl hover:bg-destructive/10 hover:text-destructive transition-all flex items-center gap-2 px-2"
+      >
+        <LogOut className="w-4 h-4" />
+        <span className="hidden md:block text-sm font-medium">
+          Logout
+        </span>
+      </Button>
+    </>
+  ) : (
+    <Link to="/login">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+      >
+        <User className="w-5 h-5" />
+      </Button>
+    </Link>
+  )}
+
+  <Link to="/cart" className="relative">
+    <Button
+      variant="ghost"
+      size="icon"
+      className="rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+    >
+      <ShoppingCart className="w-5 h-5" />
+    </Button>
+
+    {itemCount > 0 && (
+      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground rounded-full">
+        {itemCount}
+      </Badge>
+    )}
+  </Link>
+
+  {/* Mobile Menu */}
+  <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+    <SheetTrigger asChild className="lg:hidden">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-xl hover:bg-primary/10"
+      >
+        <Menu className="w-5 h-5" />
+      </Button>
+    </SheetTrigger>
+
+    <SheetContent side="right" className="w-[85vw] max-w-[320px] pt-12">
+      <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+
+      <div className="flex flex-col gap-1 overflow-y-auto max-h-[85vh] pr-1">
+        {navLinks.map((link) => (
+          <Link
+            key={link.name}
+            to={link.href}
+            onClick={() => setMobileOpen(false)}
+            className={`px-4 py-3 rounded-xl text-base font-semibold transition-all ${
+              isActive(link.href)
+                ? "text-primary bg-primary/10"
+                : "text-foreground/70 hover:text-primary hover:bg-primary/5"
+            }`}
+          >
+            {link.name}
+          </Link>
+        ))}
+      </div>
+    </SheetContent>
+  </Sheet>
+</div>
         </div>
       </div>
       <ConfirmDialog

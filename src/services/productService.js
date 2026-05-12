@@ -34,6 +34,13 @@ export const getProducts = async () => {
   );
 };
 
+export const getProductsWithAttributes = async () => {
+  return axios.get(
+    `${API}/api/method/dumas_15.a3_dumas.api.get_variant_items_with_attributes`,
+    authHeaders
+  );
+};
+
 /*
 ========================================
 GET TEMPLATE VARIANTS

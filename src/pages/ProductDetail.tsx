@@ -3,7 +3,7 @@ import Navigation from "@/components/Navigation";
 
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { useState, useRef,useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -22,13 +22,17 @@ import {
 import {
   Bolt,
   CalendarIcon,
+  Check,
   Gift,
+  Minus,
+  Plus,
   ShoppingCart,
   Soup,
   Sparkles,
   Star,
   Zap,
 } from "lucide-react";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -52,23 +56,19 @@ const VEGETABLE_OPTIONS = [
 ];
 
 const ProductDetail = () => {
-
   const location = useLocation();
 
-const editMode = location.state?.editMode;
-const cartIndex = location.state?.cartIndex;
-const cartItem = location.state?.cartItem;
-  
+  const editMode = location.state?.editMode;
+  const cartIndex = location.state?.cartIndex;
+  const cartItem = location.state?.cartItem;
 
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-    const [meatPercentage, setMeatPercentage] = useState<number>(0);
-    const [grainPercentage, setGrainPercentage] = useState<number>(0);
+  const [meatPercentage, setMeatPercentage] = useState<number>(0);
+  const [grainPercentage, setGrainPercentage] = useState<number>(0);
 
   const BASE_URL = "https://dumas.frappe.cloud";
-
- 
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -93,69 +93,49 @@ const cartItem = location.state?.cartItem;
     fetchProduct();
   }, [id]);
 
-    useEffect(() => {
-  if (grainPercentage + meatPercentage <= 100) {
-    const veg = 100 - (grainPercentage + meatPercentage);
-    setGpvRatio(`${grainPercentage}-${meatPercentage}-${veg}`);
-  }
-}, [grainPercentage, meatPercentage]);
-
-useEffect(() => {
-  if (editMode && cartItem) {
-    setMeatType(cartItem.customization?.meatType || "");
-    setGrainType(cartItem.customization?.grainType || "");
-    setGrainPercentage(
-      cartItem.customization?.grainPercentage || 0
-    );
-
-    setMeatPercentage(
-      cartItem.customization?.meatPercentage || 0
-    );
-
-    setSelectedVegetables(
-      cartItem.customization?.vegetables || []
-    );
-
-    setPreparationInstructions(
-      cartItem.customization?.preparationInstructions || ""
-    );
-
-    setExtraSoup(
-      cartItem.customization?.extraSoup || 0
-    );
-
-    setPurchaseType(cartItem.purchaseType);
-
-    // one time
-    if (cartItem.purchaseType === "onetime") {
-      setDeliveryDate(cartItem.subscription?.date);
-      setDeliveryTime(cartItem.subscription?.timeSlot || "");
+  useEffect(() => {
+    if (grainPercentage + meatPercentage <= 100) {
+      const veg = 100 - (grainPercentage + meatPercentage);
+      setGpvRatio(`${grainPercentage}-${meatPercentage}-${veg}`);
     }
+  }, [grainPercentage, meatPercentage]);
 
-    // subscription
-    if (cartItem.purchaseType === "subscription") {
-      setSubscriptionStartDate(
-        cartItem.subscription?.startDate
+  useEffect(() => {
+    if (editMode && cartItem) {
+      setMeatType(cartItem.customization?.meatType || "");
+      setGrainType(cartItem.customization?.grainType || "");
+      setGrainPercentage(cartItem.customization?.grainPercentage || 0);
+
+      setMeatPercentage(cartItem.customization?.meatPercentage || 0);
+
+      setSelectedVegetables(cartItem.customization?.vegetables || []);
+
+      setPreparationInstructions(
+        cartItem.customization?.preparationInstructions || "",
       );
 
-      setSubscriptionEndDate(
-        cartItem.subscription?.endDate
-      );
+      setExtraSoup(cartItem.customization?.extraSoup || 0);
 
-      setSubscriptionTimeSlot(
-        cartItem.subscription?.timeSlot || ""
-      );
+      setPurchaseType(cartItem.purchaseType);
 
-      setSelectedDays(
-        cartItem.subscription?.deliveryDays || []
-      );
+      // one time
+      if (cartItem.purchaseType === "onetime") {
+        setDeliveryDate(cartItem.subscription?.date);
+        setDeliveryTime(cartItem.subscription?.timeSlot || "");
+      }
+
+      // subscription
+      if (cartItem.purchaseType === "subscription") {
+        setSubscriptionStartDate(cartItem.subscription?.startDate);
+
+        setSubscriptionEndDate(cartItem.subscription?.endDate);
+
+        setSubscriptionTimeSlot(cartItem.subscription?.timeSlot || "");
+
+        setSelectedDays(cartItem.subscription?.deliveryDays || []);
+      }
     }
-  }
-}, []);
-
-
-
- 
+  }, []);
 
   const { addToCart, updateCartItem } = useCart();
   const { toast } = useToast();
@@ -177,21 +157,20 @@ useEffect(() => {
   // One-Time Purchase States
   const [deliveryDate, setDeliveryDate] = useState<Date>();
 
-
   // Subscription States
   const [subscriptionStartDate, setSubscriptionStartDate] = useState<Date>();
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date>();
   const [subscriptionTimeSlot, setSubscriptionTimeSlot] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
 
-  const [purchaseType, setPurchaseType] = useState<"onetime" | "subscription">("onetime");
-
+  const [purchaseType, setPurchaseType] = useState<"onetime" | "subscription">(
+    "onetime",
+  );
 
   // Review States
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
-
 
   const [gpvRatio, setGpvRatio] = useState<string>("");
 
@@ -208,22 +187,20 @@ useEffect(() => {
 
   const remainingForNextSoup = 250 - (getQuantityInGrams(quantity) % 250);
 
-const isValidCustomTime = (date: Date, time: string) => {
-  if (!date || !time) return false;
+  const isValidCustomTime = (date: Date, time: string) => {
+    if (!date || !time) return false;
 
-  const now = new Date();
+    const now = new Date();
 
-  const [hour, minute] = time.split(":").map(Number);
+    const [hour, minute] = time.split(":").map(Number);
 
-  const delivery = new Date(date);
-  delivery.setHours(hour, minute, 0, 0);
+    const delivery = new Date(date);
+    delivery.setHours(hour, minute, 0, 0);
 
-  const diff =
-    (delivery.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const diff = (delivery.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-  return diff >= 12;
-};
-  
+    return diff >= 12;
+  };
 
   const showUnlockMessage = freeSoup > 0;
   const showUpsellMessage =
@@ -248,30 +225,24 @@ const isValidCustomTime = (date: Date, time: string) => {
     });
   };
 
-const generateTimeOptions = () => {
-  const times = [];
+  const generateTimeOptions = () => {
+    const times = [];
 
-  for (let hour = 8; hour <= 20; hour++) {
-    const h = hour.toString().padStart(2, "0");
-    times.push(`${h}:00`);
-  }
+    for (let hour = 8; hour <= 20; hour++) {
+      const h = hour.toString().padStart(2, "0");
+      times.push(`${h}:00`);
+    }
 
-  return times;
-};
+    return times;
+  };
 
-   const availableTimes = useMemo(() => {
-  if (!deliveryDate) return [];
+  const availableTimes = useMemo(() => {
+    if (!deliveryDate) return [];
 
-  return generateTimeOptions().filter((time) =>
-    isValidCustomTime(deliveryDate, time)
-  );
-}, [deliveryDate]);
-
-
-
-
-
-
+    return generateTimeOptions().filter((time) =>
+      isValidCustomTime(deliveryDate, time),
+    );
+  }, [deliveryDate]);
 
   if (loading) {
     return <p className="text-center py-10">Loading...</p>;
@@ -287,11 +258,6 @@ const generateTimeOptions = () => {
       </div>
     );
   }
-
-
-
-
-  
 
   const isPetFood = true;
 
@@ -348,13 +314,6 @@ const generateTimeOptions = () => {
   //   navigate("/cart");
   // };
 
-
-
-
-
-
-
-
   const handleAddToCart = () => {
     const user = localStorage.getItem("dumas_user");
 
@@ -365,7 +324,7 @@ const generateTimeOptions = () => {
         variant: "destructive",
       });
 
-     navigate("/login", { state: { from: location.pathname } });
+      navigate("/login", { state: { from: location.pathname } });
       return;
     }
     // ✅ FIX 1: Validate date
@@ -379,23 +338,23 @@ const generateTimeOptions = () => {
     }
 
     // ✅ FIX 2: Validate time slot
-   if (!deliveryTime) {
-  toast({
-    title: "Select Time",
-    description: "Please select a delivery time.",
-    variant: "destructive",
-  });
-  return;
-}
+    if (!deliveryTime) {
+      toast({
+        title: "Select Time",
+        description: "Please select a delivery time.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  if (!isValidCustomTime(deliveryDate, deliveryTime)) {
-  toast({
-    title: "Invalid Time",
-    description: "Minimum 12 hours gap required.",
-    variant: "destructive",
-  });
-  return;
-}
+    if (!isValidCustomTime(deliveryDate, deliveryTime)) {
+      toast({
+        title: "Invalid Time",
+        description: "Minimum 12 hours gap required.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
@@ -407,11 +366,11 @@ const generateTimeOptions = () => {
       price: Number(product.standard_rate || 100),
 
       category: product.item_group,
-    quantity: editMode
-  ? cartItem?.quantity || 1
-  : isPetFood
-  ? 1
-  : standardQuantity,
+      quantity: editMode
+        ? cartItem?.quantity || 1
+        : isPetFood
+          ? 1
+          : standardQuantity,
       image: product.image,
 
       purchaseType: "onetime" as const,
@@ -428,7 +387,7 @@ const generateTimeOptions = () => {
           grainType,
           grainPercentage,
           gpvRatio,
-            meatPercentage,
+          meatPercentage,
 
           // soup logic
           freeSoup: finalFreeSoup,
@@ -445,17 +404,14 @@ const generateTimeOptions = () => {
 
     console.log("ADDING TO CART:", newCartItem); // :contentReference[oaicite:0]{index=0}
 
-  
-   if (editMode) {
-  updateCartItem(cartIndex, newCartItem);
-} else {
-  addToCart(newCartItem);
-}
+    if (editMode) {
+      updateCartItem(cartIndex, newCartItem);
+    } else {
+      addToCart(newCartItem);
+    }
 
-navigate("/cart");
+    navigate("/cart");
   };
-
-  
 
   const handleSubscribe = () => {
     const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
@@ -486,11 +442,11 @@ navigate("/cart");
       // IMPORTANT FIX → ensure price goes to cart
       price: Number(product.standard_rate || 100),
 
- quantity: editMode
-  ? cartItem?.quantity || 1
-  : isPetFood
-  ? 1
-  : standardQuantity,
+      quantity: editMode
+        ? cartItem?.quantity || 1
+        : isPetFood
+          ? 1
+          : standardQuantity,
       image: product.image,
       category: product.item_group,
 
@@ -509,7 +465,7 @@ navigate("/cart");
           meatType,
           grainType,
           grainPercentage,
-            meatPercentage,
+          meatPercentage,
           gpvRatio,
           freeSoup: finalFreeSoup,
           extraSoup: extraSoup === -1 ? 0 : extraSoup,
@@ -521,25 +477,24 @@ navigate("/cart");
 
     console.log("SUBSCRIPTION CART ITEM:", newCartItem);
 
-   
-  if (editMode) {
-  updateCartItem(cartIndex, newCartItem);
-} else {
-  addToCart(newCartItem);
-}
+    if (editMode) {
+      updateCartItem(cartIndex, newCartItem);
+    } else {
+      addToCart(newCartItem);
+    }
 
-navigate("/cart");
+    navigate("/cart");
   };
 
   const formatTime = (time: string) => {
-  const [h, m] = time.split(":");
-  const hour = Number(h);
+    const [h, m] = time.split(":");
+    const hour = Number(h);
 
-  const ampm = hour >= 12 ? "PM" : "AM";
-  const displayHour = hour % 12 || 12;
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
 
-  return `${displayHour}:${m} ${ampm}`;
-};
+    return `${displayHour}:${m} ${ampm}`;
+  };
 
   const toggleDay = (day: string) => {
     setSelectedDays((prev) =>
@@ -564,10 +519,6 @@ navigate("/cart");
     truncateDescription(product.description);
   const subscriptionPrice = (product.standard_rate * 0.84).toFixed(2); // ~16% discount for 7+ days
 
-
- 
-
-
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -585,7 +536,7 @@ navigate("/cart");
         >
           Continue Shopping
         </Button>
-</div>
+      </div>
       {/* Product Header - White Background */}
       <section className="bg-background py-12">
         <div className="container mx-auto px-4">
@@ -708,36 +659,47 @@ navigate("/cart");
                         </Label>
 
                         <div className="space-y-3">
-                          {VEGETABLE_OPTIONS.map((veg) => (
-                            <div
-                              key={veg.value}
-                              className={cn(
-                                "flex items-center space-x-3 p-2 rounded-lg border cursor-pointer transition",
-                                selectedVegetables.includes(veg.value)
-                                  ? "bg-primary/10 border-primary/30"
-                                  : "border-border hover:bg-muted/50",
-                              )}
-                              onClick={() => toggleVegetable(veg.value)}
-                            >
-                              <Checkbox
-                                checked={selectedVegetables.includes(veg.value)}
-                                onCheckedChange={() =>
-                                  toggleVegetable(veg.value)
-                                }
-                                className="border-primary data-[state=checked]:bg-primary"
-                              />
+                          {VEGETABLE_OPTIONS.map((veg) => {
+                            const isSelected = selectedVegetables.includes(
+                              veg.value,
+                            );
 
-                              <span
+                            return (
+                              <div
+                                key={veg.value}
+                                onClick={() => toggleVegetable(veg.value)}
                                 className={cn(
-                                  "text-sm font-medium",
-                                  selectedVegetables.includes(veg.value) &&
-                                    "text-primary",
+                                  "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                                  isSelected
+                                    ? "border-primary bg-primary/10"
+                                    : "border-border hover:bg-muted/50",
                                 )}
                               >
-                                {veg.label}
-                              </span>
-                            </div>
-                          ))}
+                                {/* Custom Square Box */}
+                                <div
+                                  className={cn(
+                                    "h-6 w-6 min-w-[24px] border-2 flex items-center justify-center rounded",
+                                    isSelected
+                                      ? "bg-primary border-primary"
+                                      : "bg-white border-gray-400",
+                                  )}
+                                >
+                                  {isSelected && (
+                                    <Check className="h-4 w-4 text-white stroke-[3]" />
+                                  )}
+                                </div>
+
+                                <span
+                                  className={cn(
+                                    "text-sm font-medium",
+                                    isSelected && "text-primary",
+                                  )}
+                                >
+                                  {veg.label}
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -785,61 +747,63 @@ navigate("/cart");
                         Grain Percentage (%)
                       </Label>
 
-                     <Select
-  value={grainPercentage.toString()}
-  onValueChange={(val) => setGrainPercentage(Number(val))}
->
-  <SelectTrigger>
-    <SelectValue placeholder="Select grain %" />
-  </SelectTrigger>
+                      <Select
+                        value={grainPercentage.toString()}
+                        onValueChange={(val) => setGrainPercentage(Number(val))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select grain %" />
+                        </SelectTrigger>
 
-  <SelectContent>
-    {[0, 5, 10, 15, 20, 25, 30].map((val) => (
-      val <= 100 - meatPercentage && (
-        <SelectItem key={val} value={val.toString()}>
-          {val}%
-        </SelectItem>
-      )
-    ))}
-  </SelectContent>
-</Select>
+                        <SelectContent>
+                          {[0, 5, 10, 15, 20, 25, 30].map(
+                            (val) =>
+                              val <= 100 - meatPercentage && (
+                                <SelectItem key={val} value={val.toString()}>
+                                  {val}%
+                                </SelectItem>
+                              ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div>
-  <Label className="text-base font-semibold mb-2 block">
-    Meat Percentage (%)
-  </Label>
+                      <Label className="text-base font-semibold mb-2 block">
+                        Meat Percentage (%)
+                      </Label>
 
-<Select
-  value={meatPercentage.toString()}
-  onValueChange={(val) => setMeatPercentage(Number(val))}
->
-  <SelectTrigger>
-    <SelectValue placeholder="Select meat %" />
-  </SelectTrigger>
+                      <Select
+                        value={meatPercentage.toString()}
+                        onValueChange={(val) => setMeatPercentage(Number(val))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select meat %" />
+                        </SelectTrigger>
 
-  <SelectContent>
-    {[50, 60, 70, 75, 80, 85, 90].map((val) => (
-      val <= 100 - grainPercentage && (
-        <SelectItem key={val} value={val.toString()}>
-          {val}%
-        </SelectItem>
-      )
-    ))}
-  </SelectContent>
-</Select>
-</div>
+                        <SelectContent>
+                          {[50, 60, 70, 75, 80, 85, 90].map(
+                            (val) =>
+                              val <= 100 - grainPercentage && (
+                                <SelectItem key={val} value={val.toString()}>
+                                  {val}%
+                                </SelectItem>
+                              ),
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
                     <div>
                       <Label className="text-base font-semibold mb-2 block">
                         GPV Ratio (Grain : Protein : Veg)
                       </Label>
 
-                     <div className="p-3 rounded-lg border bg-muted">
-  <p className="text-sm font-semibold">
-    {gpvRatio || "0-0-100"}
-  </p>
-</div>
+                      <div className="p-3 rounded-lg border bg-muted">
+                        <p className="text-sm font-semibold">
+                          {gpvRatio || "0-0-100"}
+                        </p>
+                      </div>
                     </div>
 
                     {/* ✅ Proper Working Skip Soup Checkbox */}
@@ -907,25 +871,25 @@ navigate("/cart");
                         <div className="flex items-center gap-3">
                           <span className="text-sm">Add extra soup:</span>
 
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() =>
-                              setExtraSoup((prev) => Math.max(0, prev - 1))
-                            }
-                          >
-                            -
-                          </Button>
+                        <Button
+  variant="outline"
+  className="h-10 w-10 rounded-xl"
+  onClick={() =>
+    setExtraSoup((prev) => Math.max(0, prev - 1))
+  }
+>
+  <Minus className="h-4 w-4 stroke-[4]" />
+</Button>
 
                           <span className="font-semibold">{extraSoup}</span>
 
                           <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setExtraSoup((prev) => prev + 1)}
-                          >
-                            +
-                          </Button>
+  variant="outline"
+  className="h-10 w-10 rounded-xl"
+  onClick={() => setExtraSoup((prev) => prev + 1)}
+>
+  <Plus className="h-4 w-4 stroke-[4]" />
+</Button>
 
                           <span className="text-xs text-muted-foreground">
                             (₹10 per soup)
@@ -997,151 +961,98 @@ navigate("/cart");
                 )}
               </div>
             </div>
-            
           </div>
-          
         </div>
-        
       </section>
-
-      
 
       {/* Purchase Options - Orange Background */}
       <section className="bg-primary/10 py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8">
-                  <div className="mb-8 max-w-sm">
-  <Label className="text-base font-semibold mb-2 block">
-    Purchase Type
-  </Label>
+            <div className="mb-8">
+              <Label className="text-base font-semibold mb-4 block">
+                Purchase Type
+              </Label>
 
-  <Select value={purchaseType} onValueChange={(val: any) => setPurchaseType(val)}>
-    <SelectTrigger className="bg-background">
-      <SelectValue placeholder="Select purchase type" />
-    </SelectTrigger>
+              <RadioGroup
+                value={purchaseType}
+                onValueChange={(value: "onetime" | "subscription") =>
+                  setPurchaseType(value)
+                }
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              >
+                {/* One Time Purchase */}
+                <div
+                  className={cn(
+                    "flex items-center space-x-3 rounded-xl border p-4 cursor-pointer transition-all",
+                    purchaseType === "onetime"
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:bg-muted/50",
+                  )}
+                >
+                  <RadioGroupItem value="onetime" id="onetime" />
 
-    <SelectContent>
-      <SelectItem value="onetime">One-Time Purchase</SelectItem>
-      <SelectItem value="subscription">Subscription</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
-      
+                  <Label
+                    htmlFor="onetime"
+                    className="cursor-pointer flex flex-col"
+                  >
+                    <span className="font-semibold">One-Time Purchase</span>
+
+                    <span className="text-sm text-muted-foreground">
+                      Buy once only
+                    </span>
+                  </Label>
+                </div>
+
+                {/* Subscription */}
+                <div
+                  className={cn(
+                    "flex items-center space-x-3 rounded-xl border p-4 cursor-pointer transition-all",
+                    purchaseType === "subscription"
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:bg-muted/50",
+                  )}
+                >
+                  <RadioGroupItem value="subscription" id="subscription" />
+
+                  <Label
+                    htmlFor="subscription"
+                    className="cursor-pointer flex flex-col"
+                  >
+                    <span className="font-semibold">Subscription</span>
+
+                    <span className="text-sm text-muted-foreground">
+                      Save more with recurring delivery
+                    </span>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
             {/* One-Time Purchase */}
 
             {purchaseType === "onetime" && (
-            <div className="bg-background p-8 rounded-2xl shadow-lg flex flex-col min-h-[320px]">
-              <h3 className="text-2xl font-bold mb-6">One-Time Purchase</h3>
-              <div className="space-y-4 flex-1">
-                <div>
-                  <Label className="text-sm font-semibold mb-2 block">
-                    Delivery Date
-                  </Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          deliveryDate &&
-                            "bg-primary/10 border-primary/30 text-primary",
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {deliveryDate
-                          ? format(deliveryDate, "MMMM do, yyyy")
-                          : "Select a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-auto p-0 bg-background"
-                      align="start"
-                    >
-                      <Calendar
-                        mode="single"
-                        selected={deliveryDate}
-                        onSelect={setDeliveryDate}
-                        initialFocus
-                        // disabled={(date) =>
-                        //   date < new Date(new Date().setHours(20, 0, 0, 0))
-                        // }
-
-                    disabled={(date) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const selected = new Date(date);
-  selected.setHours(0, 0, 0, 0);
-
-  // ❌ block today + past
-  return selected <= today;
-}}
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold mb-2 block">
-                    Time Slot
-                  </Label>
-                <Select value={deliveryTime} onValueChange={setDeliveryTime}>
-  <SelectTrigger>
-    <SelectValue placeholder="Select delivery time" />
-  </SelectTrigger>
-
-<SelectContent className="max-h-60 overflow-y-auto">
-    {availableTimes.map((time) => (
-      <SelectItem key={time} value={time}>
-        {formatTime(time)}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
-
-
-                </div>
-              </div>
-              <Button
-                size="xl"
-                onClick={handleAddToCart}
-                className="w-full text-lg mt-6"
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Add to Cart
-              </Button>
-            </div>
-
-)}
-
-            {/* Subscribe & Save */}
-            {purchaseType === "subscription" && (
-            <div className="bg-background p-8 rounded-2xl shadow-lg flex flex-col min-h-[320px]">
-              <h3 className="text-2xl font-bold mb-6">Subscribe & Save</h3>
-              <div className="grid md:grid-cols-1 gap-6 flex-1">
-                {/* Left Column */}
-                <div className="space-y-4">
+              <div className="bg-background p-8 rounded-2xl shadow-lg flex flex-col min-h-[320px]">
+                <h3 className="text-2xl font-bold mb-6">One-Time Purchase</h3>
+                <div className="space-y-4 flex-1">
                   <div>
                     <Label className="text-sm font-semibold mb-2 block">
-                      Delivery Date Between
+                      Delivery Date
                     </Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full justify-start text-left font-normal text-sm",
-                            (subscriptionStartDate || subscriptionEndDate) &&
+                            "w-full justify-start text-left font-normal",
+                            deliveryDate &&
                               "bg-primary/10 border-primary/30 text-primary",
                           )}
                         >
-                          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">
-                            {subscriptionStartDate && subscriptionEndDate
-                              ? `${format(subscriptionStartDate, "MMM d")} - ${format(subscriptionEndDate, "MMM d, yyyy")}`
-                              : "Select date range"}
-                          </span>
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {deliveryDate
+                            ? format(deliveryDate, "MMMM do, yyyy")
+                            : "Select a date"}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent
@@ -1149,18 +1060,25 @@ navigate("/cart");
                         align="start"
                       >
                         <Calendar
-                          mode="range"
-                          selected={{
-                            from: subscriptionStartDate,
-                            to: subscriptionEndDate,
-                          }}
-                          onSelect={(range) => {
-                            setSubscriptionStartDate(range?.from);
-                            setSubscriptionEndDate(range?.to);
-                          }}
+                          mode="single"
+                          selected={deliveryDate}
+                          onSelect={setDeliveryDate}
                           initialFocus
+                          // disabled={(date) =>
+                          //   date < new Date(new Date().setHours(20, 0, 0, 0))
+                          // }
+
+                          disabled={(date) => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+
+                            const selected = new Date(date);
+                            selected.setHours(0, 0, 0, 0);
+
+                            // ❌ block today + past
+                            return selected <= today;
+                          }}
                           className="pointer-events-auto"
-                          numberOfMonths={2}
                         />
                       </PopoverContent>
                     </Popover>
@@ -1171,76 +1089,162 @@ navigate("/cart");
                       Time Slot
                     </Label>
                     <Select
-                      value={subscriptionTimeSlot}
-                      onValueChange={setSubscriptionTimeSlot}
+                      value={deliveryTime}
+                      onValueChange={setDeliveryTime}
                     >
-                      <SelectTrigger
-                        className={cn(
-                          subscriptionTimeSlot &&
-                            "bg-primary/10 border-primary/30",
-                        )}
-                      >
-                        <SelectValue placeholder="Select time slot" />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select delivery time" />
                       </SelectTrigger>
-                      <SelectContent className="bg-background">
-                        <SelectItem value="morning">
-                          Morning (8AM - 12PM)
-                        </SelectItem>
-                        <SelectItem value="noon">Noon (12PM - 4PM)</SelectItem>
-                        <SelectItem value="evening">
-                          Evening (4PM - 8PM)
-                        </SelectItem>
+
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        {availableTimes.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {formatTime(time)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
+                <Button
+                  size="xl"
+                  onClick={handleAddToCart}
+                  className="w-full text-lg mt-6"
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Add to Cart
+                </Button>
+              </div>
+            )}
 
-                {/* Right Column - Days Selection */}
-                <div>
-                  <Label className="text-sm font-semibold mb-2 block">
-                    Delivery Days
-                  </Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {weekDays.map((day) => (
-                      <div
-                        key={day}
-                        className={cn(
-                          "flex items-center space-x-2 p-2 rounded-lg border cursor-pointer transition-colors",
-                          selectedDays.includes(day)
-                            ? "bg-primary/10 border-primary/30"
-                            : "border-border hover:bg-muted/50",
-                        )}
-                        onClick={() => toggleDay(day)}
+            {/* Subscribe & Save */}
+            {purchaseType === "subscription" && (
+              <div className="bg-background p-8 rounded-2xl shadow-lg flex flex-col min-h-[320px]">
+                <h3 className="text-2xl font-bold mb-6">Subscribe & Save</h3>
+                <div className="grid md:grid-cols-1 gap-6 flex-1">
+                  {/* Left Column */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-semibold mb-2 block">
+                        Delivery Date Between
+                      </Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal text-sm",
+                              (subscriptionStartDate || subscriptionEndDate) &&
+                                "bg-primary/10 border-primary/30 text-primary",
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">
+                              {subscriptionStartDate && subscriptionEndDate
+                                ? `${format(subscriptionStartDate, "MMM d")} - ${format(subscriptionEndDate, "MMM d, yyyy")}`
+                                : "Select date range"}
+                            </span>
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-auto p-0 bg-background"
+                          align="start"
+                        >
+                          <Calendar
+                            mode="range"
+                            selected={{
+                              from: subscriptionStartDate,
+                              to: subscriptionEndDate,
+                            }}
+                            onSelect={(range) => {
+                              setSubscriptionStartDate(range?.from);
+                              setSubscriptionEndDate(range?.to);
+                            }}
+                            initialFocus
+                            className="pointer-events-auto"
+                            numberOfMonths={2}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-semibold mb-2 block">
+                        Time Slot
+                      </Label>
+                      <Select
+                        value={subscriptionTimeSlot}
+                        onValueChange={setSubscriptionTimeSlot}
                       >
-                        <Checkbox
-                          checked={selectedDays.includes(day)}
-                          onCheckedChange={() => toggleDay(day)}
-                          className="border-primary data-[state=checked]:bg-primary"
-                        />
-                        <span
+                        <SelectTrigger
                           className={cn(
-                            "text-sm font-medium",
-                            selectedDays.includes(day) && "text-primary",
+                            subscriptionTimeSlot &&
+                              "bg-primary/10 border-primary/30",
                           )}
                         >
-                          {day}
-                        </span>
-                      </div>
-                    ))}
+                          <SelectValue placeholder="Select time slot" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background">
+                          <SelectItem value="morning">
+                            Morning (8AM - 12PM)
+                          </SelectItem>
+                          <SelectItem value="noon">
+                            Noon (12PM - 4PM)
+                          </SelectItem>
+                          <SelectItem value="evening">
+                            Evening (4PM - 8PM)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Right Column - Days Selection */}
+                  <div>
+                    <Label className="text-sm font-semibold mb-2 block">
+                      Delivery Days
+                    </Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {weekDays.map((day) => (
+                        <div
+                          key={day}
+                          className={cn(
+                            "flex items-center space-x-2 p-2 rounded-lg border cursor-pointer transition-colors",
+                            selectedDays.includes(day)
+                              ? "bg-primary/10 border-primary/30"
+                              : "border-border hover:bg-muted/50",
+                          )}
+                          onClick={() => toggleDay(day)}
+                        >
+                          <Checkbox
+                            checked={selectedDays.includes(day)}
+                            onCheckedChange={() => toggleDay(day)}
+                            className="border-primary data-[state=checked]:bg-primary"
+                          />
+                          <span
+                            className={cn(
+                              "text-sm font-medium",
+                              selectedDays.includes(day) && "text-primary",
+                            )}
+                          >
+                            {day}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
+                <Button
+                  size="xl"
+                  onClick={handleSubscribe}
+                  variant="orderNow"
+                  className="w-full text-lg mt-6"
+                >
+                  <CalendarIcon className="mr-2 h-5 w-5" />
+                  Subscribe for 7+ days
+                </Button>
               </div>
-              <Button
-                size="xl"
-                onClick={handleSubscribe}
-                variant="orderNow"
-                className="w-full text-lg mt-6"
-              >
-                <CalendarIcon className="mr-2 h-5 w-5" />
-                Subscribe for 7+ days
-              </Button>
-            </div>
-)}
+            )}
           </div>
         </div>
       </section>

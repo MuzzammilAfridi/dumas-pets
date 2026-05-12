@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProducts } from "@/services/productService";
-
+import { getProductsWithAttributes } from "@/services/productService";
 
 export const useProducts = () => {
   const [products, setProducts] = useState([]);
@@ -11,47 +10,47 @@ export const useProducts = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await getProducts();
+        const res = await getProductsWithAttributes();
 
-        // console.log("DATA:", res.data);
+        console.log("API RESPONSE:", res.data);
 
-        const rawData = Array.isArray(res.data?.data)
-          ? res.data.data
-          : [];
-
-        const mapCategory = (group, name) => {
-          const g = (group || "").toLowerCase();
-          const n = (name || "").toLowerCase();
-
-          if (g.includes("meal") || n.includes("food")) return "PET FOOD";
-          if (n.includes("treat")) return "TREATS";
-          if (n.includes("cake")) return "CAKES";
-
-          return "PET FOOD"; // default fallback
-        };
+        const rawData = res.data?.message?.data || [];
 
         const createSlug = (str) => {
           return str
-            ?.trim()                          // remove trailing spaces
-            .replace(/\//g, "-")              // remove slash
-            .replace(/%/g, "percent")         // replace %
-            .replace(/[^a-zA-Z0-9]+/g, "-")   // remove all special chars
+            ?.trim()
+            .replace(/\//g, "-")
+            .replace(/%/g, "percent")
+            .replace(/[^a-zA-Z0-9]+/g, "-")
             .toLowerCase();
         };
 
-        const formatted = rawData.map((item) => ({
-          id: item.item_code,           // UI usage
-          item_code: item.item_code,    // 🔥 ADD THIS (CRITICAL FIX)
-          slug: createSlug(item.item_code),
-          name: item.item_name,
-          price: item.standard_rate,
-          category: item.item_group,
-          image: item.image
-            ? `${BASE_URL}${item.image}`
-            : "https://via.placeholder.com/150",
-        }));
+       const formatted = rawData.map((item) => ({
+  id: item.item_code,
+
+  item_code: item.item_code,
+
+  slug: createSlug(item.item_code),
+
+  name: item.item_name,
+
+  category: item.item_group,
+
+  price: item.standard_rate || 0,
+
+  image: item.image
+    ? `${BASE_URL}${item.image}`
+    : "https://via.placeholder.com/300",
+
+  hasVariants: item.has_variants,
+
+  variantOf: item.variant_of,
+
+  attributes: item.attributes || [],
+}));
 
         setProducts(formatted);
+
         console.log("Formatted Products:", formatted);
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -62,9 +61,6 @@ export const useProducts = () => {
 
     fetchProducts();
   }, []);
-
-
-
 
   return { products, loading };
 };
