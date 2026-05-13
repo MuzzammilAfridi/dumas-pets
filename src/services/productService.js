@@ -111,3 +111,28 @@ export const getItemGroups = async () => {
     }
   );
 };
+
+// export const getProductById = async (itemCode) => {
+//   const encodedCode = encodeURIComponent(itemCode.trim());
+
+//   return axios.get(
+//     `${API}/api/resource/Item/${encodedCode}`,
+//     authHeaders
+//   );
+// };
+
+export const getProductById = async (itemCode) => {
+  return axios.get(
+    `${API}/api/resource/Item`,
+    {
+      ...authHeaders,
+      params: {
+        filters: JSON.stringify([
+          ["item_code", "=", itemCode.trim()]
+        ]),
+        fields: JSON.stringify(["*"]),
+        limit_page_length: 1,
+      },
+    }
+  );
+};

@@ -216,7 +216,7 @@ setCategoryTree(filteredTree);
             {variants.map((v) => (
               <div
                 key={v.item_code}
-                onClick={() => navigate(`/product/${v.item_code}`)}
+                onClick={() => navigate(`/product/${encodeURIComponent(v.item_code.trim())}`)}
                 className="cursor-pointer"
               >
                 <Card className="h-full flex flex-col overflow-hidden hover:shadow-xl transition-all hover:scale-[1.02] border-2">
@@ -252,8 +252,9 @@ setCategoryTree(filteredTree);
                       className="w-full mt-4"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/product/${v.item_code}`);
-                      }}
+navigate(
+  `/product/${encodeURIComponent(v.item_code.trim())}`
+);                      }}
                     >
                       Order
                     </Button>

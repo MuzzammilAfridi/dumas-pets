@@ -39,6 +39,9 @@ const TrendingItems = () => {
     }
   };
 
+  console.log("items in trending items", items);
+  
+
   return (
     <section className="py-16 bg-primary/5 min-h-screen">
       <div className="container mx-auto px-4">
@@ -67,11 +70,11 @@ const TrendingItems = () => {
   {items.map((item) => (
     <div
       key={item.item_code}
-      onClick={() =>
-        navigate(`/template/${item.item_code}`, {
-          state: { name: item.item_name },
-        })
-      }
+     onClick={() =>
+  navigate(`/product/${encodeURIComponent(item.item_code)}`, {
+    state: { name: item.item_name },
+  })
+}
       className="cursor-pointer"
     >
  <Card className="h-full flex flex-col overflow-hidden hover:shadow-xl transition-all hover:scale-[1.02] border-2">
@@ -110,7 +113,9 @@ const TrendingItems = () => {
                         size="lg"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/template/${item.item_code}`);
+                      navigate(
+  `/template/${encodeURIComponent(item.item_code)}`
+);
                         }}
                       >
                         <ShoppingCart className="w-4 h-4 mr-2" />

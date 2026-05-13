@@ -76,7 +76,7 @@ const Templates = () => {
               {items.slice(0, 3).map((item) => (
                 <div
                   key={item.item_code}
-                  onClick={() => navigate(`/template/${item.item_code}`)}
+                  onClick={() => navigate(`/product/${encodeURIComponent(item.item_code.trim())}`)}
                   className="cursor-pointer"
                 >
                   <Card className="h-full flex flex-col overflow-hidden hover:shadow-xl transition-all hover:scale-[1.02] border-2">

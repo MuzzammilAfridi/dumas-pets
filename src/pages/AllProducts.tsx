@@ -362,7 +362,7 @@ const groupedTemplates = filteredTemplates.reduce((acc, item) => {
   if (item.has_variants) {
     navigate(`/template/${item.item_code}`);
   } else {
-    navigate(`/product/${item.item_code}`);
+   navigate(`/product/${encodeURIComponent(item.item_code.trim())}`);
   }
 }}
           >

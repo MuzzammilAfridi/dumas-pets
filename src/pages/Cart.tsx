@@ -476,6 +476,8 @@ const handlePlaceOrder = async () => {
         variant: "destructive",
       });
 
+        setIsProcessing(false);
+
       return;
     }
 
@@ -588,10 +590,21 @@ const handlePlaceOrder = async () => {
 
     const razorpay = new window.Razorpay(options);
 
+    razorpay.on("payment.cancel", () => {
+  setIsProcessing(false);
+
+  toast({
+    title: "Payment Cancelled",
+    description: "You cancelled the payment.",
+    variant: "destructive",
+  });
+});
+
     razorpay.on(
       "payment.failed",
+      
       function (response: any) {
-
+  setIsProcessing(false);
         console.log(
           "PAYMENT FAILED:",
           response
@@ -608,6 +621,10 @@ const handlePlaceOrder = async () => {
         setIsProcessing(false);
       }
     );
+
+    setTimeout(() => {
+  setIsProcessing(false);
+}, 30000);
 
     razorpay.open();
 
@@ -1002,7 +1019,10 @@ if (cartItems.length === 0){
                             size="sm"
                             className="text-primary ml-2"
                           onClick={() =>
-  navigate(`/product/${item.productId}`, {
+navigate(
+  `/product/${encodeURIComponent(
+    item.templateItem || item.productId
+  )}`, {
     state: {
       editMode: true,
       cartIndex: idx,
