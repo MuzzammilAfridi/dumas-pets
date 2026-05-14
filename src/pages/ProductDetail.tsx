@@ -1,6 +1,9 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import { findOrCreateVariant } from "@/services/variantService";
+import {
+  findOrCreateVariant,
+  getItemAttribute,
+} from "@/services/variantService";
 
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
@@ -21,7 +24,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Bolt,
+
   CalendarIcon,
   Check,
   Gift,
@@ -29,7 +32,7 @@ import {
   Plus,
   ShoppingCart,
   Soup,
-  Sparkles,
+
   Star,
   Zap,
 } from "lucide-react";
@@ -43,12 +46,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getProductById } from "@/services/productService";
 
-const API_KEY = import.meta.env.VITE_FRAPPE_API_KEY;
-const API_SECRET = import.meta.env.VITE_FRAPPE_API_SECRET;
 
-import axios from "axios";
-
-const API = import.meta.env.VITE_API_URL;
 
 const VEGETABLE_OPTIONS = [
   { label: "Carrot", value: "carrot" },
@@ -68,25 +66,25 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [meatPercentage, setMeatPercentage] = useState<number>(80);
-const [grainPercentage, setGrainPercentage] = useState<number>(15);
+  const [grainPercentage, setGrainPercentage] = useState<number>(15);
 
   const BASE_URL = "https://dumas.frappe.cloud";
-useEffect(() => {
-  const fetchProduct = async () => {
-    try {
-      const res = await getProductById(id);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await getProductById(id);
 
-     setProduct(res.data.data[0]);
-      console.log("PRODUCT DATA:", res.data.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setProduct(res.data.data[0]);
+       
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchProduct();
-}, [id]);
+    fetchProduct();
+  }, [id]);
 
   useEffect(() => {
     if (grainPercentage + meatPercentage <= 100) {
@@ -132,17 +130,66 @@ useEffect(() => {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchAttributes = async () => {
+      try {
+        const [
+          foodTypeRes,
+          grainTypeRes,
+          quantityRes,
+          grainPercentageRes,
+          meatPercentageRes,
+        ] = await Promise.all([
+          getItemAttribute("Food Type"),
+          getItemAttribute("Grain Type"),
+          getItemAttribute("Quantity"),
+          getItemAttribute("Grain Percentage"),
+          getItemAttribute("Meat Percentage"),
+        ]);
+
+        setFoodTypeOptions(foodTypeRes.data.data.item_attribute_values);
+
+        setGrainTypeOptions(grainTypeRes.data.data.item_attribute_values);
+
+        setQuantityOptions(quantityRes.data.data.item_attribute_values);
+
+       setGrainPercentageOptions(
+  [...grainPercentageRes.data.data.item_attribute_values].sort(
+    (a, b) => Number(a.attribute_value) - Number(b.attribute_value),
+  ),
+);
+
+setMeatPercentageOptions(
+  [...meatPercentageRes.data.data.item_attribute_values].sort(
+    (a, b) => Number(a.attribute_value) - Number(b.attribute_value),
+  ),
+);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchAttributes();
+  }, []);
+
   const { addToCart, updateCartItem } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
   const descriptionTabRef = useRef<HTMLButtonElement>(null);
 
   // Pet Food Customization States
-  const [foodType, setFoodType] = useState<string>("");
- const [grainType, setGrainType] = useState<string>("Brown Rice");
+
+  const [foodTypeOptions, setFoodTypeOptions] = useState([]);
+  const [grainTypeOptions, setGrainTypeOptions] = useState([]);
+  const [quantityOptions, setQuantityOptions] = useState([]);
+  const [grainPercentageOptions, setGrainPercentageOptions] = useState([]);
+  const [meatPercentageOptions, setMeatPercentageOptions] = useState([]);
+
+  const [foodType, setFoodType] = useState<string>("Default");
+  const [grainType, setGrainType] = useState<string>("Brown Rice");
   // const [grainPercentage, setGrainPercentage] = useState<number>(0);
   const [selectedVegetables, setSelectedVegetables] = useState<string[]>([]);
-const [quantity, setQuantity] = useState<string>("100 gm");
+  const [quantity, setQuantity] = useState<string>("100 gm");
   const [preparationInstructions, setPreparationInstructions] =
     useState<string>("");
 
@@ -272,44 +319,12 @@ const [quantity, setQuantity] = useState<string>("100 gm");
     return { text: words.slice(0, maxWords).join(" "), truncated: true };
   };
 
-  // const handleAddToCart = () => {
-  //   const cartItem = {
-  //     productId: product.item_code, // ✅ THIS IS item_code
-  //     name: product.item_name, // ✅ already mapped
-  //     price: product.standard_rate || 100,
-  //     category: product.item_group, // ✅ FIXED
-  //     quantity: isPetFood ? 1 : standardQuantity,
-  //     image: product.image,
+  const isValidPercentageCombination = () => {
+  return grainPercentage + meatPercentage <= 100;
+};
 
-  //     purchaseType: "onetime" as const,
-  //     subscription: {
-  //       frequency: "once",
-  //       date: deliveryDate,
-  //       timeSlot: deliveryTimeSlot,
-  //     },
-  //     ...(isPetFood && {
-  //       customization: {
-  //         meatType,
-  //         grainType,
-  //         grainPercentage,
-  //         gpvRatio,
-  //         freeSoup,
-  //         extraSoup,
-  //         vegetables: selectedVegetables,
-  //         ...(preparationInstructions && {
-  //           preparationInstructions,
-  //         }),
-  //       },
-  //     }),
-  //   };
-
-  //   console.log("PRODUCT:", product);
-  //   // console.log("ADDING TO CART:", cartItem);
-  //   addToCart(cartItem);
-  //   navigate("/cart");
-  // };
-
-  const handleAddToCart = async() => {
+ 
+  const handleAddToCart = async () => {
     const user = localStorage.getItem("dumas_user");
 
     if (!user) {
@@ -351,29 +366,39 @@ const [quantity, setQuantity] = useState<string>("100 gm");
       return;
     }
 
+    if (!isValidPercentageCombination()) {
+  toast({
+    title: "Invalid Percentage",
+    description:
+      "Grain % and Meat % total cannot exceed 100%.",
+    variant: "destructive",
+  });
+
+  return;
+}
+
     const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
- const templateCode =
-  product.variant_of || product.item_code;
+    const templateCode = product.variant_of || product.item_code;
 
-console.log("TEMPLATE CODE:", templateCode);
+    
 
-const variantRes = await findOrCreateVariant({
-  templateItem: templateCode,
-  foodType,
-  grain: grainType,
-  grainPercentage,
-  meatPercentage,
-  quantity,
-});
+    const variantRes = await findOrCreateVariant({
+      templateItem: templateCode,
+      foodType,
+      grain: grainType,
+      grainPercentage,
+      meatPercentage,
+      quantity,
+    });
 
-console.log("VARIANT RESULT:", variantRes);
+ 
 
     const newCartItem = {
       // productId: product.item_code,
       productId: variantRes.item_code,
       templateItem: templateCode,
-      name: `${product.item_name} - ${quantity}`,
+      name: `${product.item_name} (${grainType}, ${foodType}, grain ${grainPercentage}%, meat ${meatPercentage}% ) - ${quantity}`,
 
       // IMPORTANT FIX → ensure price goes to cart
       price: Number(product.standard_rate || 100),
@@ -415,7 +440,7 @@ console.log("VARIANT RESULT:", variantRes);
       }),
     };
 
-    console.log("ADDING TO CART:", newCartItem); // :contentReference[oaicite:0]{index=0}
+    
 
     if (editMode) {
       updateCartItem(cartIndex, newCartItem);
@@ -426,7 +451,7 @@ console.log("VARIANT RESULT:", variantRes);
     navigate("/cart");
   };
 
-  const handleSubscribe = async() => {
+  const handleSubscribe = async () => {
     const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
     if (!subscriptionStartDate || !subscriptionEndDate) {
@@ -447,25 +472,36 @@ console.log("VARIANT RESULT:", variantRes);
       });
       return;
     }
-const templateCode =
-  product.variant_of || product.item_code;
 
-console.log("TEMPLATE CODE:", templateCode);
+     if (!isValidPercentageCombination()) {
+  toast({
+    title: "Invalid Percentage",
+    description:
+      "Grain % and Meat % total cannot exceed 100%.",
+    variant: "destructive",
+  });
 
-const variantRes = await findOrCreateVariant({
-  templateItem: templateCode,
-  quantity,
-  grain: grainType,
-  grainPercentage,
-  meatPercentage,
-});
+  return;
+}
+    const templateCode = product.variant_of || product.item_code;
 
-console.log("VARIANT RESULT:", variantRes);
+  
+
+    const variantRes = await findOrCreateVariant({
+      templateItem: templateCode,
+      foodType,
+      quantity,
+      grain: grainType,
+      grainPercentage,
+      meatPercentage,
+    });
+
+  
 
     const newCartItem = {
       // productId: product.item_code,
       productId: variantRes.item_code,
-      name: `${product.item_name} (${quantity})`,
+      name: `${product.item_name} (${grainType}) (${foodType}) (${grainPercentage}) (${meatPercentage}) (${quantity})`,
       templateItem: templateCode,
 
       // IMPORTANT FIX → ensure price goes to cart
@@ -504,7 +540,6 @@ console.log("VARIANT RESULT:", variantRes);
       }),
     };
 
-    console.log("SUBSCRIPTION CART ITEM:", newCartItem);
 
     if (editMode) {
       updateCartItem(cartIndex, newCartItem);
@@ -641,11 +676,14 @@ console.log("VARIANT RESULT:", variantRes);
                               <SelectValue placeholder="Default" />
                             </SelectTrigger>
                             <SelectContent className="bg-background">
-                          <SelectItem value="Default">Default</SelectItem>
-<SelectItem value="Paste">Paste</SelectItem>
-<SelectItem value="Big Piece">Big Piece</SelectItem>
-<SelectItem value="Small Piece">Small Piece</SelectItem>
-<SelectItem value="Powder">Powder</SelectItem>
+                              {foodTypeOptions.map((item) => (
+                                <SelectItem
+                                  key={item.attribute_value}
+                                  value={item.attribute_value}
+                                >
+                                  {item.attribute_value}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -673,18 +711,14 @@ console.log("VARIANT RESULT:", variantRes);
                               <SelectValue placeholder="Select grain type" />
                             </SelectTrigger>
                             <SelectContent className="bg-background">
-                              <SelectItem value="No grain">No grain</SelectItem>
-                             <SelectItem value="White Rice">White Rice</SelectItem>
-
-<SelectItem value="Brown Rice">Brown Rice</SelectItem>
-
-<SelectItem value="Broken Wheat/Dalia">
-  Broken Wheat/Dalia
-</SelectItem>
-
-<SelectItem value="Oats">Oats</SelectItem>
-
-<SelectItem value="Millet">Millet</SelectItem>
+                              {grainTypeOptions.map((item) => (
+                                <SelectItem
+                                  key={item.attribute_value}
+                                  value={item.attribute_value}
+                                >
+                                  {item.attribute_value}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -760,20 +794,12 @@ console.log("VARIANT RESULT:", variantRes);
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-background">
-                          {[
-  "100 gm",
-  "200 gm",
-  "300 gm",
-  "400 gm",
-  "500 gm",
-  "600 gm",
-  "700 gm",
-  "800 gm",
-  "900 gm",
-  "1kg",
-].map((q) => (
-                            <SelectItem key={q} value={q}>
-                              {q}
+                          {quantityOptions.map((item) => (
+                            <SelectItem
+                              key={item.attribute_value}
+                              value={item.attribute_value}
+                            >
+                              {item.attribute_value}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -786,39 +812,24 @@ console.log("VARIANT RESULT:", variantRes);
                       </Label>
 
                       <Select
-  value={grainPercentage.toString()}
-  onValueChange={(val) => {
-    const grain = Number(val);
-
-    setGrainPercentage(grain);
-
-    // Auto-sync supported ERPNext combinations
-    if (grain === 15) {
-      setMeatPercentage(80);
-    }
-
-    if (grain === 30) {
-      setMeatPercentage(65);
-    }
-
-    if (grain === 50) {
-      setMeatPercentage(45);
-    }
-  }}
->
+                        value={grainPercentage.toString()}
+                       onValueChange={(val) => {
+  setGrainPercentage(Number(val));
+}}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select grain %" />
                         </SelectTrigger>
 
                         <SelectContent>
-                        {[15, 30, 50].map(
-                            (val) =>
-                              val <= 100 - meatPercentage && (
-                                <SelectItem key={val} value={val.toString()}>
-                                  {val}%
-                                </SelectItem>
-                              ),
-                          )}
+                          {grainPercentageOptions.map((item) => (
+                            <SelectItem
+                              key={item.attribute_value}
+                              value={item.attribute_value}
+                            >
+                              {item.attribute_value}%
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -834,21 +845,21 @@ console.log("VARIANT RESULT:", variantRes);
                       > */}
                       <Select
   value={meatPercentage.toString()}
-  disabled
+  onValueChange={(val) => setMeatPercentage(Number(val))}
 >
                         <SelectTrigger>
                           <SelectValue placeholder="Select meat %" />
                         </SelectTrigger>
 
                         <SelectContent>
-                         {[45, 65, 80].map(
-                            (val) =>
-                              val <= 100 - grainPercentage && (
-                                <SelectItem key={val} value={val.toString()}>
-                                  {val}%
-                                </SelectItem>
-                              ),
-                          )}
+                          {meatPercentageOptions.map((item) => (
+                            <SelectItem
+                              key={item.attribute_value}
+                              value={item.attribute_value}
+                            >
+                              {item.attribute_value}%
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -930,25 +941,25 @@ console.log("VARIANT RESULT:", variantRes);
                         <div className="flex items-center gap-3">
                           <span className="text-sm">Add extra soup:</span>
 
-                        <Button
-  variant="outline"
-  className="h-10 w-10 rounded-xl"
-  onClick={() =>
-    setExtraSoup((prev) => Math.max(0, prev - 1))
-  }
->
-  <Minus className="h-4 w-4 stroke-[4]" />
-</Button>
+                          <Button
+                            variant="outline"
+                            className="h-10 w-10 rounded-xl"
+                            onClick={() =>
+                              setExtraSoup((prev) => Math.max(0, prev - 1))
+                            }
+                          >
+                            <Minus className="h-4 w-4 stroke-[4]" />
+                          </Button>
 
                           <span className="font-semibold">{extraSoup}</span>
 
                           <Button
-  variant="outline"
-  className="h-10 w-10 rounded-xl"
-  onClick={() => setExtraSoup((prev) => prev + 1)}
->
-  <Plus className="h-4 w-4 stroke-[4]" />
-</Button>
+                            variant="outline"
+                            className="h-10 w-10 rounded-xl"
+                            onClick={() => setExtraSoup((prev) => prev + 1)}
+                          >
+                            <Plus className="h-4 w-4 stroke-[4]" />
+                          </Button>
 
                           <span className="text-xs text-muted-foreground">
                             (₹10 per soup)
@@ -982,42 +993,8 @@ console.log("VARIANT RESULT:", variantRes);
                   </div>
                 )}
 
-                {/* TREATS & CAKES Standard Selection */}
-                {!isPetFood && (
-                  <div className="space-y-6">
-                    <div>
-                      <Label
-                        htmlFor="std-quantity"
-                        className="text-base font-semibold mb-2 block"
-                      >
-                        Quantity
-                      </Label>
-                      <Select
-                        value={standardQuantity.toString()}
-                        onValueChange={(val) =>
-                          setStandardQuantity(Number(val))
-                        }
-                      >
-                        <SelectTrigger
-                          id="std-quantity"
-                          className={cn(
-                            standardQuantity &&
-                              "bg-primary/10 border-primary/30",
-                          )}
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background">
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((q) => (
-                            <SelectItem key={q} value={q.toString()}>
-                              {q}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                )}
+              
+               
               </div>
             </div>
           </div>
@@ -1171,7 +1148,7 @@ console.log("VARIANT RESULT:", variantRes);
                   className="w-full text-lg mt-6"
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                   {editMode ? "Update Cart" : "Add to Cart"}
+                  {editMode ? "Update Cart" : "Add to Cart"}
                 </Button>
               </div>
             )}
@@ -1312,7 +1289,7 @@ console.log("VARIANT RESULT:", variantRes);
       <section className="bg-background py-16">
         <div className="container mx-auto px-4 max-w-5xl">
           <Tabs defaultValue="description" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 mb-8 h-auto">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 mb-8 h-auto">
               <TabsTrigger value="description" ref={descriptionTabRef}>
                 Description
               </TabsTrigger>

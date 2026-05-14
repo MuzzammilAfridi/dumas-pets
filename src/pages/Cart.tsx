@@ -320,17 +320,28 @@ useEffect(() => {
   
 
   const subtotal = displayItems.reduce(
-    (sum, item) => sum + getItemTotal(item),
-    0,
-  );
-  const deliveryCharge = subtotal > 100 ? 0 : 5.99;
-  const subscriptionDiscount = displayItems
-    .filter((i) => i.purchaseType === "subscription")
-    .reduce((sum, item) => {
-      const dayCount = getDeliveryDayCount(item);
-      return sum + item.price * 0.16 * item.quantity * (dayCount || 1);
-    }, 0);
-  const grandTotal = subtotal + deliveryCharge;
+  (sum, item) => sum + getItemTotal(item),
+  0,
+);
+
+const deliveryCharge = subtotal > 100 ? 0 : 5.99;
+
+const subscriptionDiscount = displayItems
+  .filter((i) => i.purchaseType === "subscription")
+  .reduce((sum, item) => {
+    const dayCount = getDeliveryDayCount(item);
+
+    const originalPrice =
+      item.price * item.quantity * (dayCount || 1);
+
+    const discountedPrice =
+      item.price * 0.84 * item.quantity * (dayCount || 1);
+
+    return sum + (originalPrice - discountedPrice);
+  }, 0);
+
+// ✅ subtotal already discounted
+const grandTotal = subtotal + deliveryCharge;
 
  const handleQuantityChange = (
   productId: string,
@@ -794,7 +805,7 @@ if (cartItems.length === 0){
   : "/placeholder.png"
                       }
                       alt={item.name}
-                      className="w-full sm:w-32 h-32 object-cover rounded-xl"
+                      className="w-full sm:w-32 h-42 md:h-32 object-cover rounded-xl"
                     />
 
                     {/* Details */}

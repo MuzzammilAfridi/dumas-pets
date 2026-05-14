@@ -30,29 +30,32 @@ FLOW:
 /* ====================================================
 HELPER → Generate GPV Ratio String
 ==================================================== */
-const generateGpvRatio = ({
-  grainPercentage,
-  meatPercentage,
-}) => {
+// const generateGpvRatio = ({
+//   grainPercentage,
+//   meatPercentage,
+// }) => {
 
-  // ERPNext currently supports ONLY these values
+//   // ERPNext currently supports ONLY these values
 
-  if (grainPercentage === 15 && meatPercentage === 80) {
-    return "15% Grain 80% Protein 5gm-Veg/100gm ";
-  }
+//   if (grainPercentage === 15 && meatPercentage === 80) {
+//     return "15% Grain 80% Protein 5gm-Veg/100gm";
+//   }
 
-  if (grainPercentage === 30 && meatPercentage === 65) {
-    return "30% Grain 65% Protein 5gm-Veg/100gm ";
-  }
+//   if (grainPercentage === 30 && meatPercentage === 65) {
+//     return "30% Grain 65% Protein 5gm-Veg/100gm";
+//   }
 
-  if (grainPercentage === 50 && meatPercentage === 45) {
-    return "50% Grain 45% Protein 5gm-Veg/100gm ";
-  }
+//   if (grainPercentage === 50 && meatPercentage === 45) {
+//     return "50% Grain 45% Protein 5gm-Veg/100gm";
+//   }
 
-  throw new Error(
-    "This Grain/Protein combination is not configured in ERPNext"
-  );
-};
+//   throw new Error(
+//     "This Grain/Protein combination is not configured in ERPNext"
+//   );
+// };
+
+const normalize = (val) =>
+  String(val).trim().toLowerCase();
 
 /* ====================================================
 HELPER → Compare Variant Attributes
@@ -60,28 +63,71 @@ HELPER → Compare Variant Attributes
 const isMatchingVariant = (
   variantAttributes,
   quantity,
+  foodType,
   grain,
-  gpvRatio
+  grainPercentage,
+  meatPercentage
 ) => {
   const quantityMatch = variantAttributes.find(
-    (a) =>
-      a.attribute === "Quantity" &&
-      a.attribute_value === quantity
-  );
+  (a) =>
+    normalize(a.attribute) === "quantity" &&
+    normalize(a.attribute_value) === normalize(quantity)
+);
 
-  const grainMatch = variantAttributes.find(
-    (a) =>
-      a.attribute === "Grain" &&
-      a.attribute_value === grain
-  );
+// const grainMatch = variantAttributes.find(
+//   (a) =>
+//     normalize(a.attribute) === "grain" &&
+//     normalize(a.attribute_value) === normalize(grain)
+// );
 
-  const gpvMatch = variantAttributes.find(
-    (a) =>
-      a.attribute === "G P V Ratio" &&
-      a.attribute_value === gpvRatio
-  );
+// const gpvMatch = variantAttributes.find(
+//   (a) =>
+//     normalize(a.attribute) === "g p v ratio" &&
+//     normalize(a.attribute_value) === normalize(gpvRatio)
+// );
 
-  return quantityMatch && grainMatch && gpvMatch;
+const foodTypeMatch = variantAttributes.find(
+  (a) =>
+    normalize(a.attribute) === "food type" &&
+    normalize(a.attribute_value) === normalize(foodType)
+);
+
+const grainTypeMatch = variantAttributes.find(
+  (a) =>
+    normalize(a.attribute) === "grain type" &&
+    normalize(a.attribute_value) === normalize(grain)
+);
+
+const grainPercentageMatch = variantAttributes.find(
+  (a) =>
+    normalize(a.attribute) === "grain percentage" &&
+    normalize(a.attribute_value) === normalize(
+      String(grainPercentage)
+    )
+);
+
+const meatPercentageMatch = variantAttributes.find(
+  (a) =>
+    normalize(a.attribute) === "meat percentage" &&
+    normalize(a.attribute_value) === normalize(
+      String(meatPercentage)
+    )
+);
+
+console.log(
+  "ATTRIBUTE VALUES:",
+  variantAttributes.map((a) => ({
+    attribute: a.attribute,
+    value: a.attribute_value,
+  }))
+);
+  return (
+  quantityMatch &&
+  foodTypeMatch &&
+  grainTypeMatch &&
+  grainPercentageMatch &&
+  meatPercentageMatch
+);
 };
 
 /* ====================================================
@@ -93,6 +139,7 @@ export const findOrCreateVariant = async ({
   grain,
   grainPercentage,
   meatPercentage,
+  foodType
 }) => {
   try {
     /*
@@ -101,13 +148,13 @@ export const findOrCreateVariant = async ({
     ====================================================
     */
 
-    const gpvRatio = generateGpvRatio({
-      grainPercentage,
-      meatPercentage,
-      quantity,
-    });
+    // const gpvRatio = generateGpvRatio({
+    //   grainPercentage,
+    //   meatPercentage,
+    //   quantity,
+    // });
 
-    console.log("GENERATED GPV RATIO:", gpvRatio);
+    // console.log("GENERATED GPV RATIO:", gpvRatio);
 
     /*
     ====================================================
@@ -116,7 +163,7 @@ export const findOrCreateVariant = async ({
     */
 
 const variantsRes = await axios.get(
-  `${API}/api/resource/Item?fields=["*"]`,
+  `${API}/api/resource/Item?fields=["name","item_code","variant_of"]&filters=[["variant_of","=","${templateItem}"]]&limit_page_length=500`,
   authHeaders
 );
 
@@ -147,12 +194,24 @@ console.log("VARIANT ITEM CODE:", variant.item_code);
 
   console.log("FULL VARIANT DOC:", variantDoc);
 
-  const matched = isMatchingVariant(
-    variantDoc.attributes || [],
-    quantity,
-    grain,
-    gpvRatio
-  );
+ const matched = isMatchingVariant(
+  variantDoc.attributes || [],
+  quantity,
+  foodType,
+  grain,
+  grainPercentage,
+  meatPercentage
+);
+
+ console.log(
+  "MATCH CHECK:",
+  variantDoc.attributes,
+  quantity,
+  foodType,
+  grain,
+  grainPercentage,
+  meatPercentage
+);
 
   if (matched) {
     existingVariant = variantDoc;
@@ -195,21 +254,31 @@ console.log("VARIANT ITEM CODE:", variant.item_code);
       stock_uom: "Gram",
 
       attributes: [
-        {
-          attribute: "Quantity",
-          attribute_value: quantity,
-        },
+  {
+    attribute: "Quantity",
+    attribute_value: quantity,
+  },
 
-        {
-          attribute: "Grain",
-          attribute_value: grain,
-        },
+  {
+    attribute: "Food Type",
+    attribute_value: foodType,
+  },
 
-        {
-          attribute: "G P V Ratio",
-          attribute_value: gpvRatio,
-        },
-      ],
+  {
+    attribute: "Grain Type",
+    attribute_value: grain,
+  },
+
+  {
+    attribute: "Grain Percentage",
+    attribute_value: String(grainPercentage),
+  },
+
+  {
+    attribute: "Meat Percentage",
+    attribute_value: String(meatPercentage),
+  },
+]
     };
 
     console.log("CREATING VARIANT:", variantPayload);
@@ -236,8 +305,41 @@ console.log("VARIANT ITEM CODE:", variant.item_code);
       existing: false,
     };
   } catch (err) {
-    console.error("VARIANT ERROR:", err);
+  console.error("VARIANT ERROR:", err);
 
-    throw err;
+  const exception =
+    err?.response?.data?.exception || "";
+
+  if (exception.includes("ItemVariantExistsError")) {
+
+    const match = exception.match(
+      /Item variant (.*?) exists/
+    );
+
+    if (match && match[1]) {
+
+      const existingItemCode = match[1];
+
+      console.log(
+        "ERPNext existing variant:",
+        existingItemCode
+      );
+
+      return {
+        item_code: existingItemCode,
+        existing: true,
+      };
+    }
   }
+
+  throw err;
+}
+};
+
+
+export const getItemAttribute = async (attributeName) => {
+  return axios.get(
+    `${API}/api/resource/Item Attribute/${encodeURIComponent(attributeName)}`,
+    authHeaders
+  );
 };
