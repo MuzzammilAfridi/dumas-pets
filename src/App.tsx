@@ -30,6 +30,7 @@ import MyOrders from "./pages/customer/MyOrders";
 import PetProfile from "./pages/customer/PetProfile";
 import ProfileManagement from "./pages/customer/ProfileManagement";
 import AddressManagement from "./pages/customer/AddressManagement";
+import RateCard from "./pages/customer/RateCard";
 import NutritionPlan from "./pages/NutritionPlan";
 import NotFound from "./pages/NotFound";
 
@@ -74,6 +75,7 @@ const App = () => (
                 <Route path="pets" element={<PetProfile />} />
                 <Route path="profile" element={<ProfileManagement />} />
                 <Route path="addresses" element={<AddressManagement />} />
+                <Route path="rate-card" element={<RateCard />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

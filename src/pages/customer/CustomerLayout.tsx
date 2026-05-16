@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, ShoppingBag, PawPrint, User, MapPin, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, PawPrint, User, MapPin, LogOut, Menu, X, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +11,7 @@ const navItems = [
   { label: 'Pet Profiles', path: '/dashboard/pets', icon: PawPrint },
   { label: 'My Profile', path: '/dashboard/profile', icon: User },
   { label: 'Addresses', path: '/dashboard/addresses', icon: MapPin },
+  { label: 'Rate Card', path: '/dashboard/rate-card', icon: ListChecks },
 ];
 
 const CustomerLayout = () => {
