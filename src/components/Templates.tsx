@@ -87,9 +87,12 @@ const Templates = () => {
                         src={
                           item.image
                             ? `${BASE_URL}${item.image}`
-                            : "/placeholder.png"
+                            : "https://placehold.co/600x400?text=No+Image"
                         }
                         alt={item.item_name}
+                        onError={(e) => {
+                          e.currentTarget.src = "https://placehold.co/600x400?text=No+Image";
+                        }}
                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                       />
                     </div>

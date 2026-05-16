@@ -4,6 +4,10 @@ const API = import.meta.env.VITE_API_URL;
 const API_KEY = import.meta.env.VITE_FRAPPE_API_KEY;
 const API_SECRET = import.meta.env.VITE_FRAPPE_API_SECRET;
 
+console.log(API_KEY);
+console.log(API_SECRET);
+console.log(`token ${API_KEY}:${API_SECRET}`);
+
 const authHeaders = {
   headers: {
     Authorization: `token ${API_KEY}:${API_SECRET}`,

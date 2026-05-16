@@ -40,7 +40,7 @@ export const useProducts = () => {
 
   image: item.image
     ? `${BASE_URL}${item.image}`
-    : "https://via.placeholder.com/300",
+    : "https://placehold.co/600x400?text=No+Image",
 
   hasVariants: item.has_variants,
 

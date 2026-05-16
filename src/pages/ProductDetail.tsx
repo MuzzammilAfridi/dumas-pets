@@ -67,6 +67,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [meatPercentage, setMeatPercentage] = useState<number>(80);
   const [grainPercentage, setGrainPercentage] = useState<number>(15);
+  const [vegetableOptions, setVegetableOptions] = useState([]);
 
   const BASE_URL = "https://dumas.frappe.cloud";
   useEffect(() => {
@@ -139,12 +140,14 @@ const ProductDetail = () => {
           quantityRes,
           grainPercentageRes,
           meatPercentageRes,
+           vegetableRes,
         ] = await Promise.all([
           getItemAttribute("Food Type"),
           getItemAttribute("Grain Type"),
           getItemAttribute("Quantity"),
           getItemAttribute("Grain Percentage"),
           getItemAttribute("Meat Percentage"),
+          getItemAttribute("Vegetables"),
         ]);
 
         setFoodTypeOptions(foodTypeRes.data.data.item_attribute_values);
@@ -152,6 +155,9 @@ const ProductDetail = () => {
         setGrainTypeOptions(grainTypeRes.data.data.item_attribute_values);
 
         setQuantityOptions(quantityRes.data.data.item_attribute_values);
+        setVegetableOptions(
+  vegetableRes.data.data.item_attribute_values
+);
 
        setGrainPercentageOptions(
   [...grainPercentageRes.data.data.item_attribute_values].sort(
@@ -251,12 +257,18 @@ setMeatPercentageOptions(
   const toggleVegetable = (veg: string) => {
     setSelectedVegetables((prev) => {
       // ✅ If user selects "No veg"
-      if (veg === "no_veg") {
-        return prev.includes("no_veg") ? [] : ["no_veg"];
-      }
+     if (veg === "No Vegetables") {
+  return prev.includes("No Vegetables")
+    ? []
+    : ["No Vegetables"];
+}
+
+let updated = prev.filter(
+  (v) => v !== "No Vegetables",
+);
 
       // ✅ If selecting other veg → remove "no_veg"
-      let updated = prev.filter((v) => v !== "no_veg");
+ 
 
       // Toggle logic
       if (updated.includes(veg)) {
@@ -611,8 +623,10 @@ setMeatPercentageOptions(
                 src={
                   product.image
                     ? `${BASE_URL}${product.image}`
-                    : "/placeholder.png"
+                   : "https://placehold.co/600x400?text=No+Image"
                 }
+
+
                 alt={product.item_name}
                 className="w-full h-full object-cover rounded-2xl shadow-lg"
               />
@@ -731,15 +745,15 @@ setMeatPercentageOptions(
                         </Label>
 
                         <div className="space-y-3">
-                          {VEGETABLE_OPTIONS.map((veg) => {
-                            const isSelected = selectedVegetables.includes(
-                              veg.value,
-                            );
+                          {vegetableOptions.map((veg) => {
+                           const isSelected = selectedVegetables.includes(
+  veg.attribute_value,
+);
 
                             return (
                               <div
-                                key={veg.value}
-                                onClick={() => toggleVegetable(veg.value)}
+                                key={veg.attribute_value}
+                                onClick={() => toggleVegetable(veg.attribute_value)}
                                 className={cn(
                                   "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
                                   isSelected
@@ -767,7 +781,7 @@ setMeatPercentageOptions(
                                     isSelected && "text-primary",
                                   )}
                                 >
-                                  {veg.label}
+                                 {veg.attribute_value}
                                 </span>
                               </div>
                             );

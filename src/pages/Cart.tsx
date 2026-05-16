@@ -567,7 +567,7 @@ const handlePlaceOrder = async () => {
           toast({
             title: "Verification Failed",
             description:
-              "Payment verification failed",
+              `Payment verification failed ${err?.message || ""}`,
             variant: "destructive",
           });
 
@@ -699,13 +699,24 @@ const handlePlaceOrder = async () => {
                 <span className="text-primary">₹{finalGrandTotal.toFixed(2)}</span>
               </div>
             </div>
-            <Button
-              size="xl"
-              className="w-full"
-              onClick={() => navigate("/shop")}
-            >
-              Continue Shopping
-            </Button>
+          <div className="space-y-3">
+  <Button
+    size="xl"
+    className="w-full"
+    onClick={() => navigate("/dashboard/orders")}
+  >
+    View My Orders
+  </Button>
+
+  <Button
+    size="xl"
+    variant="outline"
+    className="w-full"
+    onClick={() => navigate("/shop")}
+  >
+    Continue Shopping
+  </Button>
+</div>
           </Card>
         </div>
       </div>
@@ -797,14 +808,17 @@ if (cartItems.length === 0){
                     {/* Image */}
                     <img
                       // src={item.image || buffaloMeal}
-                      src={
-                   item.image?.startsWith("http")
-  ? item.image
-  : item.image
-  ? `${BASE_URL}${item.image}`
-  : "/placeholder.png"
-                      }
+                   src={
+  item.image?.startsWith("http")
+    ? item.image
+    : item.image
+    ? `${BASE_URL}${item.image}`
+    : "https://placehold.co/600x400?text=No+Image"
+}
                       alt={item.name}
+                      onError={(e) => {
+                          e.currentTarget.src = "https://placehold.co/600x400?text=No+Image";
+                        }}
                       className="w-full sm:w-32 h-42 md:h-32 object-cover rounded-xl"
                     />
 

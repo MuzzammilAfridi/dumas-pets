@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { findOrCreateVariant } from "@/services/variantService";
 
 interface Item {
   item_code: string;
@@ -16,8 +18,10 @@ interface Item {
 const TrendingItems = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const user = localStorage.getItem("dumas_user");
 
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   const BASE_URL = "https://dumas.frappe.cloud";
 
@@ -39,6 +43,44 @@ const TrendingItems = () => {
     }
   };
 
+
+const handleQuickAddToCart = async (
+  e: React.MouseEvent,
+  item: Item
+) => {
+  e.stopPropagation();
+
+  try {
+    const newCartItem = {
+      productId: item.item_code,
+
+      templateItem: item.item_code,
+
+      name: item.item_name,
+
+      price: Number((item as any).standard_rate || 100),
+
+      category: item.item_group,
+
+      quantity: 1,
+
+      image: item.image,
+
+      purchaseType: "onetime",
+
+      subscription: {
+        frequency: "once",
+      },
+    };
+
+    addToCart(newCartItem);
+
+    navigate("/cart");
+  } catch (error) {
+    console.error("Quick add failed", error);
+  }
+};
+
   console.log("items in trending items", items);
   
 
@@ -47,13 +89,15 @@ const TrendingItems = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
           <div>
-            <h2 className="text-4xl font-black text-primary">
-              Trending Items
-            </h2>
+           <h2 className="text-4xl font-black text-primary">
+  {user ? "Order Again" : "Trending Items"}
+</h2>
 
-            <p className="text-muted-foreground mt-2">
-              Most popular fresh meals for your pets
-            </p>
+<p className="text-muted-foreground mt-2">
+  {user
+    ? "Your recently ordered meals"
+    : "Most popular fresh meals for your pets"}
+</p>
           </div>
 
           <Button onClick={() => navigate("/shop")}>
@@ -70,10 +114,11 @@ const TrendingItems = () => {
   {items.map((item) => (
     <div
       key={item.item_code}
-     onClick={() =>
-  navigate(`/product/${encodeURIComponent(item.item_code)}`, {
-    state: { name: item.item_name },
-  })
+     onClick={(e) =>
+    handleQuickAddToCart(e, item)
+  // navigate(`/product/${encodeURIComponent(item.item_code)}`, {
+  //   state: { name: item.item_name },
+  // })
 }
       className="cursor-pointer"
     >
@@ -85,9 +130,12 @@ const TrendingItems = () => {
                         src={
                           item.image
                             ? `${BASE_URL}${item.image}`
-                            : "/placeholder.png"
+                            :  "https://placehold.co/600x400?text=No+Image"
                         }
                         alt={item.item_name}
+                        onError={(e) => {
+                          e.currentTarget.src = "https://placehold.co/600x400?text=No+Image";
+                        }}
                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                       />
                     </div>
@@ -109,18 +157,13 @@ const TrendingItems = () => {
                       </div>
 
                       <Button
-                        className="w-full"
-                        size="lg"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                      navigate(
-  `/template/${encodeURIComponent(item.item_code)}`
-);
-                        }}
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        View Variant
-                      </Button>
+  className="w-full"
+  size="lg"
+  onClick={(e) => handleQuickAddToCart(e, item)}
+>
+  <ShoppingCart className="w-4 h-4 mr-2" />
+  Add to Cart
+</Button>
                     </CardContent>
                   </Card>
     </div>
