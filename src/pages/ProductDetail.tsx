@@ -24,7 +24,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-
   CalendarIcon,
   Check,
   Gift,
@@ -32,7 +31,6 @@ import {
   Plus,
   ShoppingCart,
   Soup,
-
   Star,
   Zap,
 } from "lucide-react";
@@ -45,8 +43,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getProductById } from "@/services/productService";
-
-
 
 const VEGETABLE_OPTIONS = [
   { label: "Carrot", value: "carrot" },
@@ -65,7 +61,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [meatPercentage, setMeatPercentage] = useState<number>(80);
+  const [meatPercentage, setMeatPercentage] = useState<number>(50);
   const [grainPercentage, setGrainPercentage] = useState<number>(15);
   const [vegetableOptions, setVegetableOptions] = useState([]);
 
@@ -76,7 +72,6 @@ const ProductDetail = () => {
         const res = await getProductById(id);
 
         setProduct(res.data.data[0]);
-       
       } catch (err) {
         console.error(err);
       } finally {
@@ -140,7 +135,7 @@ const ProductDetail = () => {
           quantityRes,
           grainPercentageRes,
           meatPercentageRes,
-           vegetableRes,
+          vegetableRes,
         ] = await Promise.all([
           getItemAttribute("Food Type"),
           getItemAttribute("Grain Type"),
@@ -155,21 +150,19 @@ const ProductDetail = () => {
         setGrainTypeOptions(grainTypeRes.data.data.item_attribute_values);
 
         setQuantityOptions(quantityRes.data.data.item_attribute_values);
-        setVegetableOptions(
-  vegetableRes.data.data.item_attribute_values
-);
+        setVegetableOptions(vegetableRes.data.data.item_attribute_values);
 
-       setGrainPercentageOptions(
-  [...grainPercentageRes.data.data.item_attribute_values].sort(
-    (a, b) => Number(a.attribute_value) - Number(b.attribute_value),
-  ),
-);
+        setGrainPercentageOptions(
+          [...grainPercentageRes.data.data.item_attribute_values].sort(
+            (a, b) => Number(a.attribute_value) - Number(b.attribute_value),
+          ),
+        );
 
-setMeatPercentageOptions(
-  [...meatPercentageRes.data.data.item_attribute_values].sort(
-    (a, b) => Number(a.attribute_value) - Number(b.attribute_value),
-  ),
-);
+        setMeatPercentageOptions(
+          [...meatPercentageRes.data.data.item_attribute_values].sort(
+            (a, b) => Number(a.attribute_value) - Number(b.attribute_value),
+          ),
+        );
       } catch (err) {
         console.error(err);
       }
@@ -195,7 +188,7 @@ setMeatPercentageOptions(
   const [grainType, setGrainType] = useState<string>("Brown Rice");
   // const [grainPercentage, setGrainPercentage] = useState<number>(0);
   const [selectedVegetables, setSelectedVegetables] = useState<string[]>([]);
-  const [quantity, setQuantity] = useState<string>("100 gm");
+  const [quantity, setQuantity] = useState<string>("250 gm");
   const [preparationInstructions, setPreparationInstructions] =
     useState<string>("");
 
@@ -257,18 +250,13 @@ setMeatPercentageOptions(
   const toggleVegetable = (veg: string) => {
     setSelectedVegetables((prev) => {
       // ✅ If user selects "No veg"
-     if (veg === "No Vegetables") {
-  return prev.includes("No Vegetables")
-    ? []
-    : ["No Vegetables"];
-}
+      if (veg === "No Vegetables") {
+        return prev.includes("No Vegetables") ? [] : ["No Vegetables"];
+      }
 
-let updated = prev.filter(
-  (v) => v !== "No Vegetables",
-);
+      let updated = prev.filter((v) => v !== "No Vegetables");
 
       // ✅ If selecting other veg → remove "no_veg"
- 
 
       // Toggle logic
       if (updated.includes(veg)) {
@@ -332,10 +320,9 @@ let updated = prev.filter(
   };
 
   const isValidPercentageCombination = () => {
-  return grainPercentage + meatPercentage <= 100;
-};
+    return grainPercentage + meatPercentage <= 100;
+  };
 
- 
   const handleAddToCart = async () => {
     const user = localStorage.getItem("dumas_user");
 
@@ -379,21 +366,18 @@ let updated = prev.filter(
     }
 
     if (!isValidPercentageCombination()) {
-  toast({
-    title: "Invalid Percentage",
-    description:
-      "Grain % and Meat % total cannot exceed 100%.",
-    variant: "destructive",
-  });
+      toast({
+        title: "Invalid Percentage",
+        description: "Grain % and Meat % total cannot exceed 100%.",
+        variant: "destructive",
+      });
 
-  return;
-}
+      return;
+    }
 
     const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
     const templateCode = product.variant_of || product.item_code;
-
-    
 
     const variantRes = await findOrCreateVariant({
       templateItem: templateCode,
@@ -403,8 +387,6 @@ let updated = prev.filter(
       meatPercentage,
       quantity,
     });
-
- 
 
     const newCartItem = {
       // productId: product.item_code,
@@ -452,8 +434,6 @@ let updated = prev.filter(
       }),
     };
 
-    
-
     if (editMode) {
       updateCartItem(cartIndex, newCartItem);
     } else {
@@ -485,19 +465,16 @@ let updated = prev.filter(
       return;
     }
 
-     if (!isValidPercentageCombination()) {
-  toast({
-    title: "Invalid Percentage",
-    description:
-      "Grain % and Meat % total cannot exceed 100%.",
-    variant: "destructive",
-  });
+    if (!isValidPercentageCombination()) {
+      toast({
+        title: "Invalid Percentage",
+        description: "Grain % and Meat % total cannot exceed 100%.",
+        variant: "destructive",
+      });
 
-  return;
-}
+      return;
+    }
     const templateCode = product.variant_of || product.item_code;
-
-  
 
     const variantRes = await findOrCreateVariant({
       templateItem: templateCode,
@@ -507,8 +484,6 @@ let updated = prev.filter(
       grainPercentage,
       meatPercentage,
     });
-
-  
 
     const newCartItem = {
       // productId: product.item_code,
@@ -551,7 +526,6 @@ let updated = prev.filter(
         },
       }),
     };
-
 
     if (editMode) {
       updateCartItem(cartIndex, newCartItem);
@@ -623,18 +597,16 @@ let updated = prev.filter(
                 src={
                   product.image
                     ? `${BASE_URL}${product.image}`
-                   : "https://placehold.co/600x400?text=No+Image"
+                    : "https://placehold.co/600x400?text=No+Image"
                 }
-
-
                 alt={product.item_name}
                 className="w-full h-full object-cover rounded-2xl shadow-lg"
               />
             </div>
 
             {/* Right Column - Product Details */}
-            <div className="flex flex-col justify-between py-4">
-              <div className="space-y-6">
+            <div className="flex flex-col justify-between   py-4">
+              <div className="space-y-6 ">
                 {/* Product Name */}
                 <h1 className="text-4xl font-bold">{product.item_name}</h1>
 
@@ -668,128 +640,9 @@ let updated = prev.filter(
 
                 {/* PET FOOD Advanced Customization */}
                 {isPetFood && (
+                  <div className="">
                   <div className="space-y-6">
                     {/* Two Column Layout for Meat/Grain and Vegetables */}
-                    <div className="grid md:grid-cols-2 gap-8">
-                      {/* Left: Meat Type and Grain Type */}
-                      <div className="space-y-5">
-                        <div>
-                          <Label
-                            htmlFor="meat-type"
-                            className="text-base font-semibold mb-2 block"
-                          >
-                            Food Type *
-                          </Label>
-                          <Select value={foodType} onValueChange={setFoodType}>
-                            <SelectTrigger
-                              id="meat-type"
-                              className={cn(
-                                foodType && "bg-primary/10 border-primary/30",
-                              )}
-                            >
-                              <SelectValue placeholder="Default" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background">
-                              {foodTypeOptions.map((item) => (
-                                <SelectItem
-                                  key={item.attribute_value}
-                                  value={item.attribute_value}
-                                >
-                                  {item.attribute_value}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label
-                            htmlFor="grain-type"
-                            className="text-base font-semibold mb-2 block"
-                          >
-                            Grain Type *
-                          </Label>
-                          <Select
-                            value={grainType}
-                            onValueChange={(val) => {
-                              setGrainType(val);
-                              if (val === "No grain") setGrainPercentage(0);
-                            }}
-                          >
-                            <SelectTrigger
-                              id="grain-type"
-                              className={cn(
-                                grainType && "bg-primary/10 border-primary/30",
-                              )}
-                            >
-                              <SelectValue placeholder="Select grain type" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background">
-                              {grainTypeOptions.map((item) => (
-                                <SelectItem
-                                  key={item.attribute_value}
-                                  value={item.attribute_value}
-                                >
-                                  {item.attribute_value}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      {/* Right: Vegetables Radio Selection */}
-                      <div>
-                        <Label className="text-base font-semibold mb-3 block">
-                          Vegetables
-                        </Label>
-
-                        <div className="space-y-3">
-                          {vegetableOptions.map((veg) => {
-                           const isSelected = selectedVegetables.includes(
-  veg.attribute_value,
-);
-
-                            return (
-                              <div
-                                key={veg.attribute_value}
-                                onClick={() => toggleVegetable(veg.attribute_value)}
-                                className={cn(
-                                  "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
-                                  isSelected
-                                    ? "border-primary bg-primary/10"
-                                    : "border-border hover:bg-muted/50",
-                                )}
-                              >
-                                {/* Custom Square Box */}
-                                <div
-                                  className={cn(
-                                    "h-6 w-6 min-w-[24px] border-2 flex items-center justify-center rounded",
-                                    isSelected
-                                      ? "bg-primary border-primary"
-                                      : "bg-white border-gray-400",
-                                  )}
-                                >
-                                  {isSelected && (
-                                    <Check className="h-4 w-4 text-white stroke-[3]" />
-                                  )}
-                                </div>
-
-                                <span
-                                  className={cn(
-                                    "text-sm font-medium",
-                                    isSelected && "text-primary",
-                                  )}
-                                >
-                                 {veg.attribute_value}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Quantity - Full Width */}
                     <div>
                       <Label
@@ -820,79 +673,146 @@ let updated = prev.filter(
                       </Select>
                     </div>
 
-                    <div>
-                      <Label className="text-base font-semibold mb-2 block">
-                        Grain Percentage (%)
-                      </Label>
 
-                      <Select
-                        value={grainPercentage.toString()}
-                       onValueChange={(val) => {
-  setGrainPercentage(Number(val));
-}}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select grain %" />
-                        </SelectTrigger>
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                      {/* Left: Meat Type and Grain Type */}
+  <div className="md:col-span-2">
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ">
 
-                        <SelectContent>
-                          {grainPercentageOptions.map((item) => (
-                            <SelectItem
-                              key={item.attribute_value}
-                              value={item.attribute_value}
+
+
+                      <div className="">
+                        <div>
+                          <Label
+                            htmlFor="meat-type"
+                            className="text-base font-semibold mb-2 block"
+                          >
+                            Food Type *
+                          </Label>
+                          <Select value={foodType} onValueChange={setFoodType}>
+                            <SelectTrigger
+                              id="meat-type"
+                              className={cn(
+                                foodType && "bg-primary/10 border-primary/30",
+                              )}
                             >
-                              {item.attribute_value}%
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                              <SelectValue placeholder="Default" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background">
+                              {foodTypeOptions.map((item) => (
+                                <SelectItem
+                                  key={item.attribute_value}
+                                  value={item.attribute_value}
+                                >
+                                  {item.attribute_value}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
 
-                    <div>
-                      <Label className="text-base font-semibold mb-2 block">
-                        Meat Percentage (%)
-                      </Label>
+                      <div>
+                        <Label
+                          htmlFor="grain-type"
+                          className="text-base font-semibold mb-2 block"
+                        >
+                          Grain Type *
+                        </Label>
+                        <Select
+                          value={grainType}
+                          onValueChange={(val) => {
+                            setGrainType(val);
+                            if (val === "No grain") setGrainPercentage(0);
+                          }}
+                        >
+                          <SelectTrigger
+                            id="grain-type"
+                            className={cn(
+                              grainType && "bg-primary/10 border-primary/30",
+                            )}
+                          >
+                            <SelectValue placeholder="Select grain type" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background">
+                            {grainTypeOptions.map((item) => (
+                              <SelectItem
+                                key={item.attribute_value}
+                                value={item.attribute_value}
+                              >
+                                {item.attribute_value}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                      {/* <Select
+                        <div>
+                        <Label className="text-base font-semibold mb-2 block">
+                          Grain Percentage (%)
+                        </Label>
+
+                        <Select
+                          value={grainPercentage.toString()}
+                          onValueChange={(val) => {
+                            setGrainPercentage(Number(val));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select grain %" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {grainPercentageOptions.map((item) => (
+                              <SelectItem
+                                key={item.attribute_value}
+                                value={item.attribute_value}
+                              >
+                                {item.attribute_value}%
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-base font-semibold mb-2 block">
+                          Meat Percentage (%)
+                        </Label>
+
+                        {/* <Select
                         value={meatPercentage.toString()}
                         onValueChange={(val) => setMeatPercentage(Number(val))}
                       > */}
-                      <Select
-  value={meatPercentage.toString()}
-  onValueChange={(val) => setMeatPercentage(Number(val))}
->
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select meat %" />
-                        </SelectTrigger>
+                        <Select
+                          value={meatPercentage.toString()}
+                          onValueChange={(val) =>
+                            setMeatPercentage(Number(val))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select meat %" />
+                          </SelectTrigger>
 
-                        <SelectContent>
-                          {meatPercentageOptions.map((item) => (
-                            <SelectItem
-                              key={item.attribute_value}
-                              value={item.attribute_value}
-                            >
-                              {item.attribute_value}%
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-base font-semibold mb-2 block">
-                        GPV Ratio (Grain : Protein : Veg)
-                      </Label>
-
-                      <div className="p-3 rounded-lg border bg-muted">
-                        <p className="text-sm font-semibold">
-                          {gpvRatio || "0-0-100"}
-                        </p>
+                          <SelectContent>
+                            {meatPercentageOptions.map((item) => (
+                              <SelectItem
+                                key={item.attribute_value}
+                                value={item.attribute_value}
+                              >
+                                {item.attribute_value}%
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
 
-                    {/* ✅ Proper Working Skip Soup Checkbox */}
+                    
+</div>
+    {/* ✅ Proper Working Skip Soup Checkbox */}
                     {/* 🍲 Soup Add-on Section */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 md:mt-5">
                       <Label className="text-base font-semibold block">
                         <Soup className="inline-block mr-2" />
                         Soup Add-on
@@ -981,6 +901,80 @@ let updated = prev.filter(
                         </div>
                       )}
                     </div>
+</div>
+                         {/* Right: Vegetables Radio Selection */}
+                    <div className=" ">
+                      <Label className="text-base font-semibold mb-3 block">
+                        Vegetables
+                      </Label>
+
+                      <div className="space-y-3">
+                        {vegetableOptions.map((veg) => {
+                          const isSelected = selectedVegetables.includes(
+                            veg.attribute_value,
+                          );
+
+                          return (
+                            <div
+                              key={veg.attribute_value}
+                              onClick={() =>
+                                toggleVegetable(veg.attribute_value)
+                              }
+                              className={cn(
+                                "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+                                isSelected
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:bg-muted/50",
+                              )}
+                            >
+                              {/* Custom Square Box */}
+                              <div
+                                className={cn(
+                                  "h-4 w-4 min-w-[18px] border-2 flex items-center justify-center rounded",
+                                  isSelected
+                                    ? "bg-primary border-primary"
+                                    : "bg-white border-gray-400",
+                                )}
+                              >
+                                {isSelected && (
+                                  <Check className="h-3 w-3 text-white stroke-[2]" />
+                                )}
+                              </div>
+
+                              <span
+                                className={cn(
+                                  "text-sm font-medium",
+                                  isSelected && "text-primary",
+                                )}
+                              >
+                                {veg.attribute_value}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+
+
+                   
+                    </div>
+
+{/* 
+                    <div>
+                      <Label className="text-base font-semibold mb-2 block">
+                        GPV Ratio (Grain : Protein : Veg)
+                      </Label>
+
+                      <div className="p-3 rounded-lg border bg-muted">
+                        <p className="text-sm font-semibold">
+                          {gpvRatio || "0-0-100"}
+                        </p>
+                      </div>
+                    </div> */}
+
+
+                  
 
                     {/* Preparation Instructions - Full Width */}
                     <div>
@@ -1005,14 +999,17 @@ let updated = prev.filter(
                       />
                     </div>
                   </div>
+                  
+                 
+                  </div>
+                  
                 )}
-
+            
               
-               
-              </div>
             </div>
           </div>
         </div>
+          </div>
       </section>
 
       {/* Purchase Options - Orange Background */}

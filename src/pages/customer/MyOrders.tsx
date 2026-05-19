@@ -10,6 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Package, RefreshCw, Eye } from "lucide-react";
+import {
+cancelOrderWithDependencies,
+
+} from "@/services/salesOrderService";
+
 
 import { useOrders } from "@/hooks/useOrders";
 
@@ -18,6 +23,13 @@ const statusSteps = ["Pending", "Processing", "Delivered"];
 const MyOrders = () => {
   const { orders, loading } = useOrders();
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [cancelLoadingId, setCancelLoadingId] = useState<string | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+const ORDERS_PER_PAGE = 5;
+
+
   const { toast } = useToast();
 
 
@@ -113,6 +125,20 @@ status: mapERPStatus(o),
     o.payment_schedule?.[0]?.due_date || "",
 }));
 
+const totalPages = Math.ceil(
+formattedOrders.length / ORDERS_PER_PAGE
+);
+
+const startIndex =
+(currentPage - 1) * ORDERS_PER_PAGE;
+
+const paginatedOrders =
+formattedOrders.slice(
+startIndex,
+startIndex + ORDERS_PER_PAGE
+);
+
+
   if (loading) {
     return (
       <Card>
@@ -137,7 +163,8 @@ status: mapERPStatus(o),
           </CardContent>
         </Card>
       ) : (
-        formattedOrders.map((order) => (
+      paginatedOrders.map((order) => (
+
           <Card key={order.id}>
             <CardContent className="p-4">
               {/* Top Section */}
@@ -162,7 +189,9 @@ status: mapERPStatus(o),
               </div>
 
               {/* Status Progress */}
-              {order.status !== "Cancelled" && (
+             {order.status !== "Cancelled" &&
+order.status !== "Delivered" && (
+
                 <div className="mt-4 flex items-center gap-1">
                   {statusSteps.map((step, i) => {
                     const currentIdx =
@@ -210,34 +239,125 @@ status: mapERPStatus(o),
               )}
 
               {/* Buttons */}
-              <div className="mt-3 flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedOrder(order)}
-                >
-                  <Eye className="w-3 h-3 mr-1" />
-                  Details
-                </Button>
+                            <div className="mt-3 flex gap-2">
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={() => setSelectedOrder(order)}
+  >
+    <Eye className="w-3 h-3 mr-1" />
+    Details
+  </Button>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    toast({
-                      title: "Re-ordered!",
-                      description: `Items from ${order.id} added to cart.`,
-                    })
-                  }
-                >
-                  <RefreshCw className="w-3 h-3 mr-1" />
-                  Re-order
-                </Button>
-              </div>
+<Button
+variant="outline"
+size="sm"
+onClick={() =>
+toast({
+title: "Re-ordered!",
+description: `Items from ${order.id} added to cart.`,
+})
+}
+
+>
+
+
+<RefreshCw className="w-3 h-3 mr-1" />
+
+Re-order
+
+
+  </Button>
+
+{order.status !== "Cancelled" &&
+order.status !== "Delivered" && (
+
+<Button
+variant="destructive"
+size="sm"
+disabled={cancelLoadingId === order.id}
+onClick={async () => {
+try {
+
+
+  setCancelLoadingId(order.id);
+
+  await cancelOrderWithDependencies(order.id);
+
+  toast({
+    title: "Order Cancelled",
+    description: `${order.id} cancelled successfully`,
+  });
+
+  window.location.reload();
+
+} catch (err) {
+  console.error(err);
+
+  toast({
+    title: "Cancel Failed",
+    description: `${err.message}`,
+    variant: "destructive",
+  });
+
+} finally {
+  setCancelLoadingId(null);
+}
+
+
+}}
+
+>
+
+{cancelLoadingId === order.id
+? "Cancelling..."
+: "Cancel Order"} </Button>
+
+
+
+)}
+
+</div>
             </CardContent>
           </Card>
         ))
       )}
+
+      {totalPages > 1 && (
+
+  <div className="flex justify-center items-center gap-2 mt-6">
+
+
+<Button
+  variant="outline"
+  size="sm"
+  disabled={currentPage === 1}
+  onClick={() =>
+    setCurrentPage((prev) => prev - 1)
+  }
+>
+  Previous
+</Button>
+
+<div className="text-sm font-medium">
+  Page <span className="font-bold">{currentPage}</span> of {totalPages}
+</div>
+
+<Button
+  variant="outline"
+  size="sm"
+  disabled={currentPage === totalPages}
+  onClick={() =>
+    setCurrentPage((prev) => prev + 1)
+  }
+>
+  Next
+</Button>
+
+
+  </div>
+)}
+
 
       {/* Details Modal */}
       <Dialog
