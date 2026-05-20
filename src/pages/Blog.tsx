@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import { Link } from "react-router-dom";
 import { Calendar, User } from "lucide-react";
 import nutritionDog from "@/assets/nutrition-dog.jpg";
 import heroDog from "@/assets/hero-dog.jpg";
@@ -65,6 +66,7 @@ const Blog = () => {
           <div className="grid md:grid-cols-2 gap-8">
             {blogPosts.map((post) => (
               <article key={post.id} className="bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                <Link to={`/blog/${post.id}`}>
                 <img 
                   src={post.image} 
                   alt={post.title}
@@ -91,6 +93,7 @@ const Blog = () => {
                     </span>
                   </div>
                 </div>
+                </Link>
               </article>
             ))}
           </div>
