@@ -93,6 +93,7 @@ const Blog = () => {
                     </span>
                   </div>
                 </div>
+                </Link>
               </article>
             ))}
           </div>
