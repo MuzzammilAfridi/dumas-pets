@@ -466,8 +466,20 @@ const EventDetails = () => {
                     <Label htmlFor="msg">Message (optional)</Label>
                     <Textarea id="msg" placeholder="Anything you'd like us to know" className="rounded-xl" />
                   </div>
-                  <Button type="submit" size="lg" className="w-full rounded-2xl">
-                    Reserve My Spot
+                  <Button
+                    type="submit"
+                    size="lg"
+                    variant="default"
+                    disabled={submittingRegister}
+                    className="w-full rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    {submittingRegister ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" /> Reserving...
+                      </>
+                    ) : (
+                      "Reserve My Spot"
+                    )}
                   </Button>
                 </form>
               </CardContent>
