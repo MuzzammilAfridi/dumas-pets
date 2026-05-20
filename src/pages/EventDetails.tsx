@@ -216,7 +216,12 @@ const EventDetails = () => {
               <span className="flex items-center gap-2"><Clock className="h-4 w-4" />{event.time}</span>
               <span className="flex items-center gap-2"><MapPin className="h-4 w-4" />{event.location}</span>
             </div>
-            <Button size="lg" variant="hero" className="mt-8 rounded-2xl" asChild>
+            <Button
+              size="lg"
+              variant="default"
+              asChild
+              className="mt-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            >
               <a href="#register">Register Now</a>
             </Button>
           </div>
