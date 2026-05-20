@@ -196,7 +196,7 @@ const EventDetails = () => {
       <Navigation />
 
       {/* HERO */}
-      <section className="relative h-[60vh] min-h-[420px] sm:h-[70vh] sm:min-h-[480px] w-full overflow-hidden">
+      <section className="relative h-[60vh] min-h-[420px] sm:h-[70vh] sm:min-h-[520px] w-full overflow-visible pb-24 lg:pb-32">
         <img
           src={event.image}
           alt={event.title}
@@ -231,21 +231,21 @@ const EventDetails = () => {
           </div>
         </div>
 
-        {/* Floating glass info card (desktop only) */}
-        <div className="absolute -bottom-10 left-1/2 z-20 hidden w-[90%] max-w-4xl -translate-x-1/2 lg:block">
-          <div className="rounded-2xl border border-white/30 bg-white/20 p-6 shadow-lg backdrop-blur-md">
-            <div className="grid grid-cols-3 gap-6 text-center text-white">
+        {/* Floating glass info card */}
+        <div className="absolute bottom-[-60px] left-1/2 z-20 hidden w-[92%] max-w-5xl -translate-x-1/2 md:block animate-float-in">
+          <div className="rounded-2xl bg-white/15 backdrop-blur-xl border border-white/20 p-5 sm:p-6 shadow-2xl">
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center text-white">
               <div>
-                <p className="text-xs uppercase tracking-wider text-white/70">Date</p>
-                <p className="font-semibold">{event.date}</p>
+                <p className="text-[10px] sm:text-xs uppercase tracking-wider text-white/70">Date</p>
+                <p className="text-sm sm:text-base font-semibold">{event.date}</p>
               </div>
               <div className="border-x border-white/30">
-                <p className="text-xs uppercase tracking-wider text-white/70">Time</p>
-                <p className="font-semibold">{event.time}</p>
+                <p className="text-[10px] sm:text-xs uppercase tracking-wider text-white/70">Time</p>
+                <p className="text-sm sm:text-base font-semibold">{event.time}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wider text-white/70">Entry</p>
-                <p className="font-semibold">{event.fee}</p>
+                <p className="text-[10px] sm:text-xs uppercase tracking-wider text-white/70">Entry</p>
+                <p className="text-sm sm:text-base font-semibold">{event.fee}</p>
               </div>
             </div>
           </div>
@@ -253,7 +253,7 @@ const EventDetails = () => {
       </section>
 
       {/* QUICK INFO */}
-      <section className="bg-secondary/30 py-12 sm:py-16 lg:pt-24 lg:pb-20">
+      <section className="bg-secondary/30 pt-24 pb-12 sm:pb-16 lg:pt-32 lg:pb-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
             {[
