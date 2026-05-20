@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import { Link } from "react-router-dom";
 import { Calendar, User } from "lucide-react";
 import nutritionDog from "@/assets/nutrition-dog.jpg";
 import heroDog from "@/assets/hero-dog.jpg";
