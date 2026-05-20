@@ -587,10 +587,8 @@ const EventDetails = () => {
                 Join our community and never miss workshops, adoption drives, and wellness camps.
               </p>
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  toast.success("Subscribed! Welcome to the pack.");
-                }}
+                ref={newsletterFormRef}
+                onSubmit={handleNewsletter}
                 className="mt-6 flex flex-col gap-3 sm:flex-row"
               >
                 <Input
@@ -599,8 +597,19 @@ const EventDetails = () => {
                   placeholder="Enter your email"
                   className="rounded-xl bg-white/95 text-foreground"
                 />
-                <Button type="submit" variant="subscribe" className="rounded-xl">
-                  Subscribe
+                <Button
+                  type="submit"
+                  variant="default"
+                  disabled={submittingNewsletter}
+                  className="rounded-xl bg-background text-primary hover:bg-background/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-bold"
+                >
+                  {submittingNewsletter ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Subscribing...
+                    </>
+                  ) : (
+                    "Subscribe"
+                  )}
                 </Button>
               </form>
             </div>
