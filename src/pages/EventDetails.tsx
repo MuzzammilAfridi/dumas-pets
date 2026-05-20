@@ -33,6 +33,7 @@ import {
   Star,
   PawPrint,
   Mail,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
