@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import {
   Star,
   PawPrint,
   Mail,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -137,6 +139,10 @@ const related = [
 const EventDetails = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
+  const [submittingRegister, setSubmittingRegister] = useState(false);
+  const [submittingNewsletter, setSubmittingNewsletter] = useState(false);
+  const registerFormRef = useRef<HTMLFormElement>(null);
+  const newsletterFormRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -144,9 +150,32 @@ const EventDetails = () => {
     return () => clearTimeout(t);
   }, [id]);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success("Your spot is reserved! Check your email for details.");
+    setSubmittingRegister(true);
+    try {
+      await new Promise((r) => setTimeout(r, 800));
+      toast.success("Your spot is reserved! Check your email for details.");
+      registerFormRef.current?.reset();
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSubmittingRegister(false);
+    }
+  };
+
+  const handleNewsletter = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmittingNewsletter(true);
+    try {
+      await new Promise((r) => setTimeout(r, 600));
+      toast.success("Subscribed! Welcome to the pack.");
+      newsletterFormRef.current?.reset();
+    } catch {
+      toast.error("Subscription failed. Please try again.");
+    } finally {
+      setSubmittingNewsletter(false);
+    }
   };
 
   if (loading) {
@@ -187,7 +216,12 @@ const EventDetails = () => {
               <span className="flex items-center gap-2"><Clock className="h-4 w-4" />{event.time}</span>
               <span className="flex items-center gap-2"><MapPin className="h-4 w-4" />{event.location}</span>
             </div>
-            <Button size="lg" variant="hero" className="mt-8 rounded-2xl" asChild>
+            <Button
+              size="lg"
+              variant="default"
+              asChild
+              className="mt-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            >
               <a href="#register">Register Now</a>
             </Button>
           </div>
@@ -409,7 +443,7 @@ const EventDetails = () => {
             </div>
             <Card className="mt-10 rounded-2xl shadow-lg">
               <CardContent className="p-6 md:p-8">
-                <form onSubmit={handleRegister} className="space-y-5">
+                <form ref={registerFormRef} onSubmit={handleRegister} className="space-y-5">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
@@ -432,8 +466,20 @@ const EventDetails = () => {
                     <Label htmlFor="msg">Message (optional)</Label>
                     <Textarea id="msg" placeholder="Anything you'd like us to know" className="rounded-xl" />
                   </div>
-                  <Button type="submit" size="lg" className="w-full rounded-2xl">
-                    Reserve My Spot
+                  <Button
+                    type="submit"
+                    size="lg"
+                    variant="default"
+                    disabled={submittingRegister}
+                    className="w-full rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    {submittingRegister ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" /> Reserving...
+                      </>
+                    ) : (
+                      "Reserve My Spot"
+                    )}
                   </Button>
                 </form>
               </CardContent>
@@ -541,10 +587,8 @@ const EventDetails = () => {
                 Join our community and never miss workshops, adoption drives, and wellness camps.
               </p>
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  toast.success("Subscribed! Welcome to the pack.");
-                }}
+                ref={newsletterFormRef}
+                onSubmit={handleNewsletter}
                 className="mt-6 flex flex-col gap-3 sm:flex-row"
               >
                 <Input
@@ -553,8 +597,19 @@ const EventDetails = () => {
                   placeholder="Enter your email"
                   className="rounded-xl bg-white/95 text-foreground"
                 />
-                <Button type="submit" variant="subscribe" className="rounded-xl">
-                  Subscribe
+                <Button
+                  type="submit"
+                  variant="default"
+                  disabled={submittingNewsletter}
+                  className="rounded-xl bg-background text-primary hover:bg-background/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-bold"
+                >
+                  {submittingNewsletter ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Subscribing...
+                    </>
+                  ) : (
+                    "Subscribe"
+                  )}
                 </Button>
               </form>
             </div>
