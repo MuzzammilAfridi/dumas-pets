@@ -139,6 +139,10 @@ const related = [
 const EventDetails = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
+  const [submittingRegister, setSubmittingRegister] = useState(false);
+  const [submittingNewsletter, setSubmittingNewsletter] = useState(false);
+  const registerFormRef = useRef<HTMLFormElement>(null);
+  const newsletterFormRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -146,9 +150,32 @@ const EventDetails = () => {
     return () => clearTimeout(t);
   }, [id]);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success("Your spot is reserved! Check your email for details.");
+    setSubmittingRegister(true);
+    try {
+      await new Promise((r) => setTimeout(r, 800));
+      toast.success("Your spot is reserved! Check your email for details.");
+      registerFormRef.current?.reset();
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSubmittingRegister(false);
+    }
+  };
+
+  const handleNewsletter = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmittingNewsletter(true);
+    try {
+      await new Promise((r) => setTimeout(r, 600));
+      toast.success("Subscribed! Welcome to the pack.");
+      newsletterFormRef.current?.reset();
+    } catch {
+      toast.error("Subscription failed. Please try again.");
+    } finally {
+      setSubmittingNewsletter(false);
+    }
   };
 
   if (loading) {
