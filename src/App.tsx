@@ -33,6 +33,7 @@ import AddressManagement from "./pages/customer/AddressManagement";
 import RateCard from "./pages/customer/RateCard";
 import NutritionPlan from "./pages/NutritionPlan";
 import BlogDetails from "./pages/BlogDetails";
+import EventDetails from "./pages/EventDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
