@@ -34,6 +34,8 @@ import NutritionPlan from "./pages/NutritionPlan";
 import NotFound from "./pages/NotFound";
 import TemplateDetails from "./pages/customer/TemplateDetails";
 import { SalesProvider } from "./contexts/SalesContext";
+import RateCard from "./pages/admin/RateCard";
+import BlogDetails from "./pages/BlogDetails";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +51,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+               <Route path="/blog/:id" element={<BlogDetails />} />
               <Route path="/about" element={<AboutUs />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/blog" element={<Blog />} />
@@ -77,6 +80,7 @@ const App = () => (
                 <Route path="products" element={<ManageProducts />} />
                 <Route path="orders" element={<OrdersManagement />} />
                 <Route path="customers" element={<CustomerManagement />} />
+                <Route path="rate-card" element={<RateCard />} />
               </Route>
 
               {/* Customer Routes */}

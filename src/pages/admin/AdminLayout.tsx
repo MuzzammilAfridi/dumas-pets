@@ -10,6 +10,7 @@ const navItems = [
   { label: 'Products', path: '/admin/products', icon: Package },
   { label: 'Orders', path: '/admin/orders', icon: ShoppingBag },
   { label: 'Customers', path: '/admin/customers', icon: Users },
+  { label: 'Rate Card', path: '/admin/rate-card', icon: Package },
 ];
 
 const AdminLayout = () => {
