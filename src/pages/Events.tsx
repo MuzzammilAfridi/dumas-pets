@@ -93,8 +93,8 @@ const Events = () => {
                     </div>
                   </div>
                   <div className="flex-shrink-0">
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
-                      Register Now
+                    <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
+                      <Link to={`/events/${event.id}`}>Register Now</Link>
                     </Button>
                   </div>
                 </div>
