@@ -15,6 +15,17 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { User, Heart, Stethoscope, Sparkles, Phone, ShieldCheck, Upload } from "lucide-react";
+import {
   Calendar,
   Clock,
   MapPin,
