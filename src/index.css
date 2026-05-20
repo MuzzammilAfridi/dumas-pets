@@ -111,3 +111,19 @@ All colors MUST be HSL.
     font-weight: 700;
   }
 }
+
+@layer utilities {
+  @keyframes float-in {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+  .animate-float-in {
+    animation: float-in 0.8s ease-out both;
+  }
+}
