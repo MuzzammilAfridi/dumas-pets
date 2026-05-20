@@ -443,7 +443,7 @@ const EventDetails = () => {
             </div>
             <Card className="mt-10 rounded-2xl shadow-lg">
               <CardContent className="p-6 md:p-8">
-                <form onSubmit={handleRegister} className="space-y-5">
+                <form ref={registerFormRef} onSubmit={handleRegister} className="space-y-5">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
