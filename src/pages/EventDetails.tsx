@@ -451,49 +451,281 @@ const EventDetails = () => {
       {/* REGISTRATION */}
       <section id="register" className="bg-secondary/30 py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl">
+          <div className="mx-auto max-w-4xl">
             <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Reserve Your Spot</h2>
-              <p className="mt-3 text-sm sm:text-base text-muted-foreground">Seats are limited — register to confirm your place.</p>
+              <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                <PawPrint className="h-3.5 w-3.5" /> Pet Event Registration
+              </span>
+              <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Reserve Your Pet's Spot</h2>
+              <p className="mt-3 text-sm sm:text-base text-muted-foreground">
+                Tell us about you and your furry friend so we can tailor the experience.
+              </p>
             </div>
-            <Card className="mt-8 sm:mt-10 rounded-2xl shadow-lg">
-              <CardContent className="p-5 sm:p-6 md:p-8">
-                <form ref={registerFormRef} onSubmit={handleRegister} className="space-y-5">
-                  <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" required placeholder="Your name" className="rounded-xl" />
+
+            <Card className="mt-8 sm:mt-10 rounded-2xl border-white/30 bg-white/70 backdrop-blur-xl shadow-xl">
+              <CardContent className="p-5 sm:p-6 md:p-8 lg:p-10">
+                <form ref={registerFormRef} onSubmit={handleRegister} className="space-y-10">
+
+                  {/* SECTION 1: Pet Parent Details */}
+                  <div className="space-y-5">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-foreground">Pet Parent Details</h3>
+                        <p className="text-xs text-muted-foreground">We'll use this to confirm your registration.</p>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" required placeholder="you@example.com" className="rounded-xl" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" required placeholder="+91 98765 43210" className="rounded-xl" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="count">Number of Attendees</Label>
-                      <Input id="count" type="number" min={1} defaultValue={1} className="rounded-xl" />
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name *</Label>
+                        <Input id="name" name="name" required minLength={2} maxLength={80} placeholder="Your name" className="rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address *</Label>
+                        <Input id="email" name="email" type="email" required maxLength={120} placeholder="you@example.com" className="rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Input id="phone" name="phone" type="tel" required pattern="[0-9+\s\-]{7,15}" placeholder="+91 98765 43210" className="rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary" />
+                        <p className="text-xs text-muted-foreground">Include country code.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City *</Label>
+                        <Input id="city" name="city" required maxLength={60} placeholder="Bengaluru" className="rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="count">Number of Attendees *</Label>
+                        <Input id="count" name="count" type="number" min={1} max={10} defaultValue={1} required className="rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="msg">Message (optional)</Label>
-                    <Textarea id="msg" placeholder="Anything you'd like us to know" className="rounded-xl" />
+
+                  <Separator />
+
+                  {/* SECTION 2: Pet Details */}
+                  <div className="space-y-5">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                        <PawPrint className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-foreground">Pet Details</h3>
+                        <p className="text-xs text-muted-foreground">Tell us about your furry companion.</p>
+                      </div>
+                    </div>
+
+                    {/* Avatar upload placeholder */}
+                    <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-5">
+                      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 text-primary">
+                        <PawPrint className="h-8 w-8" />
+                      </div>
+                      <div className="flex-1 text-center sm:text-left">
+                        <Label htmlFor="petPhoto" className="cursor-pointer">
+                          <span className="inline-flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-all duration-300 hover:bg-primary/20">
+                            <Upload className="h-4 w-4" /> Upload Pet Photo (optional)
+                          </span>
+                          <Input id="petPhoto" name="petPhoto" type="file" accept="image/*" className="hidden" />
+                        </Label>
+                        <p className="mt-2 text-xs text-muted-foreground">JPG or PNG, up to 5MB.</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="petName">Pet Name *</Label>
+                        <Input id="petName" name="petName" required maxLength={40} placeholder="Bruno" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="petType">Pet Type *</Label>
+                        <Select name="petType" required defaultValue="dog">
+                          <SelectTrigger className="rounded-xl">
+                            <SelectValue placeholder="Select pet type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="dog">Dog</SelectItem>
+                            <SelectItem value="cat">Cat</SelectItem>
+                            <SelectItem value="rabbit">Rabbit</SelectItem>
+                            <SelectItem value="bird">Bird</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="petAge">Pet Age (years) *</Label>
+                        <Input id="petAge" name="petAge" type="number" min={0} step={0.1} max={40} required placeholder="2" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="petBreed">Pet Breed</Label>
+                        <Input id="petBreed" name="petBreed" maxLength={60} placeholder="Labrador" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="petGender">Pet Gender</Label>
+                        <Select name="petGender" defaultValue="male">
+                          <SelectTrigger className="rounded-xl">
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="male">Male</SelectItem>
+                            <SelectItem value="female">Female</SelectItem>
+                            <SelectItem value="unknown">Prefer not to say</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="petWeight">Pet Weight (kg)</Label>
+                        <Input id="petWeight" name="petWeight" type="number" min={0} step={0.1} max={200} placeholder="12.5" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                    </div>
                   </div>
+
+                  <Separator />
+
+                  {/* SECTION 3: Health & Dietary */}
+                  <div className="space-y-5">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                        <Stethoscope className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-foreground">Health & Dietary Information</h3>
+                        <p className="text-xs text-muted-foreground">Helps us prepare safe samples and sessions.</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="restrictions">Food Restrictions</Label>
+                        <Textarea id="restrictions" name="restrictions" maxLength={500} placeholder="Grain-free, no chicken, etc." className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="allergies">Allergies</Label>
+                        <Textarea id="allergies" name="allergies" maxLength={500} placeholder="Any known allergies" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="medical">Medical Conditions</Label>
+                        <Textarea id="medical" name="medical" maxLength={500} placeholder="Ongoing conditions or medications" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="care">Special Care Instructions</Label>
+                        <Textarea id="care" name="care" maxLength={500} placeholder="Anything our team should know" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* SECTION 4: Event Preferences */}
+                  <div className="space-y-5">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                        <Sparkles className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-foreground">Event Preferences</h3>
+                        <p className="text-xs text-muted-foreground">Let us know how you'd like to participate.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-2xl border bg-background/60 p-4 transition-all duration-300 hover:shadow-md">
+                      <div className="pr-4">
+                        <p className="text-sm font-medium text-foreground">Bringing your pet?</p>
+                        <p className="text-xs text-muted-foreground">Toggle off if you're attending solo.</p>
+                      </div>
+                      <Switch name="bringingPet" defaultChecked />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm">Interested Sessions</Label>
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {[
+                          { id: "nutrition", label: "Nutrition Session", icon: Salad },
+                          { id: "cooking", label: "Live Cooking Demo", icon: Utensils },
+                          { id: "vet", label: "Vet Consultation", icon: Stethoscope },
+                          { id: "networking", label: "Pet Networking", icon: Users },
+                          { id: "adoption", label: "Adoption Drive", icon: Heart },
+                        ].map((s) => (
+                          <label
+                            key={s.id}
+                            htmlFor={`s-${s.id}`}
+                            className="flex cursor-pointer items-center gap-3 rounded-2xl border bg-background/60 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:shadow-md has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                          >
+                            <Checkbox id={`s-${s.id}`} name="sessions" value={s.id} />
+                            <s.icon className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-medium text-foreground">{s.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* SECTION 5: Emergency Contact */}
+                  <div className="space-y-5">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                        <Phone className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-foreground">Emergency Contact</h3>
+                        <p className="text-xs text-muted-foreground">In case we need to reach someone on event day.</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="emName">Emergency Contact Name</Label>
+                        <Input id="emName" name="emName" maxLength={80} placeholder="Contact name" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="emPhone">Emergency Phone Number</Label>
+                        <Input id="emPhone" name="emPhone" type="tel" pattern="[0-9+\s\-]{7,15}" placeholder="+91 98765 43210" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* SECTION 6: Message + Consent */}
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="msg">Message (optional)</Label>
+                      <Textarea id="msg" name="msg" maxLength={500} placeholder="Anything you'd like us to know" className="rounded-xl focus-visible:ring-2 focus-visible:ring-primary" />
+                    </div>
+
+                    <div className="space-y-3 rounded-2xl border bg-background/60 p-4">
+                      <div className="flex items-start gap-3">
+                        <Checkbox id="terms" name="terms" required className="mt-0.5" />
+                        <Label htmlFor="terms" className="text-sm font-normal leading-relaxed text-muted-foreground">
+                          I agree to the event terms and safety guidelines. *
+                        </Label>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Checkbox id="photoConsent" name="photoConsent" className="mt-0.5" />
+                        <Label htmlFor="photoConsent" className="text-sm font-normal leading-relaxed text-muted-foreground">
+                          I consent to photos of my pet being taken during the event for community use.
+                        </Label>
+                      </div>
+                    </div>
+
+                    <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                      <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Your details are kept private and used only for this event.
+                    </p>
+                  </div>
+
                   <Button
                     type="submit"
                     size="lg"
                     variant="default"
                     disabled={submittingRegister}
-                    className="w-full rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="w-full rounded-2xl bg-primary text-primary-foreground shadow-xl transition-all duration-300 hover:bg-primary/90 hover:scale-[1.02] hover:shadow-2xl"
                   >
                     {submittingRegister ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" /> Reserving...
                       </>
                     ) : (
-                      "Reserve My Spot"
+                      "Reserve My Pet's Spot"
                     )}
                   </Button>
                 </form>
@@ -502,6 +734,7 @@ const EventDetails = () => {
           </div>
         </div>
       </section>
+
 
       {/* TESTIMONIALS */}
       <section className="bg-background py-12 sm:py-16 lg:py-20">
