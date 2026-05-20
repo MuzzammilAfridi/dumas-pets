@@ -192,11 +192,11 @@ const EventDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Navigation />
 
       {/* HERO */}
-      <section className="relative h-[70vh] min-h-[480px] w-full overflow-hidden">
+      <section className="relative h-[60vh] min-h-[420px] sm:h-[70vh] sm:min-h-[480px] w-full overflow-hidden">
         <img
           src={event.image}
           alt={event.title}
@@ -204,31 +204,35 @@ const EventDetails = () => {
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80" />
-        <div className="relative z-10 flex h-full items-center justify-center px-4">
+        <div className="relative z-10 flex h-full items-center justify-center px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl text-center text-white animate-fade-in">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary/90 px-4 py-1.5 text-sm font-semibold backdrop-blur">
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary/90 px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-semibold backdrop-blur">
               <Tag className="h-3.5 w-3.5" /> {event.category}
             </span>
-            <h1 className="mt-5 text-4xl md:text-6xl font-bold tracking-tight">{event.title}</h1>
-            <p className="mt-4 text-base md:text-lg text-white/85">{event.subtitle}</p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-white/90">
-              <span className="flex items-center gap-2"><Calendar className="h-4 w-4" />{event.date}</span>
-              <span className="flex items-center gap-2"><Clock className="h-4 w-4" />{event.time}</span>
-              <span className="flex items-center gap-2"><MapPin className="h-4 w-4" />{event.location}</span>
+            <h1 className="mt-4 sm:mt-5 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight break-words">
+              {event.title}
+            </h1>
+            <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-white/85 px-2">
+              {event.subtitle}
+            </p>
+            <div className="mt-5 sm:mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs sm:text-sm text-white/90">
+              <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" />{event.date}</span>
+              <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" />{event.time}</span>
+              <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" />{event.location}</span>
             </div>
             <Button
               size="lg"
               variant="default"
               asChild
-              className="mt-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="mt-6 sm:mt-8 w-full sm:w-auto rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
             >
               <a href="#register">Register Now</a>
             </Button>
           </div>
         </div>
 
-        {/* Floating glass info card */}
-        <div className="absolute -bottom-10 left-1/2 z-20 hidden w-[90%] max-w-4xl -translate-x-1/2 md:block">
+        {/* Floating glass info card (desktop only) */}
+        <div className="absolute -bottom-10 left-1/2 z-20 hidden w-[90%] max-w-4xl -translate-x-1/2 lg:block">
           <div className="rounded-2xl border border-white/30 bg-white/20 p-6 shadow-lg backdrop-blur-md">
             <div className="grid grid-cols-3 gap-6 text-center text-white">
               <div>
@@ -249,9 +253,9 @@ const EventDetails = () => {
       </section>
 
       {/* QUICK INFO */}
-      <section className="bg-secondary/30 py-16 md:pt-24">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <section className="bg-secondary/30 py-12 sm:py-16 lg:pt-24 lg:pb-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
             {[
               { icon: Calendar, label: "Date", value: event.date },
               { icon: Clock, label: "Time", value: event.time },
@@ -262,14 +266,14 @@ const EventDetails = () => {
             ].map((it) => (
               <Card
                 key={it.label}
-                className="rounded-2xl border-white/30 bg-white/60 backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                className="h-full rounded-2xl border-white/30 bg-white/60 backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
               >
-                <CardContent className="flex flex-col items-center gap-2 p-5 text-center">
-                  <div className="rounded-xl bg-primary/10 p-3 text-primary">
+                <CardContent className="flex h-full flex-col items-center gap-2 p-4 sm:p-5 text-center">
+                  <div className="rounded-xl bg-primary/10 p-2.5 sm:p-3 text-primary">
                     <it.icon className="h-5 w-5" />
                   </div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">{it.label}</p>
-                  <p className="text-sm font-semibold text-foreground">{it.value}</p>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">{it.label}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-foreground break-words">{it.value}</p>
                 </CardContent>
               </Card>
             ))}
@@ -278,26 +282,26 @@ const EventDetails = () => {
       </section>
 
       {/* ABOUT */}
-      <section className="bg-background py-20">
-        <div className="container mx-auto grid items-center gap-12 px-4 lg:grid-cols-2">
+      <section className="bg-background py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto grid grid-cols-1 items-center gap-8 sm:gap-10 lg:gap-12 px-4 sm:px-6 lg:px-8 lg:grid-cols-2">
           <div>
-            <span className="text-sm font-semibold uppercase tracking-wider text-primary">About the Event</span>
-            <h2 className="mt-3 text-3xl md:text-4xl font-bold text-foreground">
+            <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-primary">About the Event</span>
+            <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground break-words">
               A warm afternoon of fresh food, real science, and great company.
             </h2>
-            <p className="mt-4 text-muted-foreground leading-relaxed">
+            <p className="mt-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
               Spend the morning with vets, nutritionists, and fellow pet parents as we
               unpack everything you need to feed your pet better — from ingredient
               sourcing to portioning, allergies, and home-baked treats.
             </p>
-            <ul className="mt-6 space-y-3 text-foreground">
-              <li className="flex items-start gap-3"><PawPrint className="mt-1 h-4 w-4 text-primary" /> Hands-on meal prep demonstrations</li>
-              <li className="flex items-start gap-3"><PawPrint className="mt-1 h-4 w-4 text-primary" /> Personalised Q&A with veterinarians</li>
-              <li className="flex items-start gap-3"><PawPrint className="mt-1 h-4 w-4 text-primary" /> Take-home recipe booklet & samples</li>
-              <li className="flex items-start gap-3"><PawPrint className="mt-1 h-4 w-4 text-primary" /> Community networking with snacks</li>
+            <ul className="mt-6 space-y-3 text-sm sm:text-base text-foreground">
+              <li className="flex items-start gap-3"><PawPrint className="mt-1 h-4 w-4 shrink-0 text-primary" /> Hands-on meal prep demonstrations</li>
+              <li className="flex items-start gap-3"><PawPrint className="mt-1 h-4 w-4 shrink-0 text-primary" /> Personalised Q&A with veterinarians</li>
+              <li className="flex items-start gap-3"><PawPrint className="mt-1 h-4 w-4 shrink-0 text-primary" /> Take-home recipe booklet & samples</li>
+              <li className="flex items-start gap-3"><PawPrint className="mt-1 h-4 w-4 shrink-0 text-primary" /> Community networking with snacks</li>
             </ul>
           </div>
-          <div className="overflow-hidden rounded-2xl shadow-lg">
+          <div className="overflow-hidden rounded-2xl shadow-lg aspect-[4/3] lg:aspect-auto lg:h-full">
             <img
               src="https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?auto=format&fit=crop&w=1200&q=80"
               alt="About event"
@@ -309,23 +313,23 @@ const EventDetails = () => {
       </section>
 
       {/* LEARN */}
-      <section className="bg-secondary/30 py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-secondary/30 py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">What You Will Learn</h2>
-            <p className="mt-3 text-muted-foreground">Practical skills you can apply the moment you get home.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">What You Will Learn</h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground">Practical skills you can apply the moment you get home.</p>
           </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {learnTopics.map((t) => (
               <Card
                 key={t.title}
-                className="group rounded-2xl border-0 bg-card shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                className="group h-full rounded-2xl border-0 bg-card shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
               >
-                <CardContent className="p-6">
+                <CardContent className="p-5 sm:p-6">
                   <div className="mb-4 inline-flex rounded-2xl bg-primary/10 p-3 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                     <t.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground">{t.title}</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground">{t.title}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{t.desc}</p>
                 </CardContent>
               </Card>
@@ -335,15 +339,15 @@ const EventDetails = () => {
       </section>
 
       {/* SCHEDULE TIMELINE */}
-      <section className="bg-background py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-background py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Event Schedule</h2>
-            <p className="mt-3 text-muted-foreground">A relaxed flow with plenty of time for questions.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Event Schedule</h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground">A relaxed flow with plenty of time for questions.</p>
           </div>
-          <div className="relative mx-auto mt-12 max-w-3xl">
+          <div className="relative mx-auto mt-10 sm:mt-12 max-w-3xl">
             <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-primary/20 md:left-1/2" />
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
               {schedule.map((s, i) => (
                 <div
                   key={s.time}
@@ -355,10 +359,10 @@ const EventDetails = () => {
                     <div className="h-4 w-4 rounded-full border-4 border-background bg-primary shadow-lg" />
                   </div>
                   <div className="ml-12 md:ml-0 md:w-1/2 md:px-8">
-                    <Card className="rounded-2xl shadow-lg transition-all duration-300 hover:shadow-2xl">
-                      <CardContent className="p-5">
+                    <Card className="h-full rounded-2xl shadow-lg transition-all duration-300 hover:shadow-2xl">
+                      <CardContent className="p-4 sm:p-5">
                         <p className="text-sm font-bold text-primary">{s.time}</p>
-                        <h4 className="mt-1 text-lg font-semibold text-foreground">{s.title}</h4>
+                        <h4 className="mt-1 text-base sm:text-lg font-semibold text-foreground break-words">{s.title}</h4>
                         <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
                       </CardContent>
                     </Card>
@@ -371,32 +375,32 @@ const EventDetails = () => {
       </section>
 
       {/* SPEAKERS */}
-      <section className="bg-secondary/30 py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-secondary/30 py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Guest Speakers</h2>
-            <p className="mt-3 text-muted-foreground">Industry experts who'll guide our sessions.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Guest Speakers</h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground">Industry experts who'll guide our sessions.</p>
           </div>
-          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {speakers.map((s) => (
               <Card
                 key={s.name}
-                className="rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                className="h-full rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
               >
                 <CardContent className="p-6 text-center">
                   <img
                     src={s.img}
                     alt={s.name}
                     loading="lazy"
-                    className="mx-auto h-28 w-28 rounded-full object-cover ring-4 ring-primary/20"
+                    className="mx-auto h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover ring-4 ring-primary/20"
                   />
-                  <h3 className="mt-4 text-lg font-semibold text-foreground">{s.name}</h3>
+                  <h3 className="mt-4 text-base sm:text-lg font-semibold text-foreground break-words">{s.name}</h3>
                   <p className="text-sm font-medium text-primary">{s.role}</p>
                   <p className="mt-2 text-sm text-muted-foreground">{s.bio}</p>
-                  <div className="mt-4 flex items-center justify-center gap-3 text-muted-foreground">
-                    <a href="#" aria-label="Instagram" className="hover:text-primary"><Instagram className="h-4 w-4" /></a>
-                    <a href="#" aria-label="Twitter" className="hover:text-primary"><Twitter className="h-4 w-4" /></a>
-                    <a href="#" aria-label="LinkedIn" className="hover:text-primary"><Linkedin className="h-4 w-4" /></a>
+                  <div className="mt-4 flex items-center justify-center gap-4 text-muted-foreground">
+                    <a href="#" aria-label="Instagram" className="p-2 -m-2 hover:text-primary"><Instagram className="h-4 w-4" /></a>
+                    <a href="#" aria-label="Twitter" className="p-2 -m-2 hover:text-primary"><Twitter className="h-4 w-4" /></a>
+                    <a href="#" aria-label="LinkedIn" className="p-2 -m-2 hover:text-primary"><Linkedin className="h-4 w-4" /></a>
                   </div>
                 </CardContent>
               </Card>
@@ -406,18 +410,18 @@ const EventDetails = () => {
       </section>
 
       {/* GALLERY */}
-      <section className="bg-background py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-background py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Event Gallery</h2>
-            <p className="mt-3 text-muted-foreground">Moments from our past community gatherings.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Event Gallery</h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground">Moments from our past community gatherings.</p>
           </div>
-          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3">
+          <div className="mt-8 sm:mt-10 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
             {gallery.map((src, i) => (
               <div
                 key={src}
-                className={`group relative overflow-hidden rounded-2xl shadow-lg ${
-                  i === 0 ? "md:col-span-2 md:row-span-2" : ""
+                className={`group relative aspect-square overflow-hidden rounded-2xl shadow-lg ${
+                  i === 0 ? "md:col-span-2 md:row-span-2 md:aspect-auto" : ""
                 }`}
               >
                 <img
@@ -434,17 +438,17 @@ const EventDetails = () => {
       </section>
 
       {/* REGISTRATION */}
-      <section id="register" className="bg-secondary/30 py-20">
-        <div className="container mx-auto px-4">
+      <section id="register" className="bg-secondary/30 py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl">
             <div className="text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Reserve Your Spot</h2>
-              <p className="mt-3 text-muted-foreground">Seats are limited — register to confirm your place.</p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Reserve Your Spot</h2>
+              <p className="mt-3 text-sm sm:text-base text-muted-foreground">Seats are limited — register to confirm your place.</p>
             </div>
-            <Card className="mt-10 rounded-2xl shadow-lg">
-              <CardContent className="p-6 md:p-8">
+            <Card className="mt-8 sm:mt-10 rounded-2xl shadow-lg">
+              <CardContent className="p-5 sm:p-6 md:p-8">
                 <form ref={registerFormRef} onSubmit={handleRegister} className="space-y-5">
-                  <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
                       <Input id="name" required placeholder="Your name" className="rounded-xl" />
@@ -489,22 +493,22 @@ const EventDetails = () => {
       </section>
 
       {/* TESTIMONIALS */}
-      <section className="bg-background py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-background py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">What Attendees Say</h2>
-            <p className="mt-3 text-muted-foreground">Real feedback from our pet-parent community.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">What Attendees Say</h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground">Real feedback from our pet-parent community.</p>
           </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {testimonials.map((t) => (
-              <Card key={t.name} className="rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
-                <CardContent className="p-6">
+              <Card key={t.name} className="h-full rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                <CardContent className="p-5 sm:p-6">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
                       {t.name.charAt(0)}
                     </div>
-                    <div>
-                      <p className="font-semibold text-foreground">{t.name}</p>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-foreground break-words">{t.name}</p>
                       <div className="flex">
                         {Array.from({ length: t.rating }).map((_, i) => (
                           <Star key={i} className="h-3.5 w-3.5 fill-primary text-primary" />
@@ -512,7 +516,7 @@ const EventDetails = () => {
                       </div>
                     </div>
                   </div>
-                  <p className="mt-4 text-sm text-muted-foreground">"{t.text}"</p>
+                  <p className="mt-4 text-sm text-muted-foreground break-words">"{t.text}"</p>
                 </CardContent>
               </Card>
             ))}
@@ -521,23 +525,23 @@ const EventDetails = () => {
       </section>
 
       {/* FAQ */}
-      <section className="bg-secondary/30 py-20">
-        <div className="container mx-auto max-w-3xl px-4">
+      <section className="bg-secondary/30 py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Frequently Asked</h2>
-            <p className="mt-3 text-muted-foreground">Everything you need to know before joining.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Frequently Asked</h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground">Everything you need to know before joining.</p>
           </div>
-          <Accordion type="single" collapsible className="mt-10 space-y-3">
+          <Accordion type="single" collapsible className="mt-8 sm:mt-10 space-y-3">
             {faqs.map((f, i) => (
               <AccordionItem
                 key={f.q}
                 value={`item-${i}`}
-                className="rounded-2xl border-0 bg-card px-5 shadow-lg"
+                className="rounded-2xl border-0 bg-card px-4 sm:px-5 shadow-lg"
               >
-                <AccordionTrigger className="text-left text-foreground hover:no-underline">
+                <AccordionTrigger className="text-left text-sm sm:text-base text-foreground hover:no-underline">
                   {f.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground">{f.a}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
@@ -545,15 +549,15 @@ const EventDetails = () => {
       </section>
 
       {/* RELATED */}
-      <section className="bg-background py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-background py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Related Events</h2>
-            <p className="mt-3 text-muted-foreground">More ways to learn and connect.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Related Events</h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground">More ways to learn and connect.</p>
           </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((r) => (
-              <Card key={r.id} className="group overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+              <Card key={r.id} className="group flex h-full flex-col overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
                 <div className="aspect-[16/10] overflow-hidden">
                   <img
                     src={r.img}
@@ -562,12 +566,12 @@ const EventDetails = () => {
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
-                <CardContent className="p-5">
+                <CardContent className="flex flex-1 flex-col p-5">
                   <p className="text-xs font-semibold uppercase tracking-wider text-primary">{r.date}</p>
-                  <h3 className="mt-2 text-lg font-semibold text-foreground">{r.title}</h3>
+                  <h3 className="mt-2 text-base sm:text-lg font-semibold text-foreground break-words">{r.title}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{r.desc}</p>
-                  <Button asChild className="mt-4 w-full rounded-xl">
-                    <Link to={`/events/${r.id}`}>Register</Link>
+                  <Button asChild className="mt-auto pt-0 w-full rounded-xl">
+                    <Link to={`/events/${r.id}`} className="mt-4">Register</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -577,13 +581,15 @@ const EventDetails = () => {
       </section>
 
       {/* NEWSLETTER */}
-      <section className="px-4 pb-28 md:pb-20">
+      <section className="px-4 sm:px-6 lg:px-8 pb-28 md:pb-16 lg:pb-20">
         <div className="container mx-auto">
-          <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary/70 p-8 md:p-14 shadow-xl">
+          <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary/70 p-6 sm:p-10 md:p-14 shadow-xl">
             <div className="mx-auto max-w-2xl text-center text-primary-foreground">
-              <Mail className="mx-auto h-8 w-8 opacity-90" />
-              <h2 className="mt-3 text-3xl md:text-4xl font-bold">Stay Updated on Upcoming Pet Events</h2>
-              <p className="mt-3 text-primary-foreground/85">
+              <Mail className="mx-auto h-7 w-7 sm:h-8 sm:w-8 opacity-90" />
+              <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-bold break-words">
+                Stay Updated on Upcoming Pet Events
+              </h2>
+              <p className="mt-3 text-sm sm:text-base text-primary-foreground/85">
                 Join our community and never miss workshops, adoption drives, and wellness camps.
               </p>
               <form
@@ -595,13 +601,13 @@ const EventDetails = () => {
                   type="email"
                   required
                   placeholder="Enter your email"
-                  className="rounded-xl bg-white/95 text-foreground"
+                  className="w-full rounded-xl bg-white/95 text-foreground"
                 />
                 <Button
                   type="submit"
                   variant="default"
                   disabled={submittingNewsletter}
-                  className="rounded-xl bg-background text-primary hover:bg-background/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-bold"
+                  className="w-full sm:w-auto rounded-xl bg-background text-primary hover:bg-background/90 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-bold"
                 >
                   {submittingNewsletter ? (
                     <>
@@ -618,11 +624,14 @@ const EventDetails = () => {
       </section>
 
       {/* STICKY MOBILE CTA */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 p-3 backdrop-blur-md shadow-2xl md:hidden">
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 px-3 pt-3 backdrop-blur-md shadow-2xl md:hidden"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+      >
         <div className="flex items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-xs text-muted-foreground">Entry</p>
-            <p className="font-bold text-foreground">{event.fee}</p>
+            <p className="font-bold text-foreground truncate">{event.fee}</p>
           </div>
           <Button asChild className="flex-1 rounded-xl" size="lg">
             <a href="#register">Register Now</a>
@@ -631,8 +640,8 @@ const EventDetails = () => {
       </div>
 
       <footer className="bg-foreground py-6 text-background">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-sm">© 2024 Dumas 'N' Bismi. All rights reserved.</p>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-xs sm:text-sm break-words">© 2024 Dumas 'N' Bismi. All rights reserved.</p>
         </div>
       </footer>
     </div>
