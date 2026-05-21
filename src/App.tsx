@@ -36,6 +36,7 @@ import TemplateDetails from "./pages/customer/TemplateDetails";
 import { SalesProvider } from "./contexts/SalesContext";
 import RateCard from "./pages/admin/RateCard";
 import BlogDetails from "./pages/BlogDetails";
+import EventDetails from "./pages/EventDetails";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
                <Route path="/blog/:id" element={<BlogDetails />} />
+                <Route path="/events/:id" element={<EventDetails />} />
               <Route path="/about" element={<AboutUs />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/blog" element={<Blog />} />

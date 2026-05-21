@@ -85,7 +85,9 @@ const ProductDetail = () => {
   useEffect(() => {
     if (grainPercentage + meatPercentage <= 100) {
       const veg = 100 - (grainPercentage + meatPercentage);
-      setGpvRatio(`${grainPercentage}-${meatPercentage}-${veg}`);
+  setGpvRatio(
+  `Grain ${grainPercentage}% - Protein ${meatPercentage}% - Veg ${veg}%`
+);
     }
   }, [grainPercentage, meatPercentage]);
 
@@ -150,7 +152,18 @@ const ProductDetail = () => {
         setGrainTypeOptions(grainTypeRes.data.data.item_attribute_values);
 
         setQuantityOptions(quantityRes.data.data.item_attribute_values);
-        setVegetableOptions(vegetableRes.data.data.item_attribute_values);
+      setVegetableOptions(vegetableRes.data.data.item_attribute_values);
+
+const allVegetables = vegetableRes.data.data.item_attribute_values
+  .map((v) => v.attribute_value)
+  .filter(
+    (v) =>
+      v !== "No Vegetables" &&
+      v !== "Include Vegetables",
+  );
+
+setSelectedVegetables(allVegetables);
+        
 
         setGrainPercentageOptions(
           [...grainPercentageRes.data.data.item_attribute_values].sort(
@@ -247,25 +260,49 @@ const ProductDetail = () => {
   const showUpsellMessage =
     freeSoup === 0 && getQuantityInGrams(quantity) < 250;
 
-  const toggleVegetable = (veg: string) => {
-    setSelectedVegetables((prev) => {
-      // ✅ If user selects "No veg"
-      if (veg === "No Vegetables") {
-        return prev.includes("No Vegetables") ? [] : ["No Vegetables"];
-      }
+ const toggleVegetable = (veg: string) => {
+  setSelectedVegetables((prev) => {
+    const allVegetables = vegetableOptions
+      .map((v) => v.attribute_value)
+      .filter(
+        (v) =>
+          v !== "No Vegetables" &&
+          v !== "Include Vegetables",
+      );
 
-      let updated = prev.filter((v) => v !== "No Vegetables");
+    // ✅ Include all vegetables
+    if (veg === "Include Vegetables") {
+      const alreadyAllSelected = allVegetables.every((v) =>
+        prev.includes(v),
+      );
 
-      // ✅ If selecting other veg → remove "no_veg"
+      return alreadyAllSelected ? [] : allVegetables;
+    }
 
-      // Toggle logic
-      if (updated.includes(veg)) {
-        return updated.filter((v) => v !== veg);
-      } else {
-        return [...updated, veg];
-      }
-    });
-  };
+    // ✅ No Vegetables
+    if (veg === "No Vegetables") {
+      return prev.includes("No Vegetables")
+        ? []
+        : ["No Vegetables"];
+    }
+
+    // remove special options
+    let updated = prev.filter(
+      (v) =>
+        v !== "No Vegetables" &&
+        v !== "Include Vegetables",
+    );
+
+    // normal toggle
+    if (updated.includes(veg)) {
+      updated = updated.filter((v) => v !== veg);
+    } else {
+      updated = [...updated, veg];
+    }
+
+    return updated;
+  });
+};
 
   const generateTimeOptions = () => {
     const times = [];
@@ -901,6 +938,7 @@ const ProductDetail = () => {
                         </div>
                       )}
                     </div>
+                    
 </div>
                          {/* Right: Vegetables Radio Selection */}
                     <div className=" ">
@@ -910,9 +948,20 @@ const ProductDetail = () => {
 
                       <div className="space-y-3">
                         {vegetableOptions.map((veg) => {
-                          const isSelected = selectedVegetables.includes(
-                            veg.attribute_value,
-                          );
+                         const allVegetables = vegetableOptions
+  .map((v) => v.attribute_value)
+  .filter(
+    (v) =>
+      v !== "No Vegetables" &&
+      v !== "Include Vegetables",
+  );
+
+const isSelected =
+  veg.attribute_value === "Include Vegetables"
+    ? allVegetables.every((v) =>
+        selectedVegetables.includes(v),
+      )
+    : selectedVegetables.includes(veg.attribute_value);
 
                           return (
                             <div
@@ -953,6 +1002,7 @@ const ProductDetail = () => {
                           );
                         })}
                       </div>
+                      
                     </div>
 
 
@@ -960,7 +1010,8 @@ const ProductDetail = () => {
                    
                     </div>
 
-{/* 
+
+
                     <div>
                       <Label className="text-base font-semibold mb-2 block">
                         GPV Ratio (Grain : Protein : Veg)
@@ -971,7 +1022,7 @@ const ProductDetail = () => {
                           {gpvRatio || "0-0-100"}
                         </p>
                       </div>
-                    </div> */}
+                    </div>
 
 
                   
@@ -982,7 +1033,7 @@ const ProductDetail = () => {
                         htmlFor="prep-instructions"
                         className="text-base font-semibold mb-2 block"
                       >
-                        Preparation Instructions
+                        Special Request
                       </Label>
                       <Textarea
                         id="prep-instructions"
@@ -990,7 +1041,7 @@ const ProductDetail = () => {
                         onChange={(e) =>
                           setPreparationInstructions(e.target.value)
                         }
-                        placeholder="Enter any special preparation instructions..."
+                        placeholder="Enter any Special RequestsD..."
                         className={cn(
                           "min-h-[100px] resize-none",
                           preparationInstructions &&

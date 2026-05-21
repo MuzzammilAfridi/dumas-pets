@@ -41,15 +41,7 @@ const statusColor = (s: string) => {
   }
 };
 
-const chartData = [
-  { name: "Mon", orders: 4 },
-  { name: "Tue", orders: 7 },
-  { name: "Wed", orders: 5 },
-  { name: "Thu", orders: 8 },
-  { name: "Fri", orders: 12 },
-  { name: "Sat", orders: 9 },
-  { name: "Sun", orders: 6 },
-];
+
 
 const AdminDashboard = () => {
 
@@ -58,6 +50,18 @@ const AdminDashboard = () => {
   const { products } = useProducts();
   const [orders, setOrders] = useState<any[]>([]);
 const [loadingOrders, setLoadingOrders] = useState(true);
+
+const chartData = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+  (day) => ({
+    name: day,
+    orders: orders.filter((order: any) => {
+      const orderDate = new Date(order.creation || order.modified);
+      return (
+        orderDate.toLocaleDateString("en-US", { weekday: "short" }) === day
+      );
+    }).length,
+  })
+);
 
   const navigate = useNavigate();
 
@@ -116,16 +120,28 @@ const mapERPStatus = (order) => {
   fetchOrders();
 }, []);
 
+
+console.log("order in admin dashboard", orders);
+
+
 const fetchOrders = async () => {
   try {
     const res = await getAllSalesOrdersAdmin();
 
+    // const formatted = res.data.data.map((o: any) => ({
+    //   id: o.name,
+    //   customerName: o.customer,
+    //   total: o.grand_total || 0,
+    //   status: mapERPStatus(o),
+    // }));
+
     const formatted = res.data.data.map((o: any) => ({
-      id: o.name,
-      customerName: o.customer,
-      total: o.grand_total || 0,
-      status: mapERPStatus(o),
-    }));
+  id: o.name,
+  customerName: o.customer,
+  total: o.grand_total || 0,
+  status: mapERPStatus(o),
+  creation: o.creation,
+}));
 
     setOrders(formatted);
   } catch (err) {

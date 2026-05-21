@@ -29,6 +29,9 @@ const CustomerManagement = () => {
     ? customers.filter((o) => o.customerId === selectedCustomer.id)
     : [];
 
+    console.log("customer in customer management", customers, customerOrders);
+    
+
 const filteredCustomers = customers.filter((c) =>
   `${c.customer_name} ${c.email} ${c.phone}`
     .toLowerCase()

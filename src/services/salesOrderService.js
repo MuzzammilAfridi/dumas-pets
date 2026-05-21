@@ -78,7 +78,14 @@ export const getAllSalesOrders = (customerName) => {
 
 export const getAllSalesOrdersAdmin = () => {
   return axios.get(
-    `${API}/api/resource/Sales Order?fields=["name","customer","transaction_date","grand_total","status","docstatus", "per_billed"]&order_by=creation desc`,
+    `${API}/api/resource/Sales Order?fields=["name","customer","transaction_date","creation","grand_total","status","docstatus","per_billed"]&order_by=creation desc`,
+    authHeaders
+  );
+};
+
+export const getAddress = (addressId) => {
+  return axios.get(
+    `${API}/api/resource/Address/${addressId}`,
     authHeaders
   );
 };

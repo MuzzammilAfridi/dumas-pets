@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Eye, Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -34,10 +35,11 @@ import {
   getInvoices,
   getInvoiceFromOrder,
   cancelOrderWithDependencies,
-  markOrderAsDelivered
+  markOrderAsDelivered,
+  getAddress,
 } from "@/services/salesOrderService";
 import { useToast } from "@/hooks/use-toast";
-import { Eye } from "lucide-react";
+
 import axios from "axios";
 
 const statusColor = (s: string) => {
@@ -60,10 +62,8 @@ const mapERPStatus = (order) => {
   // ✅ NEW: detect delivered via billing %
   if (order.per_billed === 100) return "Delivered";
 
-  if (
-    order.status === "To Deliver" ||
-    order.status === "To Deliver and Bill"
-  ) return "Processing";
+  if (order.status === "To Deliver" || order.status === "To Deliver and Bill")
+    return "Processing";
 
   return "Processing";
 };
@@ -85,88 +85,83 @@ const OrdersManagement = () => {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const findInvoiceForOrder = async (orderId: string) => {
-  const res = await getInvoices();
+    const res = await getInvoices();
 
-  const invoices = res.data.data;
+    const invoices = res.data.data;
 
-  for (const inv of invoices) {
-    // check inside items
-    const match = inv.items?.find(
-      (item) => item.sales_order === orderId
-    );
+    for (const inv of invoices) {
+      // check inside items
+      const match = inv.items?.find((item) => item.sales_order === orderId);
 
-    if (match) {
-      return inv.name;
-    }
-  }
-
-  return null;
-};
-
-const getExistingInvoiceId = async (orderId) => {
-  try {
-    const res = await getInvoiceFromOrder(orderId);
-
-    const doc = res?.data?.message;
-
-    // If already invoiced → ERP attaches reference
-    if (doc?.items?.length) {
-      return doc.items[0].sales_invoice || null;
+      if (match) {
+        return inv.name;
+      }
     }
 
     return null;
-  } catch (err) {
-    console.log("Invoice lookup failed, fallback needed");
-    return null;
-  }
-};
+  };
+
+  const getExistingInvoiceId = async (orderId) => {
+    try {
+      const res = await getInvoiceFromOrder(orderId);
+
+      const doc = res?.data?.message;
+
+      // If already invoiced → ERP attaches reference
+      if (doc?.items?.length) {
+        return doc.items[0].sales_invoice || null;
+      }
+
+      return null;
+    } catch (err) {
+      console.log("Invoice lookup failed, fallback needed");
+      return null;
+    }
+  };
 
   const filtered =
     filter === "All" ? orders : orders.filter((o) => o.status === filter);
 
-const updateStatus = async (id: string, status: string) => {
-  setUpdatingId(id);
+  const updateStatus = async (id: string, status: string) => {
+    setUpdatingId(id);
 
-  try {
-    // ✅ PROCESSING = submit order (only if draft)
-    if (status === "Processing") {
-      const res = await getSalesOrder(id);
-      const order = res.data.data;
+    try {
+      // ✅ PROCESSING = submit order (only if draft)
+      if (status === "Processing") {
+        const res = await getSalesOrder(id);
+        const order = res.data.data;
 
-      if (order.docstatus === 0) {
-        await submitOrder(id);
+        if (order.docstatus === 0) {
+          await submitOrder(id);
+        }
       }
+
+      // ✅ DELIVERED = create invoice (REAL ERP ACTION)
+      if (status === "Delivered") {
+        await markOrderAsDelivered(id);
+      }
+
+      // ✅ CANCELLED
+      if (status === "Cancelled") {
+        await cancelOrderWithDependencies(id);
+      }
+
+      fetchOrders();
+
+      toast({
+        title: "Updated",
+        description: `Order ${id} updated`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.response?.data?.exception || "Failed to update order",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingId(null);
     }
-
-    // ✅ DELIVERED = create invoice (REAL ERP ACTION)
-    if (status === "Delivered") {
-      await markOrderAsDelivered(id);
-    }
-
-    // ✅ CANCELLED
-    if (status === "Cancelled") {
-      await cancelOrderWithDependencies(id);
-    }
-
-    fetchOrders();
-
-    toast({
-      title: "Updated",
-      description: `Order ${id} updated`,
-    });
-
-  } catch (err: any) {
-    toast({
-      title: "Error",
-      description:
-        err?.response?.data?.exception ||
-        "Failed to update order",
-      variant: "destructive",
-    });
-  } finally {
-    setUpdatingId(null);
-  }
-};
+  };
 
   useEffect(() => {
     fetchOrders();
@@ -178,15 +173,15 @@ const updateStatus = async (id: string, status: string) => {
 
       console.log("ADMIN ORDERS:", res.data.data);
 
-     const formatted = res.data.data.map((o: any) => ({
-  id: o.name,
-  customerName: o.customer,
-  date: o.transaction_date,
-  total: o.grand_total || 0,
-  status: mapERPStatus(o), // ✅ FIX
-  rawStatus: o.status,     // optional (debugging)
-  docstatus: o.docstatus,  // optional (debugging)
-}));
+      const formatted = res.data.data.map((o: any) => ({
+        id: o.name,
+        customerName: o.customer,
+        date: o.transaction_date,
+        total: o.grand_total || 0,
+        status: mapERPStatus(o), // ✅ FIX
+        rawStatus: o.status, // optional (debugging)
+        docstatus: o.docstatus, // optional (debugging)
+      }));
 
       setOrders(formatted);
     } catch (err) {
@@ -240,17 +235,29 @@ const updateStatus = async (id: string, status: string) => {
                   <TableCell>
                     <Select
                       value={order.status}
+                      disabled={updatingId === order.id}
                       onValueChange={(v) =>
                         updateStatus(order.id, v as Order["status"])
                       }
                     >
                       <SelectTrigger className="w-32 h-8 text-xs">
-                        <SelectValue />
+                        {updatingId === order.id ? (
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Updating
+                          </div>
+                        ) : (
+                          <SelectValue />
+                        )}
                       </SelectTrigger>
+
                       <SelectContent>
                         <SelectItem value="Pending">Pending</SelectItem>
+
                         <SelectItem value="Processing">Processing</SelectItem>
+
                         <SelectItem value="Delivered">Delivered</SelectItem>
+
                         <SelectItem value="Cancelled">Cancelled</SelectItem>
                       </SelectContent>
                     </Select>
@@ -259,20 +266,33 @@ const updateStatus = async (id: string, status: string) => {
                     <Button
                       variant="ghost"
                       size="icon"
-                     onClick={async () => {
-  const res = await getSalesOrder(order.id);
-  const o = res.data.data;
+                      onClick={async () => {
+                        const res = await getSalesOrder(order.id);
+                        const o = res.data.data;
 
-  setSelectedOrder({
-    id: o.name,
-    customerName: o.customer,
-    date: o.transaction_date,
-    total: o.grand_total,
-    status: o.status,
-    address: o.customer_address,
-    items: o.items,
-  });
-}}
+                        const addressRes = await getAddress(o.customer_address);
+                        const addr = addressRes.data.data;
+
+                        setSelectedOrder({
+                          id: o.name,
+                          customerName: o.customer,
+                          date: o.transaction_date,
+                          total: o.grand_total,
+                          status: o.status,
+                          address: [
+                            addr.address_line1,
+                            addr.address_line2,
+                            addr.city,
+                            addr.state,
+                            addr.pincode,
+                          ]
+                            .filter(Boolean)
+                            .join(", "),
+                          phone: addr.phone,
+                          email: addr.email_id,
+                          items: o.items,
+                        });
+                      }}
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
@@ -283,53 +303,127 @@ const updateStatus = async (id: string, status: string) => {
           </Table>
         </CardContent>
       </Card>
-
       <Dialog
         open={!!selectedOrder}
         onOpenChange={() => setSelectedOrder(null)}
       >
-        <DialogContent>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Order {selectedOrder?.id}</DialogTitle>
           </DialogHeader>
+
           {selectedOrder && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <p>
-                  <span className="text-muted-foreground">Customer:</span>{" "}
-                  {selectedOrder.customerName}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">Date:</span>{" "}
-                  {selectedOrder.date}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">Status:</span>{" "}
-                  {selectedOrder.status}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">Address:</span>{" "}
-                  {selectedOrder.address}
-                </p>
+            <div className="space-y-6">
+              {/* TOP SUMMARY */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border rounded-lg p-4 bg-muted/30">
+                <div>
+                  <p className="text-xs text-muted-foreground">Order ID</p>
+                  <p className="font-semibold">{selectedOrder.id}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">Order Date</p>
+                  <p className="font-medium">{selectedOrder.date}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+
+                  <Badge variant={statusColor(selectedOrder.status) as any}>
+                    {selectedOrder.status}
+                  </Badge>
+                </div>
+
+                <div>
+                  <p className="text-xs text-muted-foreground">Total Amount</p>
+
+                  <p className="font-bold text-lg">
+                    ₹{selectedOrder.total.toFixed(2)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold text-sm mb-2">Items</p>
-                {selectedOrder.items.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between text-sm py-1 border-b border-border last:border-0"
-                  >
-                    <span>
-  {item.item_name} × {item.qty}
-</span>
-<span>
-  ₹{(item.rate * item.qty).toFixed(2)}
-</span>
+
+              {/* CUSTOMER DETAILS */}
+              <div className="border rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-base">Customer Details</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Customer Name</p>
+
+                    <p className="font-medium">{selectedOrder.customerName}</p>
                   </div>
-                ))}
-                <div className="flex justify-between font-bold text-sm pt-2">
-                  <span>Total</span>
-                  <span>₹{selectedOrder.total.toFixed(2)}</span>
+
+                  {selectedOrder.phone && (
+                    <div>
+                      <p className="text-muted-foreground">Phone</p>
+
+                      <p className="font-medium">📞 {selectedOrder.phone}</p>
+                    </div>
+                  )}
+
+                  {selectedOrder.email && (
+                    <div>
+                      <p className="text-muted-foreground">Email</p>
+
+                      <p className="font-medium break-all">
+                        ✉️ {selectedOrder.email}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="md:col-span-2">
+                    <p className="text-muted-foreground">Delivery Address</p>
+
+                    <p className="font-medium leading-6 mt-1">
+                      {selectedOrder.address}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ORDER ITEMS */}
+              <div className="border rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-base">Order Items</h3>
+
+                <div className="space-y-3">
+                  {selectedOrder.items.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between border rounded-lg p-3"
+                    >
+                      <div className="space-y-1">
+                        <p className="font-medium">{item.item_name}</p>
+
+                        <p className="text-xs text-muted-foreground">
+                          Qty: {item.qty}
+                        </p>
+
+                        <p className="text-xs text-muted-foreground">
+                          ₹{item.rate} each
+                        </p>
+                      </div>
+
+                      <div className="font-semibold text-sm">
+                        ₹{(item.rate * item.qty).toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* TOTAL SUMMARY */}
+                <div className="border-t pt-4 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+
+                    <span>₹{selectedOrder.total.toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex justify-between font-bold text-base">
+                    <span>Total</span>
+
+                    <span>₹{selectedOrder.total.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
             </div>
