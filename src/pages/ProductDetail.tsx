@@ -1348,7 +1348,7 @@ const isSelected =
       </section>
 
       {/* Detailed Information Tabs - White Background */}
-      <section className="bg-background py-16">
+      {/* <section className="bg-background py-16">
         <div className="container mx-auto px-4 max-w-5xl">
           <Tabs defaultValue="description" className="w-full">
             <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 mb-8 h-auto">
@@ -1450,7 +1450,7 @@ const isSelected =
             </TabsContent>
           </Tabs>
         </div>
-      </section>
+      </section> */}
 
       <footer className="bg-foreground text-background py-6">
         <div className="container mx-auto px-4 text-center">
