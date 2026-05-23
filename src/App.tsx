@@ -95,6 +95,7 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
+      </SupabaseAuthProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
