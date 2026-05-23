@@ -33,7 +33,7 @@ export const ErpProductCard = ({ item }: { item: ErpItem }) => {
             size="sm"
             className="flex-1 rounded-xl"
             onClick={() => {
-              addToCart({ id: item.item_code, name: item.item_name, price: item.standard_rate, image: item.image, category: item.item_group } as any);
+              addToCart({ productId: item.item_code, name: item.item_name, price: item.standard_rate, quantity: 1, image: item.image, category: item.item_group, purchaseType: "onetime" });
               toast({ title: "Added to cart", description: item.item_name });
             }}
           >
