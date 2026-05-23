@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { SupabaseAuthProvider } from "./contexts/SupabaseAuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import CategoryListing from "./pages/CategoryListing";
@@ -34,6 +35,9 @@ import RateCard from "./pages/customer/RateCard";
 import NutritionPlan from "./pages/NutritionPlan";
 import BlogDetails from "./pages/BlogDetails";
 import EventDetails from "./pages/EventDetails";
+import Auth from "./pages/Auth";
+import ErpShop from "./pages/ErpShop";
+import MySubscriptions from "./pages/customer/MySubscriptions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +45,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <SupabaseAuthProvider>
       <CartProvider>
         <TooltipProvider>
           <Toaster />
@@ -63,6 +68,9 @@ const App = () => (
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/erp-shop" element={<ErpShop />} />
+              <Route path="/dashboard/subscriptions" element={<MySubscriptions />} />
 
               {/* Admin Routes */}
               <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
@@ -87,6 +95,7 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
+      </SupabaseAuthProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
