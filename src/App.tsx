@@ -35,6 +35,9 @@ import RateCard from "./pages/customer/RateCard";
 import NutritionPlan from "./pages/NutritionPlan";
 import BlogDetails from "./pages/BlogDetails";
 import EventDetails from "./pages/EventDetails";
+import Auth from "./pages/Auth";
+import ErpShop from "./pages/ErpShop";
+import MySubscriptions from "./pages/customer/MySubscriptions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
