@@ -136,3 +136,12 @@ export const getProductById = async (itemCode) => {
     }
   );
 };
+export const disableItem = async (itemCode) => {
+  return axios.put(
+    `${API}/api/resource/Item/${encodeURIComponent(itemCode)}`,
+    {
+      disabled: 1,
+    },
+    authHeaders
+  );
+};

@@ -26,6 +26,8 @@ const CustomerManagement = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [customerOrders, setCustomerOrders] = useState([]);
+  const [detailsLoading, setDetailsLoading] =
+  useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -77,8 +79,8 @@ const paginatedCustomers = filteredCustomers.slice(
                 <TableHead>Type</TableHead>
                 <TableHead>Gender</TableHead>
                 <TableHead>Joined</TableHead>
-                <TableHead>Orders</TableHead>
-                <TableHead>Total Spent</TableHead>
+                {/* <TableHead>Orders</TableHead>
+                <TableHead>Total Spent</TableHead> */}
                 <TableHead className="text-right">View</TableHead>
               </TableRow>
             </TableHeader>
@@ -95,26 +97,56 @@ const paginatedCustomers = filteredCustomers.slice(
                       ? new Date(c.creation).toLocaleDateString()
                       : "N/A"}
                   </TableCell>
-                  <TableCell>{c.totalOrders ? c.totalOrders : "0"}</TableCell>
-                  <TableCell>₹{c.totalSpent?.toFixed(2) || "0.00"}</TableCell>
+                {/* <TableCell>
+  <span className="text-muted-foreground">
+    View Details
+  </span>
+</TableCell>
+
+<TableCell>
+  <span className="text-muted-foreground">
+    View Details
+  </span>
+</TableCell> */}
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={async () => {
-                        try {
-                          setSelectedCustomer(c);
+        onClick={async () => {
+  try {
+    setDetailsLoading(true);
 
-                          const res = await getSalesOrdersByCustomer(
-                            c.customer_name,
-                          );
+    const res =
+      await getSalesOrdersByCustomer(
+        c.customer_name
+      );
 
-                          setCustomerOrders(res.data.data || []);
-                        } catch (err) {
-                          console.error(err);
-                          setCustomerOrders([]);
-                        }
-                      }}
+    const orders = res.data.data || [];
+
+    setCustomerOrders(orders);
+
+    const validOrders = orders.filter(
+      (o) => o.status !== "Cancelled"
+    );
+
+    const totalSpent = validOrders.reduce(
+      (sum, order) =>
+        sum + Number(order.grand_total || 0),
+      0
+    );
+
+    setSelectedCustomer({
+      ...c,
+      totalSpent,
+      totalOrders: validOrders.length,
+    });
+  } catch (err) {
+    console.error(err);
+    setCustomerOrders([]);
+  } finally {
+    setDetailsLoading(false);
+  }
+}}
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
@@ -177,26 +209,60 @@ const paginatedCustomers = filteredCustomers.slice(
           <DialogHeader>
             <DialogTitle>{selectedCustomer?.customer_name}</DialogTitle>
           </DialogHeader>
-          {selectedCustomer && (
+         {detailsLoading ? (
+  <div className="py-20 text-center">
+    Loading customer details...
+  </div>
+) : selectedCustomer && (
             <div className="space-y-6">
               {/* TOP PROFILE CARD */}
-              <div className="rounded-2xl border bg-gradient-to-r from-cyan-500/10 to-blue-500/10 p-5">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div>
-                    <h2 className="text-2xl font-bold">
-                      {selectedCustomer.customer_name}
-                    </h2>
+           <div className="rounded-2xl border bg-gradient-to-r from-cyan-500/10 to-blue-500/10 p-6">
+  <div className="flex items-start justify-between gap-6 flex-wrap">
 
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {selectedCustomer.customer_type || "Customer"}
-                    </p>
-                  </div>
+    <div className="flex items-center gap-4">
 
-                  <Badge className="text-sm px-4 py-1">
-                    {selectedCustomer.gender || "N/A"}
-                  </Badge>
-                </div>
-              </div>
+      <div className="w-20 h-20 rounded-2xl bg-cyan-100 flex items-center justify-center text-3xl font-bold text-cyan-700">
+        {selectedCustomer.customer_name?.charAt(0)}
+      </div>
+
+      <div>
+        <h2 className="text-3xl font-bold">
+          {selectedCustomer.customer_name}
+        </h2>
+
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+
+          <Badge variant="secondary">
+            {selectedCustomer.customer_type || "Customer"}
+          </Badge>
+
+          <Badge variant="outline">
+            {selectedCustomer.customer_group || "N/A"}
+          </Badge>
+
+          <Badge>
+            {selectedCustomer.territory || "N/A"}
+          </Badge>
+
+        </div>
+      </div>
+    </div>
+
+    <div className="text-right">
+      <p className="text-sm text-muted-foreground">
+        Created On
+      </p>
+
+      <p className="font-medium">
+        {selectedCustomer.creation
+          ? new Date(
+              selectedCustomer.creation
+            ).toLocaleDateString()
+          : "N/A"}
+      </p>
+    </div>
+  </div>
+</div>
 
               {/* STATS */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -233,6 +299,61 @@ const paginatedCustomers = filteredCustomers.slice(
                 </div>
               </div>
 
+              <div className="rounded-2xl border p-5">
+  
+  <h3 className="text-lg font-semibold mb-5">
+    Customer Information
+  </h3>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+    <div>
+      <p className="text-xs text-muted-foreground">
+        Created By
+      </p>
+
+      <p className="font-medium mt-1">
+        {selectedCustomer.owner || "N/A"}
+      </p>
+    </div>
+
+    <div>
+      <p className="text-xs text-muted-foreground">
+        Last Modified By
+      </p>
+
+      <p className="font-medium mt-1">
+        {selectedCustomer.modified_by || "N/A"}
+      </p>
+    </div>
+
+    <div>
+      <p className="text-xs text-muted-foreground">
+        Last Updated
+      </p>
+
+      <p className="font-medium mt-1">
+        {selectedCustomer.modified
+          ? new Date(
+              selectedCustomer.modified
+            ).toLocaleString()
+          : "N/A"}
+      </p>
+    </div>
+
+    <div>
+      <p className="text-xs text-muted-foreground">
+        Customer ID
+      </p>
+
+      <p className="font-medium mt-1">
+        {selectedCustomer.name}
+      </p>
+    </div>
+
+  </div>
+</div>
+
               {/* ORDER HISTORY */}
               <div className="rounded-2xl border p-4">
                 <div className="flex items-center justify-between mb-4">
@@ -252,7 +373,7 @@ const paginatedCustomers = filteredCustomers.slice(
                     customerOrders.map((o) => (
                       <div
                         key={o.name}
-                        className="rounded-xl border p-4 hover:bg-muted/40 transition-all"
+                       className="rounded-2xl border bg-background p-5 hover:shadow-md transition-all"
                       >
                         <div className="flex items-center justify-between gap-4">
                           <div>

@@ -84,6 +84,10 @@ const OrdersManagement = () => {
   const { toast } = useToast();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+const itemsPerPage = 10;
+
   const findInvoiceForOrder = async (orderId: string) => {
     const res = await getInvoices();
 
@@ -119,9 +123,15 @@ const OrdersManagement = () => {
     }
   };
 
-  const filtered =
-    filter === "All" ? orders : orders.filter((o) => o.status === filter);
+ const filtered =
+  filter === "All" ? orders : orders.filter((o) => o.status === filter);
 
+const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+const startIndex = (currentPage - 1) * itemsPerPage;
+const endIndex = startIndex + itemsPerPage;
+
+const paginatedOrders = filtered.slice(startIndex, endIndex);
   const updateStatus = async (id: string, status: string) => {
     setUpdatingId(id);
 
@@ -192,7 +202,13 @@ const OrdersManagement = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Select value={filter} onValueChange={setFilter}>
+        <Select
+  value={filter}
+  onValueChange={(value) => {
+    setFilter(value);
+    setCurrentPage(1);
+  }}
+>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -221,7 +237,7 @@ const OrdersManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((order) => (
+            {paginatedOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.customerName}</TableCell>
@@ -303,6 +319,48 @@ const OrdersManagement = () => {
           </Table>
         </CardContent>
       </Card>
+      {filtered.length > itemsPerPage && (
+  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+    <p className="text-sm text-muted-foreground">
+      Showing{" "}
+      {filtered.length === 0 ? 0 : startIndex + 1}-
+      {Math.min(endIndex, filtered.length)} of {filtered.length} orders
+    </p>
+
+    <div className="flex items-center gap-2 flex-wrap justify-center">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={currentPage === 1}
+        onClick={() => setCurrentPage((prev) => prev - 1)}
+      >
+        Previous
+      </Button>
+
+      <div className="flex items-center gap-1 flex-wrap justify-center">
+        {Array.from({ length: totalPages }, (_, i) => (
+          <Button
+            key={i + 1}
+            size="sm"
+            variant={currentPage === i + 1 ? "default" : "outline"}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </Button>
+        ))}
+      </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={currentPage === totalPages}
+        onClick={() => setCurrentPage((prev) => prev + 1)}
+      >
+        Next
+      </Button>
+    </div>
+  </div>
+)}
       <Dialog
         open={!!selectedOrder}
         onOpenChange={() => setSelectedOrder(null)}

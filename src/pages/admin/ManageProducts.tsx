@@ -37,6 +37,8 @@ import { useToast } from "@/hooks/use-toast";
 
 import { useProducts } from "@/hooks/useProducts";
 
+import { disableItem } from "@/services/productService";
+
 const ManageProducts = () => {
   const [productList, setProductList] = useState<Product[]>(initialProducts);
   const [search, setSearch] = useState("");
@@ -52,6 +54,10 @@ const ManageProducts = () => {
   });
   const { toast } = useToast();
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+const itemsPerPage = 10;
+
   const { products } = useProducts();
 
   // useEffect(() => {
@@ -60,9 +66,16 @@ const ManageProducts = () => {
 
   // console.log("products in Manage products", products);
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()),
-  );
+const filtered = products.filter((p) =>
+  p.name.toLowerCase().includes(search.toLowerCase()),
+);
+
+const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+const startIndex = (currentPage - 1) * itemsPerPage;
+const endIndex = startIndex + itemsPerPage;
+
+const paginatedProducts = filtered.slice(startIndex, endIndex);
 
   const openAdd = () => {
     setEditProduct(null);
@@ -129,10 +142,37 @@ const ManageProducts = () => {
     setDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setProductList((prev) => prev.filter((p) => p.id !== id));
-    toast({ title: "Deleted", description: "Product removed." });
-  };
+const handleDelete = async (id: string) => {
+  try {
+    const confirmDisable = window.confirm(
+      "Are you sure you want to disable this product?"
+    );
+
+    if (!confirmDisable) return;
+
+    await disableItem(id);
+
+    toast({
+      title: "Disabled",
+      description: "Product disabled successfully",
+    });
+
+    // refresh ERP data
+    window.location.reload();
+
+  } catch (err: any) {
+    console.error(err);
+
+    toast({
+      title: "Action Failed",
+      description:
+        err?.response?.data?.exception ||
+        err?.response?.data?.message ||
+        "Unable to disable product",
+      variant: "destructive",
+    });
+  }
+};
 
   // if (loading) return <p>Loading products...</p>;
 
@@ -145,7 +185,10 @@ const ManageProducts = () => {
             className="pl-9"
             placeholder="Search products..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+           onChange={(e) => {
+  setSearch(e.target.value);
+  setCurrentPage(1);
+}}
           />
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -268,7 +311,7 @@ const ManageProducts = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((p) => (
+                paginatedProducts.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell>
                       <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden">
@@ -304,9 +347,13 @@ const ManageProducts = () => {
                       <Button variant="ghost" size="icon">
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
+                    <Button
+  variant="ghost"
+  size="icon"
+  onClick={() => handleDelete(p.id)}
+>
+  <Trash2 className="w-4 h-4 text-destructive" />
+</Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -315,6 +362,46 @@ const ManageProducts = () => {
           </Table>
         </CardContent>
       </Card>
+     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+  <p className="text-sm text-muted-foreground">
+   Showing{" "}
+{filtered.length === 0 ? 0 : startIndex + 1}-
+{Math.min(endIndex, filtered.length)} of {filtered.length} products
+  </p>
+
+  <div className="flex items-center gap-2">
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage((prev) => prev - 1)}
+    >
+      Previous
+    </Button>
+
+    <div className="flex items-center gap-1 flex-wrap justify-center">
+      {Array.from({ length: totalPages }, (_, i) => (
+        <Button
+          key={i + 1}
+          size="sm"
+          variant={currentPage === i + 1 ? "default" : "outline"}
+          onClick={() => setCurrentPage(i + 1)}
+        >
+          {i + 1}
+        </Button>
+      ))}
+    </div>
+
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage((prev) => prev + 1)}
+    >
+      Next
+    </Button>
+  </div>
+</div>
     </div>
   );
 };
