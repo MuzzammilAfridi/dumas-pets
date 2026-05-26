@@ -8,6 +8,7 @@ import {
   submitSalesOrder,
   createSalesInvoiceFromOrder,
   saveSalesInvoice,
+  submitSalesInvoice
 } from "@/services/salesOrderService";
 
 const CUSTOMER_NAME = "Customer Test";
@@ -290,6 +291,8 @@ const createOrUpdateSalesOrder = async (cartItems) => {
         );
       }
 
+      mappedInvoice.update_billed_amount_in_sales_order = 1;
+
       /*
       ----------------------------------------
       STEP 3 → Save Final Invoice
@@ -297,6 +300,10 @@ const createOrUpdateSalesOrder = async (cartItems) => {
       */
       const savedInvoiceRes =
         await saveSalesInvoice(mappedInvoice);
+
+        await submitSalesInvoice(
+  savedInvoiceRes.data.data
+);
 
       console.log(
         "FINAL SALES INVOICE SAVED:",

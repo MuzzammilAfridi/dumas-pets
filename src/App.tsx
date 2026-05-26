@@ -37,6 +37,7 @@ import { SalesProvider } from "./contexts/SalesContext";
 import RateCard from "./pages/admin/RateCard";
 import BlogDetails from "./pages/BlogDetails";
 import EventDetails from "./pages/EventDetails";
+import StoreRequisition from "./pages/admin/StoreRequisition";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +83,7 @@ const App = () => (
                 <Route path="products" element={<ManageProducts />} />
                 <Route path="orders" element={<OrdersManagement />} />
                 <Route path="customers" element={<CustomerManagement />} />
+                 <Route path="requisition" element={<StoreRequisition />} />
                 <Route path="rate-card" element={<RateCard />} />
               </Route>
 

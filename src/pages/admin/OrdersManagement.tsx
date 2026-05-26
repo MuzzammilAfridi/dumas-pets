@@ -10,7 +10,13 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Loader2 } from "lucide-react";
+import {
+  Eye,
+  Loader2,
+  Search
+} from "lucide-react";
+
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -44,28 +50,38 @@ import axios from "axios";
 
 const statusColor = (s: string) => {
   switch (s) {
-    case "Delivered":
+    case "Fulfilled":
       return "default";
-    case "Processing":
+
+    case "Out for Delivery":
       return "secondary";
+
+    case "Ready":
+      return "secondary";
+
+    case "Accept":
+      return "secondary";
+
     case "Pending":
       return "outline";
-    default:
+
+    case "Cancelled":
       return "destructive";
+
+    default:
+      return "outline";
   }
 };
 
 const mapERPStatus = (order) => {
-  if (order.docstatus === 0) return "Pending";
-  if (order.docstatus === 2) return "Cancelled";
+  if (order.docstatus === 2) {
+    return "Cancelled";
+  }
 
-  // ✅ NEW: detect delivered via billing %
-  if (order.per_billed === 100) return "Delivered";
-
-  if (order.status === "To Deliver" || order.status === "To Deliver and Bill")
-    return "Processing";
-
-  return "Processing";
+  return (
+    order.custom_order_status ||
+    "Pending"
+  );
 };
 
 const mapStatus = (status, docstatus) => {
@@ -85,6 +101,7 @@ const OrdersManagement = () => {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
 
 const itemsPerPage = 10;
 
@@ -123,55 +140,103 @@ const itemsPerPage = 10;
     }
   };
 
- const filtered =
-  filter === "All" ? orders : orders.filter((o) => o.status === filter);
+const filtered =
+  orders.filter((o) => {
 
+    const matchesStatus =
+      filter === "All"
+        ? true
+        : o.status === filter;
+
+    const q = search.toLowerCase();
+
+    const matchesSearch =
+      o.id.toLowerCase().includes(q) ||
+
+      o.customerName
+        .toLowerCase()
+        .includes(q) ||
+
+      o.status
+        .toLowerCase()
+        .includes(q) ||
+
+      o.date
+        .toLowerCase()
+        .includes(q);
+
+    return (
+      matchesStatus &&
+      matchesSearch
+    );
+  });
 const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
 const startIndex = (currentPage - 1) * itemsPerPage;
 const endIndex = startIndex + itemsPerPage;
+const API =
+  import.meta.env.VITE_API_URL;
+
+const API_KEY =
+  import.meta.env.VITE_FRAPPE_API_KEY;
+
+const API_SECRET =
+  import.meta.env.VITE_FRAPPE_API_SECRET;
+
+const authHeaders = {
+  headers: {
+    Authorization: `token ${API_KEY}:${API_SECRET}`,
+  },
+};
 
 const paginatedOrders = filtered.slice(startIndex, endIndex);
-  const updateStatus = async (id: string, status: string) => {
-    setUpdatingId(id);
+const updateStatus = async (
+  id: string,
+  status: string
+) => {
+  setUpdatingId(id);
 
-    try {
-      // ✅ PROCESSING = submit order (only if draft)
-      if (status === "Processing") {
-        const res = await getSalesOrder(id);
-        const order = res.data.data;
+  try {
+    // Cancel logic
+    if (status === "Cancelled") {
+      await cancelOrderWithDependencies(id);
+    } else {
+      // Update custom ERP field
+      await axios.put(
+        `${API}/api/resource/Sales Order/${id}`,
+        {
+          custom_order_status: status,
+        },
+        authHeaders
+      );
 
-        if (order.docstatus === 0) {
-          await submitOrder(id);
-        }
-      }
-
-      // ✅ DELIVERED = create invoice (REAL ERP ACTION)
-      if (status === "Delivered") {
+      // OPTIONAL:
+      // When fulfilled → create delivery
+      if (status === "Fulfilled") {
         await markOrderAsDelivered(id);
       }
-
-      // ✅ CANCELLED
-      if (status === "Cancelled") {
-        await cancelOrderWithDependencies(id);
-      }
-
-      fetchOrders();
-
-      toast({
-        title: "Updated",
-        description: `Order ${id} updated`,
-      });
-    } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err?.response?.data?.exception || "Failed to update order",
-        variant: "destructive",
-      });
-    } finally {
-      setUpdatingId(null);
     }
-  };
+
+    await fetchOrders();
+
+    toast({
+      title: "Updated",
+      description: `Order ${id} updated`,
+    });
+
+  } catch (err: any) {
+    toast({
+      title: "Error",
+      description:
+        err?.response?.data?.exception ||
+        "Failed to update order",
+      variant: "destructive",
+    });
+
+  } finally {
+    setUpdatingId(null);
+  }
+};
 
   useEffect(() => {
     fetchOrders();
@@ -201,7 +266,8 @@ const paginatedOrders = filtered.slice(startIndex, endIndex);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
+   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+    
         <Select
   value={filter}
   onValueChange={(value) => {
@@ -215,13 +281,46 @@ const paginatedOrders = filtered.slice(startIndex, endIndex);
           <SelectContent>
             <SelectItem value="All">All Orders</SelectItem>
             <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Processing">Processing</SelectItem>
-            <SelectItem value="Delivered">Delivered</SelectItem>
+           <SelectItem value="Accept">
+  Accept
+</SelectItem>
+
+<SelectItem value="Ready">
+  Ready
+</SelectItem>
+
+<SelectItem value="Out for Delivery">
+  Out for Delivery
+</SelectItem>
+
+<SelectItem value="Fulfilled">
+  Fulfilled
+</SelectItem>
             <SelectItem value="Cancelled">Cancelled</SelectItem>
           </SelectContent>
         </Select>
+        
       </div>
+      <div className="relative w-full sm:w-80">
+  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 
+  <Input
+    placeholder="Search orders..."
+    value={search}
+    onChange={(e) => {
+      setSearch(e.target.value);
+      setCurrentPage(1);
+    }}
+    className="pl-10"
+  />
+</div>
+{filtered.length === 0 ? (
+  <Card>
+    <CardContent className="py-10 text-center text-muted-foreground">
+      No matching orders found.
+    </CardContent>
+  </Card>
+) : (
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -251,7 +350,10 @@ const paginatedOrders = filtered.slice(startIndex, endIndex);
                   <TableCell>
                     <Select
                       value={order.status}
-                      disabled={updatingId === order.id}
+                      disabled={
+  updatingId === order.id ||
+  order.status === "Cancelled"
+}
                       onValueChange={(v) =>
                         updateStatus(order.id, v as Order["status"])
                       }
@@ -267,14 +369,32 @@ const paginatedOrders = filtered.slice(startIndex, endIndex);
                         )}
                       </SelectTrigger>
 
+                    
                       <SelectContent>
-                        <SelectItem value="Pending">Pending</SelectItem>
+  <SelectItem value="Pending">
+    Pending
+  </SelectItem>
 
-                        <SelectItem value="Processing">Processing</SelectItem>
+  <SelectItem value="Accept">
+    Accept
+  </SelectItem>
 
-                        <SelectItem value="Delivered">Delivered</SelectItem>
+  <SelectItem value="Ready">
+    Ready
+  </SelectItem>
 
-                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+  <SelectItem value="Out for Delivery">
+    Out for Delivery
+  </SelectItem>
+
+  <SelectItem value="Fulfilled">
+    Fulfilled
+  </SelectItem>
+
+  <SelectItem value="Cancelled">
+    Cancelled
+  </SelectItem>
+
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -294,7 +414,9 @@ const paginatedOrders = filtered.slice(startIndex, endIndex);
                           customerName: o.customer,
                           date: o.transaction_date,
                           total: o.grand_total,
-                          status: o.status,
+                          status:
+  o.custom_order_status ||
+  "Pending",
                           address: [
                             addr.address_line1,
                             addr.address_line2,
@@ -319,6 +441,7 @@ const paginatedOrders = filtered.slice(startIndex, endIndex);
           </Table>
         </CardContent>
       </Card>
+)}
       {filtered.length > itemsPerPage && (
   <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
     <p className="text-sm text-muted-foreground">
@@ -387,7 +510,8 @@ const paginatedOrders = filtered.slice(startIndex, endIndex);
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Status</p>
 
-                  <Badge variant={statusColor(selectedOrder.status) as any}>
+                  <Badge variant={statusColor(selectedOrder.custom_order_status
+) as any}>
                     {selectedOrder.status}
                   </Badge>
                 </div>

@@ -58,6 +58,16 @@ export const updateSalesOrder = (id, payload) => {
   );
 };
 
+export const submitSalesInvoice = (invoiceDoc) => {
+  return axios.post(
+    `${API}/api/method/frappe.client.submit`,
+    {
+      doc: invoiceDoc,
+    },
+    authHeaders
+  );
+};
+
 /* -----------------------------------
 3. Get Single Sales Order
 GET /api/resource/Sales Order/:id
@@ -78,7 +88,7 @@ export const getAllSalesOrders = (customerName) => {
 
 export const getAllSalesOrdersAdmin = () => {
   return axios.get(
-    `${API}/api/resource/Sales Order?fields=["name","customer","transaction_date","creation","grand_total","status","docstatus","per_billed"]&order_by=creation desc`,
+    `${API}/api/resource/Sales Order?fields=["name","customer","transaction_date","creation","grand_total","status","docstatus","per_billed", "custom_order_status"]&order_by=creation desc`,
     authHeaders
   );
 };

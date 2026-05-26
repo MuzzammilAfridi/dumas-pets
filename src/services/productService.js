@@ -15,25 +15,57 @@ const authHeaders = {
 GET ALL PRODUCTS
 ========================================
 */
-export const getProducts = async () => {
+// export const getProducts = async () => {
+//   return axios.get(
+//     `${API}/api/resource/Item`,
+//     {
+//       ...authHeaders,
+//       params: {
+//         fields: JSON.stringify([
+//           "item_code",
+//           "name",
+//           "item_name",
+//           "standard_rate",
+//           "item_group",
+//           "image",
+//         ]),
+//       },
+//     }
+//   );
+// };
+
+
+export const getProducts = async (
+  start = 0,
+  limit = 1000
+) => {
   return axios.get(
     `${API}/api/resource/Item`,
     {
       ...authHeaders,
+
       params: {
         fields: JSON.stringify([
           "item_code",
-          "name",
           "item_name",
           "standard_rate",
           "item_group",
           "image",
+          "disabled",
+          "description",
         ]),
+
+       filters: JSON.stringify([
+  ["disabled", "=", 0],
+  ["has_variants", "=", 0]
+]),
+
+        limit_start: start,
+        limit_page_length: limit,
       },
     }
   );
 };
-
 export const getProductsWithAttributes = async () => {
   return axios.get(
     `${API}/api/method/dumas_15.a3_dumas.api.get_variant_items_with_attributes`,
@@ -60,9 +92,11 @@ export const getTemplateVariants = async (itemCode) => {
           "item_group",
           "standard_rate",
         ]),
-        filters: JSON.stringify([
-          ["variant_of", "=", itemCode],
-        ]),
+       filters: JSON.stringify([
+  ["disabled", "=", 0],
+  ["has_variants", "=", 0],
+  ["variant_of", "is", "not set"]
+]),
       },
     }
   );

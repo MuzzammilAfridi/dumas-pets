@@ -17,9 +17,10 @@ const CategoryListing = () => {
   const decodedCategory = category?.split("-").join(" ").toLowerCase();
 
   // filter backend data
-  const allProducts = products.filter(
-    (p: any) => p.category?.trim().toLowerCase() === decodedCategory,
-  );
+const allProducts = products.filter(
+  (p: any) =>
+    p.item_group?.trim().toLowerCase() === decodedCategory
+);
 
   // console.log("All product in categoryListing", allProducts);
 

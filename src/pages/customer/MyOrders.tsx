@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
+
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +21,13 @@ cancelOrderWithDependencies,
 
 import { useOrders } from "@/hooks/useOrders";
 
-const statusSteps = ["Pending", "Processing", "Delivered"];
+const statusSteps = [
+  "Pending",
+  "Accept",
+  "Ready",
+  "Out for Delivery",
+  "Fulfilled",
+];
 
 const MyOrders = () => {
   const { orders, loading } = useOrders();
@@ -26,6 +35,7 @@ const MyOrders = () => {
   const [cancelLoadingId, setCancelLoadingId] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
 
 const ORDERS_PER_PAGE = 5;
 
@@ -36,30 +46,51 @@ const ORDERS_PER_PAGE = 5;
   console.log("orders in my order", orders);
   
 
-  const mapERPStatus = (order: any) => {
-  if (order.docstatus === 0) return "Pending";
-  if (order.docstatus === 2) return "Cancelled";
+//   const mapERPStatus = (order: any) => {
+//   if (order.docstatus === 0) return "Pending";
+//   if (order.docstatus === 2) return "Cancelled";
 
-  if (order.per_billed === 100) return "Delivered";
+//   if (order.per_billed === 100) return "Delivered";
 
-  if (
-    order.status === "To Deliver" ||
-    order.status === "To Deliver and Bill"
-  ) return "Processing";
+//   if (
+//     order.status === "To Deliver" ||
+//     order.status === "To Deliver and Bill"
+//   ) return "Processing";
 
-  return "Processing";
+//   return "Processing";
+// };
+
+
+const mapERPStatus = (order) => {
+  if (order.docstatus === 2) {
+    return "Cancelled";
+  }
+
+  return (
+    order.custom_order_status ||
+    "Pending"
+  );
 };
-
 const statusColor = (s: string) => {
   switch (s) {
-    case "Delivered":
-      return "default";     // green / success
-    case "Processing":
-      return "secondary";   // blue / in-progress
+    case "Fulfilled":
+      return "default";
+
+    case "Out for Delivery":
+      return "secondary";
+
+    case "Ready":
+      return "secondary";
+
+    case "Accept":
+      return "secondary";
+
     case "Pending":
-      return "outline";     // gray
+      return "outline";
+
     case "Cancelled":
-      return "destructive"; // red
+      return "destructive";
+
     default:
       return "outline";
   }
@@ -119,24 +150,48 @@ status: mapERPStatus(o),
   delivery_status: o.delivery_status || "",
   payment_due:
     o.payment_schedule?.[0]?.outstanding || 0,
-  paid_amount:
-    o.payment_schedule?.[0]?.paid_amount || 0,
+ paid_amount:
+  o.billing_status === "Fully Billed"
+    ? o.grand_total
+    : 0,
   due_date:
     o.payment_schedule?.[0]?.due_date || "",
 }));
 
-const totalPages = Math.ceil(
-formattedOrders.length / ORDERS_PER_PAGE
-);
+// const totalPages = Math.ceil(
+// formattedOrders.length / ORDERS_PER_PAGE
+// );
 
 const startIndex =
 (currentPage - 1) * ORDERS_PER_PAGE;
 
-const paginatedOrders =
-formattedOrders.slice(
-startIndex,
-startIndex + ORDERS_PER_PAGE
+const filteredOrders =
+  formattedOrders.filter((order) => {
+
+    const q = search.toLowerCase();
+
+    return (
+      order.id.toLowerCase().includes(q) ||
+
+      order.status.toLowerCase().includes(q) ||
+
+      order.date.toLowerCase().includes(q) ||
+
+      order.items.some((item: any) =>
+        item.name.toLowerCase().includes(q)
+      )
+    );
+  });
+
+const totalPages = Math.ceil(
+  filteredOrders.length / ORDERS_PER_PAGE
 );
+
+const paginatedOrders =
+  filteredOrders.slice(
+    startIndex,
+    startIndex + ORDERS_PER_PAGE
+  );
 
 
   if (loading) {
@@ -154,8 +209,20 @@ startIndex + ORDERS_PER_PAGE
       <h2 className="text-xl font-bold text-foreground">
         My Order History
       </h2>
+      <div className="relative max-w-md">
+  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 
-      {formattedOrders.length === 0 ? (
+  <Input
+    placeholder="Search orders..."
+    value={search}
+    onChange={(e) => {
+      setSearch(e.target.value);
+      setCurrentPage(1);
+    }}
+    className="pl-10"
+  />
+</div>
+{filteredOrders.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             <Package className="w-10 h-10 mx-auto mb-2 opacity-50" />
@@ -270,7 +337,7 @@ Re-order
   </Button>
 
 {order.status !== "Cancelled" &&
-order.status !== "Delivered" && (
+order.status !== "Fulfilled" && (
 
 <Button
 variant="destructive"
@@ -477,7 +544,10 @@ try {
             <p><strong>Delivery Date:</strong> {selectedOrder.delivery_date || "-"}</p>
             <p><strong>Time Slot:</strong> {selectedOrder.custom_delivery_time_slot || "-"}</p>
             <p><strong>Billing Status:</strong> {selectedOrder.billing_status || "-"}</p>
-            <p><strong>Delivery Status:</strong> {selectedOrder.delivery_status || "-"}</p>
+           <p>
+  <strong>Order Status:</strong>{" "}
+  {selectedOrder.status || "-"}
+</p>
           </div>
         </Card>
       </div>

@@ -66,8 +66,10 @@ const itemsPerPage = 10;
 
   // console.log("products in Manage products", products);
 
-const filtered = products.filter((p) =>
-  p.name.toLowerCase().includes(search.toLowerCase()),
+const filtered = products.filter((p: any) =>
+  p.item_name
+    ?.toLowerCase()
+    .includes(search.toLowerCase())
 );
 
 const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -318,7 +320,7 @@ const handleDelete = async (id: string) => {
                         {p.image ? (
                           <img
                             src={p.image}
-                            alt={p.name}
+                            alt={p.item_name}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -332,12 +334,12 @@ const handleDelete = async (id: string) => {
                     </TableCell>
 
                     <TableCell className="font-medium  truncate max-w-36 ">
-                      {p.name}
+                      {p.item_name}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{p.category}</Badge>
+                      <Badge variant="outline">{p.item_group}</Badge>
                     </TableCell>
-                    <TableCell>₹{p.price?.toFixed(2)}</TableCell>
+                    <TableCell>₹{p.standard_rate?.toFixed(2)}</TableCell>
                     <TableCell>10</TableCell>
                     <TableCell>
                       <Badge>Active</Badge>
@@ -350,7 +352,7 @@ const handleDelete = async (id: string) => {
                     <Button
   variant="ghost"
   size="icon"
-  onClick={() => handleDelete(p.id)}
+  onClick={() => handleDelete(p.item_code)}
 >
   <Trash2 className="w-4 h-4 text-destructive" />
 </Button>

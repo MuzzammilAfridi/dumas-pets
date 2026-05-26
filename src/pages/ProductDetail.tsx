@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import {
-  findOrCreateVariant,
+
   getItemAttribute,
 } from "@/services/variantService";
 
@@ -414,23 +414,12 @@ setSelectedVegetables(allVegetables);
 
     const finalFreeSoup = extraSoup === -1 ? 0 : freeSoup;
 
-    const templateCode = product.variant_of || product.item_code;
-
-    const variantRes = await findOrCreateVariant({
-      templateItem: templateCode,
-      foodType,
-      grain: grainType,
-      grainPercentage,
-      meatPercentage,
-      quantity,
-    });
 
     const newCartItem = {
       // productId: product.item_code,
-      productId: variantRes.item_code,
-      templateItem: templateCode,
-      name: `${product.item_name} (${grainType}, ${foodType}, grain ${grainPercentage}%, meat ${meatPercentage}% ) - ${quantity}`,
-
+      productId: product.item_code.trim(),
+ 
+  name: product.item_name,
       // IMPORTANT FIX → ensure price goes to cart
       price: Number(product.standard_rate || 100),
 
@@ -511,22 +500,13 @@ setSelectedVegetables(allVegetables);
 
       return;
     }
-    const templateCode = product.variant_of || product.item_code;
-
-    const variantRes = await findOrCreateVariant({
-      templateItem: templateCode,
-      foodType,
-      quantity,
-      grain: grainType,
-      grainPercentage,
-      meatPercentage,
-    });
+   
 
     const newCartItem = {
       // productId: product.item_code,
-      productId: variantRes.item_code,
-      name: `${product.item_name} (${grainType}) (${foodType}) (${grainPercentage}) (${meatPercentage}) (${quantity})`,
-      templateItem: templateCode,
+      productId: product.item_code,
+      name: product.item_name,
+    
 
       // IMPORTANT FIX → ensure price goes to cart
       price: Number(product.standard_rate || 100),

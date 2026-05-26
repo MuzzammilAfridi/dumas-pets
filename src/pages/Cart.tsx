@@ -1045,15 +1045,15 @@ if (cartItems.length === 0){
                             className="text-primary ml-2"
                           onClick={() =>
 navigate(
-  `/product/${encodeURIComponent(
-    item.templateItem || item.productId
-  )}`, {
+  `/product/${encodeURIComponent(item.productId)}`,
+  {
     state: {
       editMode: true,
       cartIndex: idx,
       cartItem: item,
     },
-  })
+  }
+)
 }
                           >
                             <Edit className="w-3 h-3 mr-1" /> Edit
