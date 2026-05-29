@@ -25,6 +25,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageProducts from "./pages/admin/ManageProducts";
 import OrdersManagement from "./pages/admin/OrdersManagement";
 import StoreRequisition from "./pages/admin/StoreRequisition";
+import KitchenRequisition from "./pages/admin/KitchenRequisition";
 import CustomerManagement from "./pages/admin/CustomerManagement";
 import CustomerLayout from "./pages/customer/CustomerLayout";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
@@ -79,6 +80,7 @@ const App = () => (
                 <Route path="products" element={<ManageProducts />} />
                 <Route path="orders" element={<OrdersManagement />} />
                 <Route path="requisition" element={<StoreRequisition />} />
+                <Route path="kitchen" element={<KitchenRequisition />} />
                 <Route path="customers" element={<CustomerManagement />} />
               </Route>
 
