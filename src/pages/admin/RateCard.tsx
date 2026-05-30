@@ -1,4 +1,4 @@
-import { useState } from 'react';
+
 import { format } from 'date-fns';
 import { CalendarIcon, Save } from 'lucide-react';
 import { products } from '@/data/products';
@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { getActiveTariff, getTariffDetails, updateRateCard, getRateCardItems } from '@/services/rateService';
+import { useEffect, useState } from "react";
 
 interface RateRow {
   id: string;
@@ -26,22 +28,22 @@ interface RateRow {
   available: boolean;
 }
 
-const UOMS = ['kg', 'g', 'pack', 'piece', 'box', 'litre'];
+
+
+const UOMS = [
+  'Kg',
+  'Gram',
+  'Pack',
+  'Piece',
+  'Box',
+  'Litre'
+];
 
 const RateCard = () => {
-  const [rows, setRows] = useState<RateRow[]>(
-    products.map((p) => ({
-      id: p.id,
-      name: p.name,
-      category: p.category,
-      selected: false,
-      rate: p.price,
-      uom: 'pack',
-      available: true,
-    }))
-  );
+const [rows, setRows] = useState<RateRow[]>([]);
   const [enableFromDate, setEnableFromDate] = useState<Date | undefined>(new Date());
   const [enabled, setEnabled] = useState(true);
+  
 
   const updateRow = (id: string, patch: Partial<RateRow>) =>
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
@@ -51,11 +53,113 @@ const RateCard = () => {
 
   const selectedCount = rows.filter((r) => r.selected).length;
 
-  const handleSave = () => {
-    if (!enableFromDate) return toast.error('Please pick an enable-from date');
-    if (selectedCount === 0) return toast.error('Select at least one item');
-    toast.success(`Rate card saved for ${selectedCount} item(s)`);
-  };
+// const handleSave = async () => {
+//   try {
+//     const activeRes = await getActiveTariff();
+
+//     const activeTariff = activeRes.data.data?.[0];
+
+   
+
+//     if (!activeTariff) {
+//       toast.error("No active tariff found");
+//       return;
+//     }
+
+//     const payload = {
+//       date: format(enableFromDate!, "yyyy-MM-dd"),
+//       status: enabled ? "Enabled" : "Disabled",
+//       rate_card: rows
+//         .filter((r) => r.selected)
+//         .map((r, index) => ({
+//           idx: index + 1,
+//           item: r.name,
+//           category: r.category,
+//           qty: 1,
+//           uom: r.uom,
+//           rate: r.rate,
+//           availability: r.available ? 1 : 0,
+//         })),
+//     };
+
+//     await updateRateCard(activeTariff.name, payload);
+
+//     toast.success("Rate card updated successfully");
+//   } catch (error) {
+//     console.error(error);
+//     toast.error("Failed to update rate card");
+//   }
+// };
+
+
+const handleSave = async () => {
+  try {
+    console.log("========== SAVE STARTED ==========");
+
+    const rateCardName = "Rate Card - 1";
+
+    const payload = {
+      date: format(enableFromDate!, "yyyy-MM-dd"),
+      status: enabled ? "Enabled" : "Disabled",
+      rate_card: rows
+        .filter((r) => r.selected)
+        .map((r, index) => ({
+          idx: index + 1,
+          item: r.name,
+          category: r.category,
+          qty: 1,
+          uom: r.uom,
+          rate: r.rate,
+          availability: r.available ? 1 : 0,
+        })),
+    };
+
+    console.log("Updating:", rateCardName);
+    console.log("Payload:", payload);
+
+    const updateRes = await updateRateCard(
+      rateCardName,
+      payload
+    );
+
+    console.log("Update Success:", updateRes.data);
+
+    toast.success("Rate card updated successfully");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to update rate card");
+  }
+};
+
+const loadRateCard = async () => {
+  try {
+    const tariffRes = await getRateCardItems();
+
+
+    console.log("Rate Card:", tariffRes.data.data);
+
+    const rateCard = tariffRes.data.data.rate_card;
+
+    const mappedRows = rateCard.map((item: any) => ({
+      id: item.name,
+      name: item.item,
+      category: item.category,
+      selected: true,
+      rate: item.rate || 0,
+      uom: item.uom || "Gram",
+      available: Boolean(item.availability),
+    }));
+
+    setRows(mappedRows);
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to load rate card");
+  }
+};
+
+useEffect(() => {
+  loadRateCard();
+}, []);
 
   return (
     <div className="space-y-6">
