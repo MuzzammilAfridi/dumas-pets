@@ -87,3 +87,9 @@ export const getRateCardItems = async () => {
     "/api/resource/Daily Tariff/Rate%20Card%20-%201"
   );
 };
+
+export const getUOMs = () => {
+  return apiClient.get(
+    '/api/resource/UOM?fields=["name"]'
+  );
+};

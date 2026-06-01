@@ -15,14 +15,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { getActiveTariff, getTariffDetails, updateRateCard, getRateCardItems } from '@/services/rateService';
+import { getActiveTariff, getTariffDetails, updateRateCard, getRateCardItems, getUOMs } from '@/services/rateService';
 import { useEffect, useState } from "react";
 
 interface RateRow {
   id: string;
   name: string;
   category: string;
-  selected: boolean;
+  // selected: boolean;
   rate: number;
   uom: string;
   available: boolean;
@@ -43,15 +43,16 @@ const RateCard = () => {
 const [rows, setRows] = useState<RateRow[]>([]);
   const [enableFromDate, setEnableFromDate] = useState<Date | undefined>(new Date());
   const [enabled, setEnabled] = useState(true);
+  const [uoms, setUoms] = useState<string[]>([]);
   
 
   const updateRow = (id: string, patch: Partial<RateRow>) =>
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
 
-  const allSelected = rows.length > 0 && rows.every((r) => r.selected);
-  const toggleAll = (val: boolean) => setRows((prev) => prev.map((r) => ({ ...r, selected: val })));
+  // const allSelected = rows.length > 0 && rows.every((r) => r.selected);
+  // const toggleAll = (val: boolean) => setRows((prev) => prev.map((r) => ({ ...r, selected: val })));
 
-  const selectedCount = rows.filter((r) => r.selected).length;
+  // const selectedCount = rows.filter((r) => r.selected).length;
 
 // const handleSave = async () => {
 //   try {
@@ -91,6 +92,36 @@ const [rows, setRows] = useState<RateRow[]>([]);
 //   }
 // };
 
+const addNewRow = () => {
+  const newRow: RateRow = {
+    id: `new-${Date.now()}`,
+    name: "",
+    category: "",
+    // selected: true,
+    rate: 0,
+    uom: "Gram",
+    available: true,
+  };
+
+  setRows((prev) => [...prev, newRow]);
+};
+
+const loadUOMs = async () => {
+  try {
+    const res = await getUOMs();
+
+    const uomList = res.data.data.map(
+      (item: any) => item.name
+    );
+
+    setUoms(uomList);
+
+    console.log("UOMs:", uomList);
+  } catch (error) {
+    console.error("Failed to load UOMs", error);
+  }
+};
+
 
 const handleSave = async () => {
   try {
@@ -101,17 +132,15 @@ const handleSave = async () => {
     const payload = {
       date: format(enableFromDate!, "yyyy-MM-dd"),
       status: enabled ? "Enabled" : "Disabled",
-      rate_card: rows
-        .filter((r) => r.selected)
-        .map((r, index) => ({
-          idx: index + 1,
-          item: r.name,
-          category: r.category,
-          qty: 1,
-          uom: r.uom,
-          rate: r.rate,
-          availability: r.available ? 1 : 0,
-        })),
+     rate_card: rows.map((r, index) => ({
+  idx: index + 1,
+  item: r.name,
+  category: r.category,
+  qty: 1,
+  uom: r.uom,
+  rate: r.rate,
+  availability: r.available ? 1 : 0,
+})),
     };
 
     console.log("Updating:", rateCardName);
@@ -144,7 +173,7 @@ const loadRateCard = async () => {
       id: item.name,
       name: item.item,
       category: item.category,
-      selected: true,
+      // selected: true,
       rate: item.rate || 0,
       uom: item.uom || "Gram",
       available: Boolean(item.availability),
@@ -159,6 +188,7 @@ const loadRateCard = async () => {
 
 useEffect(() => {
   loadRateCard();
+    loadUOMs();
 }, []);
 
   return (
@@ -220,20 +250,28 @@ useEffect(() => {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-lg">Items</CardTitle>
-            <CardDescription>{selectedCount} of {rows.length} selected</CardDescription>
+          <CardDescription>
+  {rows.length} Items
+</CardDescription>
           </div>
-          <Button onClick={handleSave} className="gap-2">
-            <Save className="w-4 h-4" /> Save Rate Card
-          </Button>
+        <div className="flex gap-2">
+  <Button variant="outline" onClick={addNewRow}>
+    + Add Row
+  </Button>
+
+  <Button onClick={handleSave} className="gap-2">
+    <Save className="w-4 h-4" /> Save Rate Card
+  </Button>
+</div>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="w-12">
+                  {/* <TableHead className="w-12">
                     <Checkbox checked={allSelected} onCheckedChange={(v) => toggleAll(Boolean(v))} />
-                  </TableHead>
+                  </TableHead> */}
                   <TableHead>Item</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead className="w-36">Rate (₹)</TableHead>
@@ -243,40 +281,54 @@ useEffect(() => {
               </TableHeader>
               <TableBody>
                 {rows.map((r) => (
-                  <TableRow key={r.id} className={cn(!r.selected && 'opacity-70')}>
-                    <TableCell>
+               <TableRow key={r.id}>
+                    {/* <TableCell>
                       <Checkbox
                         checked={r.selected}
                         onCheckedChange={(v) => updateRow(r.id, { selected: Boolean(v) })}
                       />
-                    </TableCell>
-                    <TableCell className="font-medium">{r.name}</TableCell>
+                    </TableCell> */}
+                   <TableCell>
+  <Input
+    value={r.name}
+    onChange={(e) =>
+      updateRow(r.id, { name: e.target.value })
+    }
+  />
+</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{r.category}</Badge>
-                    </TableCell>
+  <Input
+    value={r.category}
+    onChange={(e) =>
+      updateRow(r.id, { category: e.target.value })
+    }
+  />
+</TableCell>
                     <TableCell>
                       <Input
                         type="number"
                         min={0}
                         step="0.01"
                         value={r.rate}
-                        disabled={!r.selected}
+                        
                         onChange={(e) => updateRow(r.id, { rate: parseFloat(e.target.value) || 0 })}
                       />
                     </TableCell>
                     <TableCell>
                       <Select
                         value={r.uom}
-                        disabled={!r.selected}
+                      
                         onValueChange={(v) => updateRow(r.id, { uom: v })}
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {UOMS.map((u) => (
-                            <SelectItem key={u} value={u}>{u}</SelectItem>
-                          ))}
+                         {uoms.map((u) => (
+  <SelectItem key={u} value={u}>
+    {u}
+  </SelectItem>
+))}
                         </SelectContent>
                       </Select>
                     </TableCell>
@@ -284,7 +336,7 @@ useEffect(() => {
                       <div className="flex items-center gap-2">
                         <Switch
                           checked={r.available}
-                          disabled={!r.selected}
+                          
                           onCheckedChange={(v) => updateRow(r.id, { available: v })}
                         />
                         <span className="text-sm text-muted-foreground">
