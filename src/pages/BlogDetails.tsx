@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {  useEffect, useState,  } from "react";
 import { Link, useParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
@@ -27,20 +27,8 @@ import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
 import team1 from "@/assets/team-1.jpg";
+import { getBlogById } from "@/services/blogService";
 
-const blogPosts: Record<string, any> = {
-  "1": {
-    id: 1,
-    title: "The Importance of Fresh Food for Your Pet's Health",
-    subtitle:
-      "Discover why switching to fresh home-cooked meals can transform your dog's overall health and energy levels.",
-    image: nutritionDog,
-    author: "Bismi Anil",
-    date: "January 15, 2026",
-    readTime: "6 min read",
-    category: "Nutrition",
-  },
-};
 
 const ingredientsToAvoid = [
   { icon: AlertTriangle, title: "Artificial Preservatives", desc: "Linked to long-term health concerns." },
@@ -84,6 +72,8 @@ const relatedPosts = [
   },
 ];
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const dummyComments = [
   {
     name: "Priya Sharma",
@@ -100,30 +90,62 @@ const dummyComments = [
 ];
 
 const BlogDetails = () => {
+
+ 
+  // const post = blogPosts[id || "1"] || blogPosts["1"];
+
   const { id } = useParams();
-  const [loading, setLoading] = useState(true);
-  const post = blogPosts[id || "1"] || blogPosts["1"];
+const [post, setPost] = useState<any>(null);
+const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 400);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return () => clearTimeout(t);
-  }, [id]);
+console.log("Blog ID:", id);
+useEffect(() => {
+  fetchBlog();
+}, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen">
-        <Navigation />
-        <div className="container mx-auto px-4 py-12 space-y-6">
-          <Skeleton className="h-[60vh] w-full rounded-2xl" />
-          <Skeleton className="h-8 w-2/3" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-4/6" />
-        </div>
-      </div>
-    );
+const fetchBlog = async () => {
+  try {
+    setLoading(true);
+
+    const data = await getBlogById(id!);
+
+    console.log("Blog Response:", data);
+
+    setPost(data);
+  } catch (error) {
+    console.error("Blog Error:", error);
+  } finally {
+    setLoading(false);
   }
+};
+
+
+
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen">
+  //       <Navigation />
+  //       <div className="container mx-auto px-4 py-12 space-y-6">
+  //         <Skeleton className="h-[60vh] w-full rounded-2xl" />
+  //         <Skeleton className="h-8 w-2/3" />
+  //         <Skeleton className="h-4 w-full" />
+  //         <Skeleton className="h-4 w-5/6" />
+  //         <Skeleton className="h-4 w-4/6" />
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  if (loading || !post) {
+  return (
+    <div className="min-h-screen">
+      <Navigation />
+      <div className="container mx-auto px-4 py-12">
+        <Skeleton className="h-[60vh] w-full rounded-2xl" />
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-background">
@@ -132,24 +154,30 @@ const BlogDetails = () => {
       {/* 2. Hero Banner */}
       <section className="relative h-[60vh] min-h-[420px] w-full overflow-hidden group">
         <img
-          src={post.image}
-          alt={post.title}
+      src={
+  post?.meta_image
+    ? post.meta_image.startsWith("http")
+      ? post.meta_image
+      : `${API_URL}${post.meta_image}`
+    : heroDog
+}
+          alt={post?.title}
           loading="lazy"
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80" />
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 text-white">
           <span className="inline-block px-4 py-1.5 bg-primary/90 backdrop-blur-sm text-primary-foreground text-xs font-bold tracking-widest uppercase rounded-full mb-5 shadow-lg">
-            {post.category}
+          {post.blog_category}
           </span>
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-black max-w-4xl leading-tight mb-4 drop-shadow-lg">
-            {post.title}
+            {post?.title}
           </h1>
-          <p className="text-base md:text-lg text-white/90 max-w-2xl mb-6">{post.subtitle}</p>
+          <p className="text-base md:text-lg text-white/90 max-w-2xl mb-6">{post?.blog_intro}</p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/80">
-            <span className="flex items-center gap-1.5"><User className="w-4 h-4" />{post.author}</span>
-            <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />{post.date}</span>
-            <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" />{post.readTime}</span>
+            <span className="flex items-center gap-1.5"><User className="w-4 h-4" />{post?.blogger}</span>
+            <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />{new Date(post?.published_on).toLocaleDateString()}</span>
+            <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" />{post?.readTime}</span>
           </div>
         </div>
       </section>

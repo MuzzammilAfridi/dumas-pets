@@ -12,6 +12,11 @@ import {
   AlertTriangle, CheckCircle2, Download, FileText, Printer, RefreshCw, Search, Package2,
 } from 'lucide-react';
 
+import { Checkbox } from "@/components/ui/checkbox";
+
+const API_KEY = import.meta.env.VITE_FRAPPE_API_KEY;
+const API_SECRET = import.meta.env.VITE_FRAPPE_API_SECRET;
+
 interface BreakdownRow {
   orderId: string;
   customer: string;
@@ -35,6 +40,75 @@ const StoreRequisition = () => {
   const [orderSearch, setOrderSearch] = useState('');
   const [materialSearch, setMaterialSearch] = useState('');
   const [refreshTick, setRefreshTick] = useState(0);
+  const [selectedBOMs, setSelectedBOMs] = useState<number[]>([]);
+
+  const toggleBOM = (index: number) => {
+  setSelectedBOMs(prev =>
+    prev.includes(index)
+      ? prev.filter(i => i !== index)
+      : [...prev, index]
+  );
+};
+
+
+  const createMaterialRequest = async () => {
+  try {
+    if (selectedBOMs.length === 0) {
+  toast({
+    title: "No BOM Selected",
+    description: "Please select at least one BOM material.",
+    variant: "destructive",
+  });
+  return;
+}
+    const payload = {
+      material_request_type: "Purchase",
+      transaction_date: new Date().toISOString().split("T")[0],
+      schedule_date: new Date().toISOString().split("T")[0],
+      items: summary.map((item) => ({
+        item_code: item.materialName, // replace with actual item code if available
+        schedule_date: new Date().toISOString().split("T")[0],
+        qty: item.totalQty,
+      uom: item.unit === "pcs" ? "Nos" : "Unit",
+stock_uom: item.unit === "pcs" ? "Nos" : "Unit",
+        conversion_factor: 1,
+      })),
+    };
+console.log(JSON.stringify(payload, null, 2));
+    const response = await fetch(
+      "https://dumas.frappe.cloud/api/resource/Material%20Request",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `token ${API_KEY}:${API_SECRET}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.exception || "Failed to create Material Request");
+    }
+
+    toast({
+      title: "Material Request Created",
+      description: `Request No: ${data.data.name}`,
+    });
+
+    console.log("Material Request:", data);
+  } catch (error: any) {
+    console.error(error);
+
+    toast({
+      title: "Error",
+      description: error.message,
+      variant: "destructive",
+    });
+  }
+};
 
   const allProducts = useMemo(
     () => Array.from(new Set(mockOrders.flatMap(o => o.items.map(i => i.name)))),
@@ -67,6 +141,8 @@ const StoreRequisition = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTick]);
 
+  
+
   const filteredBreakdown = useMemo(() => {
     return breakdown.filter(r => {
       if (orderStatus !== 'All' && r.status !== orderStatus) return false;
@@ -78,9 +154,15 @@ const StoreRequisition = () => {
     });
   }, [breakdown, orderStatus, productFilter, dateFilter, orderSearch, materialSearch]);
 
+  const selectedBreakdown = useMemo(() => {
+  return filteredBreakdown.filter((_, index) =>
+    selectedBOMs.includes(index)
+  );
+}, [filteredBreakdown, selectedBOMs]);
+
   // Step 4: group materials
   const summary = useMemo(() => {
-    const grouped = filteredBreakdown.reduce<Record<string, { materialName: string; unit: string; totalQty: number }>>(
+    const grouped = selectedBreakdown.reduce<Record<string, { materialName: string; unit: string; totalQty: number }>>(
       (acc, item) => {
         const key = `${item.materialName}-${item.unit}`;
         if (!acc[key]) acc[key] = { materialName: item.materialName, unit: item.unit, totalQty: 0 };
@@ -97,7 +179,7 @@ const StoreRequisition = () => {
         return { ...m, available, shortage, isShort: available < m.totalQty };
       })
       .sort((a, b) => Number(b.isShort) - Number(a.isShort));
-  }, [filteredBreakdown]);
+  }, [selectedBreakdown]);
 
   const shortageCount = summary.filter(s => s.isShort).length;
 
@@ -207,6 +289,18 @@ const handleExport = async (label: string) => {
   });
 };
 
+
+const toggleAllBOMs = () => {
+  if (selectedBOMs.length === filteredBreakdown.length) {
+    setSelectedBOMs([]);
+  } else {
+    setSelectedBOMs(filteredBreakdown.map((_, index) => index));
+  }
+};
+
+
+
+
   return (
     // <div id="requisition-content">
     <div className="space-y-4">
@@ -233,9 +327,13 @@ const handleExport = async (label: string) => {
               <Button variant="outline" size="sm" onClick={() => handleExport('Print')}>
                 <Printer className="w-4 h-4" /> Print
               </Button>
-              <Button size="sm" onClick={() => toast({ title: 'Requisition generated', description: `${summary.length} materials sent to store.` })}>
-                <Package2 className="w-4 h-4" /> Generate Requisition
-              </Button>
+      <Button
+  size="sm"
+  onClick={createMaterialRequest}
+>
+  <Package2 className="w-4 h-4" />
+  Generate Requisition
+</Button>
             </div>
           </div>
 
@@ -279,12 +377,22 @@ const handleExport = async (label: string) => {
               <Table>
                 <TableHeader className="sticky top-0 bg-card z-10">
                   <TableRow>
+                
+  <TableHead>
+    <Checkbox
+      checked={
+        filteredBreakdown.length > 0 &&
+        selectedBOMs.length === filteredBreakdown.length
+      }
+      onCheckedChange={toggleAllBOMs}
+    />
+  </TableHead>
                     <TableHead>Order ID</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Product</TableHead>
                     <TableHead className="text-right">Ordered</TableHead>
                     <TableHead>BOM Material</TableHead>
-                    <TableHead>Unit</TableHead>
+                    {/* <TableHead>Unit</TableHead> */}
                     <TableHead className="text-right">Qty / Product</TableHead>
                     <TableHead className="text-right">Total Qty</TableHead>
                   </TableRow>
@@ -292,19 +400,25 @@ const handleExport = async (label: string) => {
                 <TableBody>
                   {filteredBreakdown.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                         No requisition rows match the current filters.
                       </TableCell>
                     </TableRow>
                   )}
                   {filteredBreakdown.map((r, i) => (
-                    <TableRow key={i} className={i % 2 === 0 ? '' : 'bg-muted/30'}>
+                  <TableRow key={i}>
+  <TableCell>
+    <Checkbox
+      checked={selectedBOMs.includes(i)}
+      onCheckedChange={() => toggleBOM(i)}
+    />
+  </TableCell>
                       <TableCell className="font-medium">{r.orderId}</TableCell>
                       <TableCell>{r.customer}</TableCell>
                       <TableCell>{r.product}</TableCell>
                       <TableCell className="text-right">{r.orderedQty}</TableCell>
                       <TableCell>{r.materialName}</TableCell>
-                      <TableCell className="text-muted-foreground">{r.unit}</TableCell>
+                      {/* <TableCell className="text-muted-foreground">{r.unit}</TableCell> */}
                       <TableCell className="text-right">{r.qtyPerProduct}</TableCell>
                       <TableCell className="text-right font-semibold">{r.totalMaterialQty}</TableCell>
                     </TableRow>

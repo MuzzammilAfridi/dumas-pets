@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X, ClipboardList, ChefHat, Truck } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu, X, ClipboardList, ChefHat, Truck, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +13,7 @@ const navItems = [
     { label: 'Store Requisition', path: '/admin/requisition', icon: ClipboardList },
      { label: 'Kitchen Requisition', path: '/admin/kitchen', icon: ChefHat },
       { label: 'PickUp List', path: '/admin/pickup', icon: Truck },
+       { label: 'Blog Management', path: '/admin/blogs', icon: FileText },
   { label: 'Rate Card', path: '/admin/rate-card', icon: Package },
 ];
 

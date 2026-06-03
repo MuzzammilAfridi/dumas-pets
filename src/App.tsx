@@ -40,6 +40,7 @@ import EventDetails from "./pages/EventDetails";
 import StoreRequisition from "./pages/admin/StoreRequisition";
 import KitchenRequisition from "./pages/admin/KitchenRequisition";
 import PickupList from "./pages/admin/PickupList";
+import BlogManagement from "./pages/admin/BlogManagement";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const App = () => (
                  <Route path="requisition" element={<StoreRequisition />} />
                     <Route path="kitchen" element={<KitchenRequisition />} />
                           <Route path="pickup" element={<PickupList />} />
+                            <Route path="blogs" element={<BlogManagement />} />
                 <Route path="rate-card" element={<RateCard />} />
               </Route>
 
