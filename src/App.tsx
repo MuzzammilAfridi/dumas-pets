@@ -28,6 +28,7 @@ import StoreRequisition from "./pages/admin/StoreRequisition";
 import KitchenRequisition from "./pages/admin/KitchenRequisition";
 import PickupList from "./pages/admin/PickupList";
 import CustomerManagement from "./pages/admin/CustomerManagement";
+import BlogManagement from "./pages/admin/BlogManagement";
 import CustomerLayout from "./pages/customer/CustomerLayout";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import MyOrders from "./pages/customer/MyOrders";
@@ -84,6 +85,7 @@ const App = () => (
                 <Route path="kitchen" element={<KitchenRequisition />} />
                 <Route path="pickup" element={<PickupList />} />
                 <Route path="customers" element={<CustomerManagement />} />
+                <Route path="blogs" element={<BlogManagement />} />
               </Route>
 
               {/* Customer Routes */}
