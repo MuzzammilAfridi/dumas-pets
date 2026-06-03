@@ -28,6 +28,7 @@ import StoreRequisition from "./pages/admin/StoreRequisition";
 import KitchenRequisition from "./pages/admin/KitchenRequisition";
 import PickupList from "./pages/admin/PickupList";
 import CustomerManagement from "./pages/admin/CustomerManagement";
+import BlogManagement from "./pages/admin/BlogManagement";
 import CustomerLayout from "./pages/customer/CustomerLayout";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import MyOrders from "./pages/customer/MyOrders";
