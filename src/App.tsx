@@ -85,6 +85,7 @@ const App = () => (
                 <Route path="kitchen" element={<KitchenRequisition />} />
                 <Route path="pickup" element={<PickupList />} />
                 <Route path="customers" element={<CustomerManagement />} />
+                <Route path="blogs" element={<BlogManagement />} />
               </Route>
 
               {/* Customer Routes */}
