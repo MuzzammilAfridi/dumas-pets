@@ -76,7 +76,7 @@ export const mockKitchenOrders: KitchenOrder[] = [
   {
     id: 'KO-1001', orderDate: today, pickupDate: today, timeSlot: '10:00 AM - 12:00 PM',
     customerName: 'Sarah Mitchell', phone: '+91 98765 43210', altPhone: '+91 98765 11111',
-    items: [{ itemName: 'Premium Chicken & Rice', quantity: 2, rawMaterials: ['Chicken 500g', 'Rice 300g', 'Carrots 100g'], cookingInstructions: 'Boil chicken, mix with steamed rice. No salt.', gpvRatio: 'Puppy' }],
+    items: [{ itemName: 'Premium Chicken & Rice', quantity: 2, rawMaterials: ['Chicken 500g', 'Rice 300g', 'Carrots 100g'], cookingInstructions: 'Boil chicken, mix with steamed rice. No salt.', gpvRatio: '40/40/20' }],
     deliveryBoy: 'Rajesh Kumar', deliveryBoyPhone: '+91 90000 11111', vehicleNumber: 'KA-01-AB-1234', assignedTime: '09:00 AM',
     address: '123 Oak Street, Apt 4B', landmark: 'Near Central Park', city: 'Bangalore', state: 'KA', pincode: '560001',
     status: 'In Preparation', specialNotes: 'Customer prefers warm packaging.',
@@ -90,7 +90,7 @@ export const mockKitchenOrders: KitchenOrder[] = [
   {
     id: 'KO-1002', orderDate: today, pickupDate: tomorrow, timeSlot: '2:00 PM - 4:00 PM',
     customerName: 'John Davis', phone: '+91 99887 76655',
-    items: [{ itemName: 'Birthday Celebration Cake', quantity: 1, rawMaterials: ['Flour 500g', 'Yogurt 200g', 'Carob powder 50g'], cookingInstructions: 'Bake at 180°C for 35 min. Decorate with paw print.', gpvRatio: 'Puppy' }],
+    items: [{ itemName: 'Birthday Celebration Cake', quantity: 1, rawMaterials: ['Flour 500g', 'Yogurt 200g', 'Carob powder 50g'], cookingInstructions: 'Bake at 180°C for 35 min. Decorate with paw print.', gpvRatio: '30/30/40' }],
     deliveryBoy: 'Suresh Patel', deliveryBoyPhone: '+91 90000 22222', vehicleNumber: 'KA-02-CD-5678',
     address: '456 Elm Avenue', landmark: 'Opposite City Mall', city: 'Mumbai', state: 'MH', pincode: '400001',
     status: 'Pending', specialNotes: 'Add "Happy Birthday Rex" on cake.',
@@ -101,8 +101,8 @@ export const mockKitchenOrders: KitchenOrder[] = [
     id: 'KO-1003', orderDate: today, pickupDate: today, timeSlot: '6:00 PM - 8:00 PM',
     customerName: 'Emily Roberts', phone: '+91 97777 88888',
     items: [
-      { itemName: 'Peanut Butter Bones', quantity: 2, rawMaterials: ['Peanut Butter 100g', 'Whole Wheat 200g'], cookingInstructions: 'Shape into bones, bake 20 min.', gpvRatio: 'Adult' },
-      { itemName: 'Dental Chew Sticks', quantity: 1, rawMaterials: ['Sweet Potato 150g', 'Parsley 20g'], cookingInstructions: 'Dehydrate for 4 hours.', gpvRatio: 'Senior' },
+      { itemName: 'Peanut Butter Bones', quantity: 2, rawMaterials: ['Peanut Butter 100g', 'Whole Wheat 200g'], cookingInstructions: 'Shape into bones, bake 20 min.', gpvRatio: '30/50/20' },
+      { itemName: 'Dental Chew Sticks', quantity: 1, rawMaterials: ['Sweet Potato 150g', 'Parsley 20g'], cookingInstructions: 'Dehydrate for 4 hours.', gpvRatio: '20/40/40' },
     ],
     deliveryBoy: 'Mahesh Singh', deliveryBoyPhone: '+91 90000 33333',
     address: '789 Pine Road', landmark: 'Behind Tech Park', city: 'Pune', state: 'MH', pincode: '411001',
@@ -116,7 +116,7 @@ export const mockKitchenOrders: KitchenOrder[] = [
   {
     id: 'KO-1004', orderDate: today, pickupDate: today, timeSlot: '12:00 PM - 2:00 PM',
     customerName: 'Arjun Sharma', phone: '+91 91234 56789',
-    items: [{ itemName: 'Grain-Free Chicken', quantity: 3, rawMaterials: ['Chicken 1kg', 'Sweet Potato 300g', 'Spinach 100g'], cookingInstructions: 'Slow cook 45 min. No grains.', gpvRatio: 'Adult' }],
+    items: [{ itemName: 'Grain-Free Chicken', quantity: 3, rawMaterials: ['Chicken 1kg', 'Sweet Potato 300g', 'Spinach 100g'], cookingInstructions: 'Slow cook 45 min. No grains.', gpvRatio: '40/40/20' }],
     deliveryBoy: 'Rajesh Kumar', deliveryBoyPhone: '+91 90000 11111', vehicleNumber: 'KA-01-AB-1234',
     address: '12 MG Road', landmark: 'Near Metro Station', city: 'Bangalore', state: 'KA', pincode: '560002',
     status: 'Out for Delivery',
@@ -126,7 +126,7 @@ export const mockKitchenOrders: KitchenOrder[] = [
   {
     id: 'KO-1005', orderDate: today, pickupDate: dayAfter, timeSlot: '10:00 AM - 12:00 PM',
     customerName: 'Priya Nair', phone: '+91 95555 12345',
-    items: [{ itemName: 'Buffalo & Grain Mix', quantity: 1, rawMaterials: ['Buffalo Meat 400g', 'Brown Rice 200g'], cookingInstructions: 'Cook thoroughly. Cool before packing.', gpvRatio: 'Adult' }],
+    items: [{ itemName: 'Buffalo & Grain Mix', quantity: 1, rawMaterials: ['Buffalo Meat 400g', 'Brown Rice 200g'], cookingInstructions: 'Cook thoroughly. Cool before packing.', gpvRatio: '50/30/20' }],
     deliveryBoy: 'Suresh Patel', deliveryBoyPhone: '+91 90000 22222',
     address: '88 Marine Drive', landmark: 'Sea facing', city: 'Mumbai', state: 'MH', pincode: '400020',
     status: 'Packed',
@@ -136,7 +136,7 @@ export const mockKitchenOrders: KitchenOrder[] = [
   {
     id: 'KO-1006', orderDate: today, pickupDate: today, timeSlot: '4:00 PM - 6:00 PM',
     customerName: 'Vikram Reddy', phone: '+91 93333 44444',
-    items: [{ itemName: 'Complete Nutrition Mix', quantity: 2, rawMaterials: ['Chicken 500g', 'Rice 200g', 'Carrots 100g', 'Pumpkin 100g'], cookingInstructions: 'Balanced portion. Pack hot.', gpvRatio: 'Puppy' }],
+    items: [{ itemName: 'Complete Nutrition Mix', quantity: 2, rawMaterials: ['Chicken 500g', 'Rice 200g', 'Carrots 100g', 'Pumpkin 100g'], cookingInstructions: 'Balanced portion. Pack hot.', gpvRatio: '40/40/20' }],
     deliveryBoy: 'Mahesh Singh', deliveryBoyPhone: '+91 90000 33333',
     address: '45 Jubilee Hills', landmark: 'Road No. 5', city: 'Hyderabad', state: 'TG', pincode: '500033',
     status: 'Delivered',
@@ -146,7 +146,7 @@ export const mockKitchenOrders: KitchenOrder[] = [
   {
     id: 'KO-1007', orderDate: today, pickupDate: today, timeSlot: '8:00 AM - 10:00 AM',
     customerName: 'Anita Desai', phone: '+91 96666 77777',
-    items: [{ itemName: 'Senior Dog Soft Meal', quantity: 1, rawMaterials: ['Fish 300g', 'Pumpkin 150g'], cookingInstructions: 'Mash well, easy to chew.', gpvRatio: 'Senior' }],
+    items: [{ itemName: 'Senior Dog Soft Meal', quantity: 1, rawMaterials: ['Fish 300g', 'Pumpkin 150g'], cookingInstructions: 'Mash well, easy to chew.', gpvRatio: '20/40/40' }],
     deliveryBoy: 'Unassigned', deliveryBoyPhone: '-',
     address: '101 Linking Road', landmark: 'Bandra West', city: 'Mumbai', state: 'MH', pincode: '400050',
     status: 'Cancelled', specialNotes: 'Customer cancelled — refund issued.',
@@ -156,7 +156,7 @@ export const mockKitchenOrders: KitchenOrder[] = [
   {
     id: 'KO-1008', orderDate: today, pickupDate: tomorrow, timeSlot: '6:00 PM - 8:00 PM',
     customerName: 'Rohan Kapoor', phone: '+91 92222 33333',
-    items: [{ itemName: 'Lamb & Vegetable Bowl', quantity: 2, rawMaterials: ['Lamb 600g', 'Mixed Veg 200g'], cookingInstructions: 'Slow simmer 60 min.', gpvRatio: 'Adult' }],
+    items: [{ itemName: 'Lamb & Vegetable Bowl', quantity: 2, rawMaterials: ['Lamb 600g', 'Mixed Veg 200g'], cookingInstructions: 'Slow simmer 60 min.', gpvRatio: '30/50/20' }],
     deliveryBoy: 'Rajesh Kumar', deliveryBoyPhone: '+91 90000 11111',
     address: '22 Banjara Hills', landmark: 'Phase 3', city: 'Hyderabad', state: 'TG', pincode: '500034',
     status: 'Accepted',
