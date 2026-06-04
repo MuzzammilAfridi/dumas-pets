@@ -102,6 +102,7 @@ export function exportOrdersExcel(orders: KitchenOrder[]) {
       'Time Slot': o.timeSlot,
       'Customer Name': o.customerName,
       'Phone': o.phone,
+      'GPV Ratio': i.gpvRatio,
       'Item Name': i.itemName,
       'Quantity': i.quantity,
       'Raw Materials': i.rawMaterials.join(', '),
