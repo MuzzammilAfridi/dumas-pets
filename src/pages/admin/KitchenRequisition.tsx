@@ -226,6 +226,7 @@ const KitchenRequisition = () => {
                   <TableHead>Order</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Pickup</TableHead>
+                  <TableHead>GPV Ratio</TableHead>
                   <TableHead>Items</TableHead>
                   <TableHead>Delivery Boy</TableHead>
                   <TableHead>Status</TableHead>
