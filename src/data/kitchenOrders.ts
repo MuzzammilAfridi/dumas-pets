@@ -146,7 +146,7 @@ export const mockKitchenOrders: KitchenOrder[] = [
   {
     id: 'KO-1007', orderDate: today, pickupDate: today, timeSlot: '8:00 AM - 10:00 AM',
     customerName: 'Anita Desai', phone: '+91 96666 77777',
-    items: [{ itemName: 'Senior Dog Soft Meal', quantity: 1, rawMaterials: ['Fish 300g', 'Pumpkin 150g'], cookingInstructions: 'Mash well, easy to chew.', gpvRatio: '20/40/40' }],
+    items: [{ itemName: 'Gentle Fish Soft Meal', quantity: 1, rawMaterials: ['Fish 300g', 'Pumpkin 150g'], cookingInstructions: 'Mash well, easy to chew.', gpvRatio: '20/40/40' }],
     deliveryBoy: 'Unassigned', deliveryBoyPhone: '-',
     address: '101 Linking Road', landmark: 'Bandra West', city: 'Mumbai', state: 'MH', pincode: '400050',
     status: 'Cancelled', specialNotes: 'Customer cancelled — refund issued.',
