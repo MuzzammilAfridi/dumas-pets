@@ -140,7 +140,8 @@ export function generateGPVItemSummary(orders: KitchenOrder[]): ItemSummaryRow[]
   const map = new Map<string, { gpvRatio: string; itemName: string; totalQty: number; orderIds: Set<string> }>();
   for (const o of orders) {
     for (const i of o.items) {
-      const gpv = i.gpvRatio || '—';
+      const gpv = getActualGPVRatio(i);
+      if (!gpv) continue;
       const key = `${gpv}__${i.itemName}`;
       const entry = map.get(key) ?? { gpvRatio: gpv, itemName: i.itemName, totalQty: 0, orderIds: new Set<string>() };
       entry.totalQty += i.quantity;
