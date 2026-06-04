@@ -306,15 +306,15 @@ const KitchenRequisition = () => {
           </CardContent>
         </Card>
 
-        {/* Item Wise Summary */}
+        {/* GPV Wise Item Summary */}
         <Card className="lg:col-span-3">
           <CardContent className="p-0">
             <div className="p-4 border-b flex items-center justify-between gap-2">
               <div>
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
-                  <Boxes className="w-4 h-4 text-primary" /> Item Wise Summary
+                  <Boxes className="w-4 h-4 text-primary" /> GPV Wise Item Summary
                 </h3>
-                <p className="text-xs text-muted-foreground">{itemSummary.length} unique items · auto-grouped</p>
+                <p className="text-xs text-muted-foreground">{itemSummary.length} GPV × Item groups · auto-grouped</p>
               </div>
               <Button variant="outline" size="sm" onClick={() => exportItemSummaryExcel(filtered)}>
                 <FileSpreadsheet className="w-4 h-4" />
@@ -324,6 +324,7 @@ const KitchenRequisition = () => {
               <Table>
                 <TableHeader className="sticky top-0 bg-card z-10">
                   <TableRow>
+                    <TableHead>GPV Ratio</TableHead>
                     <TableHead>Item Name</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
                     <TableHead className="text-right">Orders</TableHead>
@@ -331,11 +332,16 @@ const KitchenRequisition = () => {
                 </TableHeader>
                 <TableBody>
                   {itemSummary.length === 0 ? (
-                    <TableRow><TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
+                    <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
                       No items to summarize.
                     </TableCell></TableRow>
                   ) : itemSummary.map(s => (
-                    <TableRow key={s.itemName}>
+                    <TableRow key={`${s.gpvRatio}__${s.itemName}`}>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5">
+                          {s.gpvRatio}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="font-medium">{s.itemName}</TableCell>
                       <TableCell className="text-right font-semibold text-primary">{s.totalQty}</TableCell>
                       <TableCell className="text-right text-muted-foreground">{s.orderCount}</TableCell>
@@ -347,6 +353,7 @@ const KitchenRequisition = () => {
           </CardContent>
         </Card>
       </div>
+
 
       {/* Detail drawer */}
       <Sheet open={!!detailOrder} onOpenChange={(o) => !o && setDetailOrder(null)}>
