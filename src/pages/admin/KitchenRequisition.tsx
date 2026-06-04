@@ -12,6 +12,7 @@ import {
   Eye, Download, Printer, FileSpreadsheet, FileText, Search, RefreshCw, ChefHat,
   Clock, Package, Truck, CheckCircle2, XCircle, Hourglass, Boxes
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import {
   KITCHEN_STATUSES, KitchenOrder, KitchenOrderStatus, mockKitchenOrders, statusColorMap
 } from '@/data/kitchenOrders';
@@ -21,7 +22,7 @@ import { cn } from '@/lib/utils';
 
 const todayStr = new Date().toISOString().slice(0, 10);
 
-const cardConfig: { status: KitchenOrderStatus | 'All' | 'Today'; label: string; icon: any; color: string }[] = [
+const cardConfig: { status: KitchenOrderStatus | 'All' | 'Today'; label: string; icon: LucideIcon; color: string }[] = [
   { status: 'All',               label: 'Total Orders',      icon: Boxes,        color: 'from-slate-500 to-slate-600' },
   { status: 'Today',             label: "Today's Orders",    icon: Clock,        color: 'from-primary to-orange-500' },
   { status: 'Pending',           label: 'Pending',           icon: Hourglass,    color: 'from-gray-400 to-gray-500' },
