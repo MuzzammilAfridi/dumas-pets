@@ -13,6 +13,7 @@ export interface KitchenOrderItem {
   quantity: number;
   rawMaterials: string[];
   cookingInstructions: string;
+  gpvRatio: string;
 }
 
 export interface StatusHistoryEntry {
