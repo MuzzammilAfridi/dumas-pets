@@ -236,7 +236,7 @@ const KitchenRequisition = () => {
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                  <TableRow><TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
                     No orders match your filters.
                   </TableCell></TableRow>
                 ) : filtered.map(o => (
@@ -255,6 +255,15 @@ const KitchenRequisition = () => {
                     <TableCell>
                       <div className="text-sm">{o.pickupDate}</div>
                       <div className="text-xs text-muted-foreground">{o.timeSlot}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        {Array.from(new Set(o.items.map(i => i.gpvRatio))).map(g => (
+                          <Badge key={g} variant="outline" className="w-fit text-xs border-primary/30 text-primary bg-primary/5">
+                            {g}
+                          </Badge>
+                        ))}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">{o.items.map(i => `${i.itemName} ×${i.quantity}`).join(', ')}</div>
