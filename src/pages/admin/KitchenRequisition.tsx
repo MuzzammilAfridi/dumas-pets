@@ -12,15 +12,17 @@ import {
   Eye, Download, Printer, FileSpreadsheet, FileText, Search, RefreshCw, ChefHat,
   Clock, Package, Truck, CheckCircle2, XCircle, Hourglass, Boxes
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import {
   KITCHEN_STATUSES, KitchenOrder, KitchenOrderStatus, mockKitchenOrders, statusColorMap
 } from '@/data/kitchenOrders';
 import { downloadOrderPDF, downloadPackingSlipPDF, exportOrdersExcel, exportItemSummaryExcel, generateItemSummary } from '@/lib/kitchenExports';
+import { formatKitchenItemName, normalizeKitchenOrderGPV } from '@/lib/kitchenGpv';
 import { cn } from '@/lib/utils';
 
 const todayStr = new Date().toISOString().slice(0, 10);
 
-const cardConfig: { status: KitchenOrderStatus | 'All' | 'Today'; label: string; icon: any; color: string }[] = [
+const cardConfig: { status: KitchenOrderStatus | 'All' | 'Today'; label: string; icon: LucideIcon; color: string }[] = [
   { status: 'All',               label: 'Total Orders',      icon: Boxes,        color: 'from-slate-500 to-slate-600' },
   { status: 'Today',             label: "Today's Orders",    icon: Clock,        color: 'from-primary to-orange-500' },
   { status: 'Pending',           label: 'Pending',           icon: Hourglass,    color: 'from-gray-400 to-gray-500' },
@@ -33,7 +35,7 @@ const cardConfig: { status: KitchenOrderStatus | 'All' | 'Today'; label: string;
 ];
 
 const KitchenRequisition = () => {
-  const [orders, setOrders] = useState<KitchenOrder[]>(mockKitchenOrders);
+  const [orders, setOrders] = useState<KitchenOrder[]>(() => mockKitchenOrders.map(normalizeKitchenOrderGPV));
   const [activeCard, setActiveCard] = useState<KitchenOrderStatus | 'All' | 'Today'>('All');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -62,7 +64,7 @@ const KitchenRequisition = () => {
       if (phoneFilter && !o.phone.includes(phoneFilter)) return false;
       if (search) {
         const s = search.toLowerCase();
-        const hay = `${o.id} ${o.customerName} ${o.phone} ${o.deliveryBoy} ${o.items.map(i => i.itemName).join(' ')}`.toLowerCase();
+        const hay = `${o.id} ${o.customerName} ${o.phone} ${o.deliveryBoy} ${o.items.map(i => formatKitchenItemName(i)).join(' ')}`.toLowerCase();
         if (!hay.includes(s)) return false;
       }
       return true;
@@ -253,7 +255,7 @@ const KitchenRequisition = () => {
                       <div className="text-sm">
                         {o.items.map((i, idx) => (
                           <div key={idx}>
-                            {i.itemName} <span className="text-primary font-medium">({i.gpvRatio})</span> ×{i.quantity}
+                            {formatKitchenItemName(i)} ×{i.quantity}
                           </div>
                         ))}
                       </div>
@@ -367,7 +369,7 @@ const KitchenRequisition = () => {
                 <Section title="Food Preparation">
                   {detailOrder.items.map((i, idx) => (
                     <div key={idx} className="p-3 rounded-lg bg-muted/50 mb-2">
-                      <div className="font-semibold">{i.itemName} <span className="text-muted-foreground font-normal">×{i.quantity}</span></div>
+                      <div className="font-semibold">{formatKitchenItemName(i)} <span className="text-muted-foreground font-normal">×{i.quantity}</span></div>
                       <div className="text-xs mt-1"><span className="text-muted-foreground">Raw Materials: </span>{i.rawMaterials.join(', ')}</div>
                       <div className="text-xs mt-1"><span className="text-muted-foreground">Instructions: </span>{i.cookingInstructions}</div>
                     </div>

@@ -3,8 +3,11 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import QRCode from 'qrcode';
 import { KitchenOrder } from '@/data/kitchenOrders';
+import { formatKitchenItemName, getActualGPVRatio } from '@/lib/kitchenGpv';
 
 const COMPANY = 'Dumas Pets Kitchen';
+type AutoTableDoc = { lastAutoTable: { finalY: number } };
+type ExportRow = Record<string, string | number>;
 
 export async function downloadOrderPDF(order: KitchenOrder) {
   const doc = new jsPDF();
@@ -32,12 +35,12 @@ export async function downloadOrderPDF(order: KitchenOrder) {
   autoTable(doc, {
     startY: y,
     head: [['Item', 'Qty', 'Raw Materials', 'Cooking Instructions']],
-    body: order.items.map(i => [i.itemName, String(i.quantity), i.rawMaterials.join(', '), i.cookingInstructions]),
+    body: order.items.map(i => [formatKitchenItemName(i), String(i.quantity), i.rawMaterials.join(', '), i.cookingInstructions]),
     headStyles: { fillColor: [255, 134, 47] },
     styles: { fontSize: 9, cellPadding: 3 },
   });
 
-  const afterY = (doc as any).lastAutoTable.finalY + 10;
+  const afterY = (doc as unknown as AutoTableDoc).lastAutoTable.finalY + 10;
   doc.setFont(undefined, 'bold'); doc.text('Delivery', 14, afterY); doc.setFont(undefined, 'normal');
   doc.text(`${order.deliveryBoy}  |  ${order.deliveryBoyPhone}${order.vehicleNumber ? '  |  ' + order.vehicleNumber : ''}`, 14, afterY + 6);
 
@@ -74,13 +77,13 @@ export async function downloadPackingSlipPDF(order: KitchenOrder) {
   autoTable(doc, {
     startY: y,
     head: [['Item', 'Qty']],
-    body: order.items.map(i => [i.itemName, String(i.quantity)]),
+    body: order.items.map(i => [formatKitchenItemName(i), String(i.quantity)]),
     headStyles: { fillColor: [255, 134, 47] },
     styles: { fontSize: 9 },
     margin: { left: 10, right: 10 },
   });
 
-  const afterY = (doc as any).lastAutoTable.finalY + 6;
+  const afterY = (doc as unknown as AutoTableDoc).lastAutoTable.finalY + 6;
   doc.setFontSize(9);
   doc.text(`Delivery: ${order.deliveryBoy}`, 10, afterY);
   doc.text(`${order.deliveryBoyPhone}`, 10, afterY + 4);
@@ -88,33 +91,37 @@ export async function downloadPackingSlipPDF(order: KitchenOrder) {
   try {
     const qrDataUrl = await QRCode.toDataURL(order.id, { width: 160, margin: 1 });
     doc.addImage(qrDataUrl, 'PNG', 100, afterY - 4, 38, 38);
-  } catch {}
+  } catch (error) {
+    void error;
+  }
 
   doc.save(`PackingSlip-${order.id}.pdf`);
 }
 
 export function exportOrdersExcel(orders: KitchenOrder[]) {
-  const rows = orders.flatMap(o =>
-    o.items.map(i => ({
+  const rows: ExportRow[] = orders.flatMap(o =>
+    o.items.map(i => {
+      const actualGPVRatio = getActualGPVRatio(i);
+      return ({
       'Order ID': o.id,
       'Order Date': o.orderDate,
       'Pickup Date': o.pickupDate,
       'Time Slot': o.timeSlot,
       'Customer Name': o.customerName,
       'Phone': o.phone,
-      'GPV Ratio': i.gpvRatio,
-      'Item Name': i.itemName,
+      'GPV Ratio': actualGPVRatio,
+      'Item Name': actualGPVRatio ? `${i.itemName} (${actualGPVRatio})` : i.itemName,
       'Quantity': i.quantity,
       'Raw Materials': i.rawMaterials.join(', '),
       'Cooking Instructions': i.cookingInstructions,
       'Delivery Boy': o.deliveryBoy,
       'Address': `${o.address}, ${o.landmark}, ${o.city}, ${o.state} - ${o.pincode}`,
       'Status': o.status,
-    }))
+    });})
   );
   const ws = XLSX.utils.json_to_sheet(rows);
   const colWidths = Object.keys(rows[0] || {}).map(k => ({
-    wch: Math.min(40, Math.max(k.length, ...rows.map(r => String((r as any)[k] ?? '').length))) + 2,
+    wch: Math.min(40, Math.max(k.length, ...rows.map(r => String(r[k] ?? '').length))) + 2,
   }));
   ws['!cols'] = colWidths;
   const wb = XLSX.utils.book_new();
@@ -137,7 +144,8 @@ export function generateGPVItemSummary(orders: KitchenOrder[]): ItemSummaryRow[]
   const map = new Map<string, { gpvRatio: string; itemName: string; totalQty: number; orderIds: Set<string> }>();
   for (const o of orders) {
     for (const i of o.items) {
-      const gpv = i.gpvRatio || '—';
+      const gpv = getActualGPVRatio(i);
+      if (!gpv) continue;
       const key = `${gpv}__${i.itemName}`;
       const entry = map.get(key) ?? { gpvRatio: gpv, itemName: i.itemName, totalQty: 0, orderIds: new Set<string>() };
       entry.totalQty += i.quantity;
