@@ -15,7 +15,7 @@ import {
 import {
   KITCHEN_STATUSES, KitchenOrder, KitchenOrderStatus, mockKitchenOrders, statusColorMap
 } from '@/data/kitchenOrders';
-import { downloadOrderPDF, downloadPackingSlipPDF, exportOrdersExcel } from '@/lib/kitchenExports';
+import { downloadOrderPDF, downloadPackingSlipPDF, exportOrdersExcel, exportItemSummaryExcel, generateItemSummary } from '@/lib/kitchenExports';
 import { cn } from '@/lib/utils';
 
 const todayStr = new Date().toISOString().slice(0, 10);
