@@ -224,11 +224,8 @@ const KitchenRequisition = () => {
                     />
                   </TableHead>
                   <TableHead>Order</TableHead>
-                  <TableHead>Customer</TableHead>
                   <TableHead>Pickup</TableHead>
-                  <TableHead>GPV Ratio</TableHead>
                   <TableHead>Items</TableHead>
-                  <TableHead>Delivery Boy</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Update</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -236,7 +233,7 @@ const KitchenRequisition = () => {
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
+                  <TableRow><TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                     No orders match your filters.
                   </TableCell></TableRow>
                 ) : filtered.map(o => (
@@ -249,28 +246,17 @@ const KitchenRequisition = () => {
                       <div className="text-xs text-muted-foreground">{o.orderDate}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">{o.customerName}</div>
-                      <div className="text-xs text-muted-foreground">{o.phone}</div>
-                    </TableCell>
-                    <TableCell>
                       <div className="text-sm">{o.pickupDate}</div>
                       <div className="text-xs text-muted-foreground">{o.timeSlot}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1">
-                        {Array.from(new Set(o.items.map(i => i.gpvRatio))).map(g => (
-                          <Badge key={g} variant="outline" className="w-fit text-xs border-primary/30 text-primary bg-primary/5">
-                            {g}
-                          </Badge>
+                      <div className="text-sm">
+                        {o.items.map((i, idx) => (
+                          <div key={idx}>
+                            {i.itemName} <span className="text-primary font-medium">({i.gpvRatio})</span> ×{i.quantity}
+                          </div>
                         ))}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">{o.items.map(i => `${i.itemName} ×${i.quantity}`).join(', ')}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">{o.deliveryBoy}</div>
-                      <div className="text-xs text-muted-foreground">{o.deliveryBoyPhone}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={cn('border', statusColorMap[o.status].bg)}>
@@ -324,27 +310,21 @@ const KitchenRequisition = () => {
               <Table>
                 <TableHeader className="sticky top-0 bg-card z-10">
                   <TableRow>
-                    <TableHead>GPV Ratio</TableHead>
                     <TableHead>Item Name</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Orders</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {itemSummary.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                    <TableRow><TableCell colSpan={2} className="text-center py-12 text-muted-foreground">
                       No items to summarize.
                     </TableCell></TableRow>
                   ) : itemSummary.map(s => (
                     <TableRow key={`${s.gpvRatio}__${s.itemName}`}>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5">
-                          {s.gpvRatio}
-                        </Badge>
+                      <TableCell className="font-medium">
+                        {s.itemName} <span className="text-primary">({s.gpvRatio})</span>
                       </TableCell>
-                      <TableCell className="font-medium">{s.itemName}</TableCell>
                       <TableCell className="text-right font-semibold text-primary">{s.totalQty}</TableCell>
-                      <TableCell className="text-right text-muted-foreground">{s.orderCount}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -153,13 +153,12 @@ export function generateGPVItemSummary(orders: KitchenOrder[]): ItemSummaryRow[]
 export function exportItemSummaryExcel(orders: KitchenOrder[]) {
   const summary = generateGPVItemSummary(orders);
   const rows = summary.map(s => ({
+    'Item Name': `${s.itemName} (${s.gpvRatio})`,
     'GPV Ratio': s.gpvRatio,
-    'Item Name': s.itemName,
-    'Total Quantity': s.totalQty,
-    'Orders Count': s.orderCount,
+    'Quantity': s.totalQty,
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{ wch: 16 }, { wch: 40 }, { wch: 16 }, { wch: 16 }];
+  ws['!cols'] = [{ wch: 48 }, { wch: 16 }, { wch: 12 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'GPV Item Summary');
   XLSX.writeFile(wb, `kitchen-gpv-item-summary-${new Date().toISOString().slice(0, 10)}.xlsx`);
