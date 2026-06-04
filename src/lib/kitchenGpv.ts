@@ -4,8 +4,6 @@ const GPV_RATIO_PATTERN = /^\s*\d{1,3}\s*\/\s*\d{1,3}\s*\/\s*\d{1,3}\s*$/;
 
 const LIFECYCLE_LABELS = new Set(['puppy', 'adult', 'senior', 'kitten']);
 
-type RatioSource = KitchenOrderItem & Partial<Record<string, unknown>>;
-
 const ratioFieldCandidates = [
   'gpvRatio',
   'gpv_ratio',
@@ -32,7 +30,7 @@ function normalizeRatio(value: unknown): string {
   return ratio.replace(/\s*\/\s*/g, '/');
 }
 
-function firstNumericField(item: RatioSource, fields: string[]): string {
+function firstNumericField(item: Record<string, unknown>, fields: string[]): string {
   for (const field of fields) {
     const value = item[field];
     if (value === null || value === undefined || value === '') continue;
@@ -42,15 +40,16 @@ function firstNumericField(item: RatioSource, fields: string[]): string {
   return '';
 }
 
-export function getActualGPVRatio(item: RatioSource): string {
+export function getActualGPVRatio(item: KitchenOrderItem): string {
+  const source = item as unknown as Record<string, unknown>;
   for (const field of ratioFieldCandidates) {
-    const ratio = normalizeRatio(item[field]);
+    const ratio = normalizeRatio(source[field]);
     if (ratio) return ratio;
   }
 
-  const grain = firstNumericField(item, grainFieldCandidates);
-  const protein = firstNumericField(item, proteinFieldCandidates);
-  const veg = firstNumericField(item, vegFieldCandidates);
+  const grain = firstNumericField(source, grainFieldCandidates);
+  const protein = firstNumericField(source, proteinFieldCandidates);
+  const veg = firstNumericField(source, vegFieldCandidates);
   return grain && protein && veg ? `${grain}/${protein}/${veg}` : '';
 }
 
