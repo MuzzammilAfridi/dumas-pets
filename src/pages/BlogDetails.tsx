@@ -183,14 +183,14 @@ const fetchBlog = async () => {
       </section>
 
       {/* 3. Article Content */}
-      <article className="container mx-auto px-4 py-16 max-w-4xl">
+      {/* <article className="container mx-auto px-4 py-16 max-w-4xl">
         <p className="text-lg md:text-xl text-foreground/80 leading-relaxed mb-10 font-medium">
           Every pet parent dreams of seeing their dog happy, energetic, and full of life. What we put in their bowl
           plays a bigger role than most of us realize. Switching from processed commercial food to fresh, nutrient-rich
           meals can be the single most powerful step toward better health.
         </p>
 
-        {/* Section 1 */}
+   
         <section className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
             <Leaf className="w-7 h-7 text-primary" />
@@ -212,7 +212,7 @@ const fetchBlog = async () => {
           </div>
         </section>
 
-        {/* Section 2 */}
+    
         <section className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
             <AlertTriangle className="w-7 h-7 text-destructive" />
@@ -233,7 +233,7 @@ const fetchBlog = async () => {
           </div>
         </section>
 
-        {/* Section 3 */}
+       
         <section className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
             <Sparkles className="w-7 h-7 text-primary" />
@@ -252,7 +252,7 @@ const fetchBlog = async () => {
           </div>
         </section>
 
-        {/* 5. Quote */}
+  
         <section className="my-16">
           <div className="relative bg-primary/5 border border-primary/20 rounded-2xl p-10 md:p-12 text-center">
             <Quote className="w-12 h-12 text-primary/30 mx-auto mb-4" />
@@ -263,7 +263,6 @@ const fetchBlog = async () => {
           </div>
         </section>
 
-        {/* 6. Gallery */}
         <section className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Moments of Joy</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -275,7 +274,7 @@ const fetchBlog = async () => {
           </div>
         </section>
 
-        {/* 7. Author Card */}
+  
         <section className="mb-16">
           <div className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-lg flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
             <img src={team1} alt={post.author} className="w-24 h-24 rounded-full object-cover ring-4 ring-primary/20" />
@@ -295,7 +294,18 @@ const fetchBlog = async () => {
             </div>
           </div>
         </section>
-      </article>
+      </article> */}
+
+<article className="container mx-auto px-4 py-16 max-w-4xl">
+  <div
+    className="prose prose-lg max-w-none"
+    dangerouslySetInnerHTML={{
+      __html: post.content,
+    }}
+  />
+</article>
+
+      
 
       {/* 8. Related Posts */}
       <section className="bg-muted/40 py-16">
