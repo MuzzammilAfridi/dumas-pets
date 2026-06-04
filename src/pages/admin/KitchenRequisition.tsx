@@ -121,9 +121,12 @@ const KitchenRequisition = () => {
           </h2>
           <p className="text-sm text-muted-foreground">Manage orders, preparation, packing, and delivery from one place.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => exportOrdersExcel(filtered)}>
-            <FileSpreadsheet className="w-4 h-4" /> Export Excel
+            <FileSpreadsheet className="w-4 h-4" /> Export Kitchen List
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => exportItemSummaryExcel(filtered)}>
+            <FileSpreadsheet className="w-4 h-4" /> Export Summary List
           </Button>
           <Button variant="outline" size="sm" onClick={resetFilters}>
             <RefreshCw className="w-4 h-4" /> Reset
