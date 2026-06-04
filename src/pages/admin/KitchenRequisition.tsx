@@ -15,7 +15,7 @@ import {
 import {
   KITCHEN_STATUSES, KitchenOrder, KitchenOrderStatus, mockKitchenOrders, statusColorMap
 } from '@/data/kitchenOrders';
-import { downloadOrderPDF, downloadPackingSlipPDF, exportOrdersExcel } from '@/lib/kitchenExports';
+import { downloadOrderPDF, downloadPackingSlipPDF, exportOrdersExcel, exportItemSummaryExcel, generateItemSummary } from '@/lib/kitchenExports';
 import { cn } from '@/lib/utils';
 
 const todayStr = new Date().toISOString().slice(0, 10);
@@ -75,6 +75,8 @@ const KitchenRequisition = () => {
     return c;
   }, [orders]);
 
+  const itemSummary = useMemo(() => generateItemSummary(filtered), [filtered]);
+
   const updateStatus = (id: string, status: KitchenOrderStatus) => {
     setOrders(prev => prev.map(o => o.id === id ? {
       ...o, status, lastUpdated: new Date().toISOString(),
@@ -121,9 +123,12 @@ const KitchenRequisition = () => {
           </h2>
           <p className="text-sm text-muted-foreground">Manage orders, preparation, packing, and delivery from one place.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => exportOrdersExcel(filtered)}>
-            <FileSpreadsheet className="w-4 h-4" /> Export Excel
+            <FileSpreadsheet className="w-4 h-4" /> Export Kitchen List
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => exportItemSummaryExcel(filtered)}>
+            <FileSpreadsheet className="w-4 h-4" /> Export Summary List
           </Button>
           <Button variant="outline" size="sm" onClick={resetFilters}>
             <RefreshCw className="w-4 h-4" /> Reset
@@ -205,90 +210,133 @@ const KitchenRequisition = () => {
         </Card>
       )}
 
-      {/* Table */}
-      <Card>
-        <CardContent className="p-0 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10">
-                  <Checkbox
-                    checked={selected.length === filtered.length && filtered.length > 0}
-                    onCheckedChange={toggleAll}
-                  />
-                </TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Pickup</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Delivery Boy</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Update</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
-                  No orders match your filters.
-                </TableCell></TableRow>
-              ) : filtered.map(o => (
-                <TableRow key={o.id} className={cn(statusColorMap[o.status].row)}>
-                  <TableCell>
-                    <Checkbox checked={selected.includes(o.id)} onCheckedChange={() => toggleSelect(o.id)} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-semibold text-foreground">{o.id}</div>
-                    <div className="text-xs text-muted-foreground">{o.orderDate}</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">{o.customerName}</div>
-                    <div className="text-xs text-muted-foreground">{o.phone}</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">{o.pickupDate}</div>
-                    <div className="text-xs text-muted-foreground">{o.timeSlot}</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">{o.items.map(i => `${i.itemName} ×${i.quantity}`).join(', ')}</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">{o.deliveryBoy}</div>
-                    <div className="text-xs text-muted-foreground">{o.deliveryBoyPhone}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn('border', statusColorMap[o.status].bg)}>
-                      {o.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Select value={o.status} onValueChange={(v) => updateStatus(o.id, v as KitchenOrderStatus)}>
-                      <SelectTrigger className="w-40 h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>{KITCHEN_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => setDetailOrder(o)} title="View details">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => downloadOrderPDF(o)} title="Order PDF">
-                        <FileText className="w-4 h-4" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => downloadPackingSlipPDF(o)} title="Packing slip">
-                        <Download className="w-4 h-4" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => downloadPackingSlipPDF(o)} title="Print">
-                        <Printer className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+      {/* Tables: Kitchen Orders (70%) + Item Wise Summary (30%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
+        <Card className="lg:col-span-7">
+          <CardContent className="p-0 overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={selected.length === filtered.length && filtered.length > 0}
+                      onCheckedChange={toggleAll}
+                    />
+                  </TableHead>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Pickup</TableHead>
+                  <TableHead>Items</TableHead>
+                  <TableHead>Delivery Boy</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Update</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {filtered.length === 0 ? (
+                  <TableRow><TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                    No orders match your filters.
+                  </TableCell></TableRow>
+                ) : filtered.map(o => (
+                  <TableRow key={o.id} className={cn(statusColorMap[o.status].row)}>
+                    <TableCell>
+                      <Checkbox checked={selected.includes(o.id)} onCheckedChange={() => toggleSelect(o.id)} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-semibold text-foreground">{o.id}</div>
+                      <div className="text-xs text-muted-foreground">{o.orderDate}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium">{o.customerName}</div>
+                      <div className="text-xs text-muted-foreground">{o.phone}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">{o.pickupDate}</div>
+                      <div className="text-xs text-muted-foreground">{o.timeSlot}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">{o.items.map(i => `${i.itemName} ×${i.quantity}`).join(', ')}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">{o.deliveryBoy}</div>
+                      <div className="text-xs text-muted-foreground">{o.deliveryBoyPhone}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={cn('border', statusColorMap[o.status].bg)}>
+                        {o.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Select value={o.status} onValueChange={(v) => updateStatus(o.id, v as KitchenOrderStatus)}>
+                        <SelectTrigger className="w-40 h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>{KITCHEN_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button size="icon" variant="ghost" onClick={() => setDetailOrder(o)} title="View details">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => downloadOrderPDF(o)} title="Order PDF">
+                          <FileText className="w-4 h-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => downloadPackingSlipPDF(o)} title="Packing slip">
+                          <Download className="w-4 h-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => downloadPackingSlipPDF(o)} title="Print">
+                          <Printer className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Item Wise Summary */}
+        <Card className="lg:col-span-3">
+          <CardContent className="p-0">
+            <div className="p-4 border-b flex items-center justify-between gap-2">
+              <div>
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Boxes className="w-4 h-4 text-primary" /> Item Wise Summary
+                </h3>
+                <p className="text-xs text-muted-foreground">{itemSummary.length} unique items · auto-grouped</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => exportItemSummaryExcel(filtered)}>
+                <FileSpreadsheet className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="max-h-[640px] overflow-auto">
+              <Table>
+                <TableHeader className="sticky top-0 bg-card z-10">
+                  <TableRow>
+                    <TableHead>Item Name</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Orders</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {itemSummary.length === 0 ? (
+                    <TableRow><TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
+                      No items to summarize.
+                    </TableCell></TableRow>
+                  ) : itemSummary.map(s => (
+                    <TableRow key={s.itemName}>
+                      <TableCell className="font-medium">{s.itemName}</TableCell>
+                      <TableCell className="text-right font-semibold text-primary">{s.totalQty}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{s.orderCount}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Detail drawer */}
       <Sheet open={!!detailOrder} onOpenChange={(o) => !o && setDetailOrder(null)}>
