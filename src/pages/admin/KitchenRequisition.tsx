@@ -310,27 +310,21 @@ const KitchenRequisition = () => {
               <Table>
                 <TableHeader className="sticky top-0 bg-card z-10">
                   <TableRow>
-                    <TableHead>GPV Ratio</TableHead>
                     <TableHead>Item Name</TableHead>
                     <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Orders</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {itemSummary.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                    <TableRow><TableCell colSpan={2} className="text-center py-12 text-muted-foreground">
                       No items to summarize.
                     </TableCell></TableRow>
                   ) : itemSummary.map(s => (
                     <TableRow key={`${s.gpvRatio}__${s.itemName}`}>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5">
-                          {s.gpvRatio}
-                        </Badge>
+                      <TableCell className="font-medium">
+                        {s.itemName} <span className="text-primary">({s.gpvRatio})</span>
                       </TableCell>
-                      <TableCell className="font-medium">{s.itemName}</TableCell>
                       <TableCell className="text-right font-semibold text-primary">{s.totalQty}</TableCell>
-                      <TableCell className="text-right text-muted-foreground">{s.orderCount}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
