@@ -75,6 +75,8 @@ const KitchenRequisition = () => {
     return c;
   }, [orders]);
 
+  const itemSummary = useMemo(() => generateItemSummary(filtered), [filtered]);
+
   const updateStatus = (id: string, status: KitchenOrderStatus) => {
     setOrders(prev => prev.map(o => o.id === id ? {
       ...o, status, lastUpdated: new Date().toISOString(),
