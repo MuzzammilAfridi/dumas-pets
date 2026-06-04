@@ -122,36 +122,44 @@ export function exportOrdersExcel(orders: KitchenOrder[]) {
 }
 
 export interface ItemSummaryRow {
+  gpvRatio: string;
   itemName: string;
   totalQty: number;
   orderCount: number;
 }
 
 export function generateItemSummary(orders: KitchenOrder[]): ItemSummaryRow[] {
-  const map = new Map<string, { totalQty: number; orderIds: Set<string> }>();
+  return generateGPVItemSummary(orders);
+}
+
+export function generateGPVItemSummary(orders: KitchenOrder[]): ItemSummaryRow[] {
+  const map = new Map<string, { gpvRatio: string; itemName: string; totalQty: number; orderIds: Set<string> }>();
   for (const o of orders) {
     for (const i of o.items) {
-      const entry = map.get(i.itemName) ?? { totalQty: 0, orderIds: new Set() };
+      const gpv = i.gpvRatio || '—';
+      const key = `${gpv}__${i.itemName}`;
+      const entry = map.get(key) ?? { gpvRatio: gpv, itemName: i.itemName, totalQty: 0, orderIds: new Set<string>() };
       entry.totalQty += i.quantity;
       entry.orderIds.add(o.id);
-      map.set(i.itemName, entry);
+      map.set(key, entry);
     }
   }
-  return Array.from(map.entries())
-    .map(([itemName, v]) => ({ itemName, totalQty: v.totalQty, orderCount: v.orderIds.size }))
-    .sort((a, b) => b.totalQty - a.totalQty);
+  return Array.from(map.values())
+    .map(v => ({ gpvRatio: v.gpvRatio, itemName: v.itemName, totalQty: v.totalQty, orderCount: v.orderIds.size }))
+    .sort((a, b) => a.gpvRatio.localeCompare(b.gpvRatio) || b.totalQty - a.totalQty);
 }
 
 export function exportItemSummaryExcel(orders: KitchenOrder[]) {
-  const summary = generateItemSummary(orders);
+  const summary = generateGPVItemSummary(orders);
   const rows = summary.map(s => ({
+    'GPV Ratio': s.gpvRatio,
     'Item Name': s.itemName,
     'Total Quantity': s.totalQty,
-    'Number of Orders': s.orderCount,
+    'Orders Count': s.orderCount,
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{ wch: 40 }, { wch: 16 }, { wch: 18 }];
+  ws['!cols'] = [{ wch: 16 }, { wch: 40 }, { wch: 16 }, { wch: 16 }];
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Item Summary');
-  XLSX.writeFile(wb, `kitchen-item-summary-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  XLSX.utils.book_append_sheet(wb, ws, 'GPV Item Summary');
+  XLSX.writeFile(wb, `kitchen-gpv-item-summary-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
