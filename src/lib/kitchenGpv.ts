@@ -4,7 +4,7 @@ const GPV_RATIO_PATTERN = /^\s*\d{1,3}\s*\/\s*\d{1,3}\s*\/\s*\d{1,3}\s*$/;
 
 const LIFECYCLE_LABELS = new Set(['puppy', 'adult', 'senior', 'kitten']);
 
-type RatioSource = KitchenOrderItem & Record<string, unknown>;
+type RatioSource = KitchenOrderItem & Partial<Record<string, unknown>>;
 
 const ratioFieldCandidates = [
   'gpvRatio',
