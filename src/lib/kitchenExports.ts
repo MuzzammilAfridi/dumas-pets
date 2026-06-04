@@ -120,3 +120,38 @@ export function exportOrdersExcel(orders: KitchenOrder[]) {
   XLSX.utils.book_append_sheet(wb, ws, 'Kitchen Orders');
   XLSX.writeFile(wb, `kitchen-orders-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
+
+export interface ItemSummaryRow {
+  itemName: string;
+  totalQty: number;
+  orderCount: number;
+}
+
+export function generateItemSummary(orders: KitchenOrder[]): ItemSummaryRow[] {
+  const map = new Map<string, { totalQty: number; orderIds: Set<string> }>();
+  for (const o of orders) {
+    for (const i of o.items) {
+      const entry = map.get(i.itemName) ?? { totalQty: 0, orderIds: new Set() };
+      entry.totalQty += i.quantity;
+      entry.orderIds.add(o.id);
+      map.set(i.itemName, entry);
+    }
+  }
+  return Array.from(map.entries())
+    .map(([itemName, v]) => ({ itemName, totalQty: v.totalQty, orderCount: v.orderIds.size }))
+    .sort((a, b) => b.totalQty - a.totalQty);
+}
+
+export function exportItemSummaryExcel(orders: KitchenOrder[]) {
+  const summary = generateItemSummary(orders);
+  const rows = summary.map(s => ({
+    'Item Name': s.itemName,
+    'Total Quantity': s.totalQty,
+    'Number of Orders': s.orderCount,
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{ wch: 40 }, { wch: 16 }, { wch: 18 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Item Summary');
+  XLSX.writeFile(wb, `kitchen-item-summary-${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
