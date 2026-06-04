@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import QRCode from 'qrcode';
 import { KitchenOrder } from '@/data/kitchenOrders';
+import { formatKitchenItemName, getActualGPVRatio } from '@/lib/kitchenGpv';
 
 const COMPANY = 'Dumas Pets Kitchen';
 
@@ -32,7 +33,7 @@ export async function downloadOrderPDF(order: KitchenOrder) {
   autoTable(doc, {
     startY: y,
     head: [['Item', 'Qty', 'Raw Materials', 'Cooking Instructions']],
-    body: order.items.map(i => [i.itemName, String(i.quantity), i.rawMaterials.join(', '), i.cookingInstructions]),
+    body: order.items.map(i => [formatKitchenItemName(i), String(i.quantity), i.rawMaterials.join(', '), i.cookingInstructions]),
     headStyles: { fillColor: [255, 134, 47] },
     styles: { fontSize: 9, cellPadding: 3 },
   });
@@ -74,7 +75,7 @@ export async function downloadPackingSlipPDF(order: KitchenOrder) {
   autoTable(doc, {
     startY: y,
     head: [['Item', 'Qty']],
-    body: order.items.map(i => [i.itemName, String(i.quantity)]),
+    body: order.items.map(i => [formatKitchenItemName(i), String(i.quantity)]),
     headStyles: { fillColor: [255, 134, 47] },
     styles: { fontSize: 9 },
     margin: { left: 10, right: 10 },
@@ -95,22 +96,24 @@ export async function downloadPackingSlipPDF(order: KitchenOrder) {
 
 export function exportOrdersExcel(orders: KitchenOrder[]) {
   const rows = orders.flatMap(o =>
-    o.items.map(i => ({
+    o.items.map(i => {
+      const actualGPVRatio = getActualGPVRatio(i);
+      return ({
       'Order ID': o.id,
       'Order Date': o.orderDate,
       'Pickup Date': o.pickupDate,
       'Time Slot': o.timeSlot,
       'Customer Name': o.customerName,
       'Phone': o.phone,
-      'GPV Ratio': i.gpvRatio,
-      'Item Name': i.itemName,
+      'GPV Ratio': actualGPVRatio,
+      'Item Name': actualGPVRatio ? `${i.itemName} (${actualGPVRatio})` : i.itemName,
       'Quantity': i.quantity,
       'Raw Materials': i.rawMaterials.join(', '),
       'Cooking Instructions': i.cookingInstructions,
       'Delivery Boy': o.deliveryBoy,
       'Address': `${o.address}, ${o.landmark}, ${o.city}, ${o.state} - ${o.pincode}`,
       'Status': o.status,
-    }))
+    });})
   );
   const ws = XLSX.utils.json_to_sheet(rows);
   const colWidths = Object.keys(rows[0] || {}).map(k => ({
