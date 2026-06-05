@@ -345,6 +345,8 @@ const DeliveryTrips = () => {
                       <TableRow>
                         <TableHead>Delivery</TableHead>
                         <TableHead>Customer</TableHead>
+                        <TableHead>Delivery Boy</TableHead>
+                        <TableHead>Contact</TableHead>
                         <TableHead className="text-center">Pkts</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Action</TableHead>
