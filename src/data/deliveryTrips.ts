@@ -29,6 +29,7 @@ export interface DeliveryTrip {
 export const deliveryBoy = {
   name: 'Ramesh Patel',
   vehicle: 'Tata Ace · GJ01AB1234',
+  contact: '+91 98765 43210',
 };
 
 const today = new Date().toISOString().slice(0, 10);
