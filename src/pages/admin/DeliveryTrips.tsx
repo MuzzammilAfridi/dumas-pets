@@ -165,8 +165,6 @@ const DeliveryTrips = () => {
             Manage assigned delivery trips and update delivery statuses
           </p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm">
-            <span className="flex items-center gap-1.5 text-foreground"><User className="w-4 h-4 text-primary" /> <strong>{deliveryBoy.name}</strong></span>
-            <span className="flex items-center gap-1.5 text-muted-foreground"><Truck className="w-4 h-4" /> {deliveryBoy.vehicle}</span>
             <span className="text-muted-foreground">Total: <strong className="text-foreground">{kpis.totalTrips}</strong></span>
             <span className="text-green-700">Completed: <strong>{kpis.completedTrips}</strong></span>
             <span className="text-amber-700">Pending: <strong>{kpis.pendingTrips + kpis.inProgressTrips}</strong></span>
