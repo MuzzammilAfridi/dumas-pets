@@ -27,6 +27,7 @@ import OrdersManagement from "./pages/admin/OrdersManagement";
 import StoreRequisition from "./pages/admin/StoreRequisition";
 import KitchenRequisition from "./pages/admin/KitchenRequisition";
 import PickupList from "./pages/admin/PickupList";
+import DeliveryTrips from "./pages/admin/DeliveryTrips";
 import CustomerManagement from "./pages/admin/CustomerManagement";
 import BlogManagement from "./pages/admin/BlogManagement";
 import CustomerLayout from "./pages/customer/CustomerLayout";
@@ -84,6 +85,7 @@ const App = () => (
                 <Route path="requisition" element={<StoreRequisition />} />
                 <Route path="kitchen" element={<KitchenRequisition />} />
                 <Route path="pickup" element={<PickupList />} />
+                <Route path="delivery-trips" element={<DeliveryTrips />} />
                 <Route path="customers" element={<CustomerManagement />} />
                 <Route path="blogs" element={<BlogManagement />} />
               </Route>
