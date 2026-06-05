@@ -8,6 +8,8 @@ export interface Delivery {
   customerName: string;
   location: string;
   status: DeliveryStatus;
+  deliveryBoyName: string;
+  deliveryBoyContact: string;
 }
 
 export interface DeliveryTrip {
