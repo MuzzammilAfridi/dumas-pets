@@ -8,11 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Truck, Search, RefreshCw, Route as RouteIcon, Package, CheckCircle2, Clock,
-  PackageCheck, PackageX, Boxes, User, MapPin, MousePointerClick, ChevronLeft, ChevronRight,
+            Truck, Search, RefreshCw, Route as RouteIcon, Package, CheckCircle2, Clock,
+  PackageCheck, PackageX, Boxes, MapPin, MousePointerClick, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import {
-  DeliveryTrip, Delivery, TripStatus, DeliveryStatus, mockTrips, deliveryBoy,
+  DeliveryTrip, Delivery, TripStatus, DeliveryStatus, mockTrips,
   tripStatusClass, deliveryStatusClass,
 } from '@/data/deliveryTrips';
 import { cn } from '@/lib/utils';
@@ -165,8 +165,6 @@ const DeliveryTrips = () => {
             Manage assigned delivery trips and update delivery statuses
           </p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm">
-            <span className="flex items-center gap-1.5 text-foreground"><User className="w-4 h-4 text-primary" /> <strong>{deliveryBoy.name}</strong></span>
-            <span className="flex items-center gap-1.5 text-muted-foreground"><Truck className="w-4 h-4" /> {deliveryBoy.vehicle}</span>
             <span className="text-muted-foreground">Total: <strong className="text-foreground">{kpis.totalTrips}</strong></span>
             <span className="text-green-700">Completed: <strong>{kpis.completedTrips}</strong></span>
             <span className="text-amber-700">Pending: <strong>{kpis.pendingTrips + kpis.inProgressTrips}</strong></span>
@@ -347,6 +345,8 @@ const DeliveryTrips = () => {
                       <TableRow>
                         <TableHead>Delivery</TableHead>
                         <TableHead>Customer</TableHead>
+                        <TableHead>Delivery Boy</TableHead>
+                        <TableHead>Contact</TableHead>
                         <TableHead className="text-center">Pkts</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Action</TableHead>
@@ -355,7 +355,7 @@ const DeliveryTrips = () => {
                     <TableBody>
                       {pagedDeliveries.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center py-12 text-muted-foreground text-sm">
+                          <TableCell colSpan={7} className="text-center py-12 text-muted-foreground text-sm">
                             No deliveries match filters
                           </TableCell>
                         </TableRow>
@@ -372,6 +372,12 @@ const DeliveryTrips = () => {
                               <div className="text-xs text-muted-foreground flex items-center gap-1">
                                 <MapPin className="w-3 h-3" /> {d.location}
                               </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm font-medium">{d.deliveryBoyName || '-'}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm text-muted-foreground">{d.deliveryBoyContact || '-'}</div>
                             </TableCell>
                             <TableCell className="text-center">
                               <Badge variant="secondary" className="font-mono">{d.packets}</Badge>
