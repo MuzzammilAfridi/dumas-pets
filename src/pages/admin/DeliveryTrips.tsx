@@ -373,6 +373,12 @@ const DeliveryTrips = () => {
                                 <MapPin className="w-3 h-3" /> {d.location}
                               </div>
                             </TableCell>
+                            <TableCell>
+                              <div className="text-sm font-medium">{d.deliveryBoyName || '-'}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm text-muted-foreground">{d.deliveryBoyContact || '-'}</div>
+                            </TableCell>
                             <TableCell className="text-center">
                               <Badge variant="secondary" className="font-mono">{d.packets}</Badge>
                             </TableCell>
