@@ -12,7 +12,7 @@ import {
   PackageCheck, PackageX, Boxes, MapPin, MousePointerClick, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import {
-  DeliveryTrip, Delivery, TripStatus, DeliveryStatus, mockTrips, deliveryBoy,
+  DeliveryTrip, Delivery, TripStatus, DeliveryStatus, mockTrips,
   tripStatusClass, deliveryStatusClass,
 } from '@/data/deliveryTrips';
 import { cn } from '@/lib/utils';
