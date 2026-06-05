@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Truck, Search, RefreshCw, Route as RouteIcon, Package, CheckCircle2, Clock,
-  PackageCheck, PackageX, Boxes, User, MapPin, MousePointerClick, ChevronLeft, ChevronRight,
+            Truck, Search, RefreshCw, Route as RouteIcon, Package, CheckCircle2, Clock,
+  PackageCheck, PackageX, Boxes, MapPin, MousePointerClick, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import {
   DeliveryTrip, Delivery, TripStatus, DeliveryStatus, mockTrips, deliveryBoy,
