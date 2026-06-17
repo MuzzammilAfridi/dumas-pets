@@ -180,16 +180,6 @@ const Gallery = () => {
                   className="w-full max-h-[60vh] object-contain"
                 />
 
-                {/* Close */}
-                <button
-                  type="button"
-                  onClick={close}
-                  aria-label="Close"
-                  className="absolute top-3 right-3 h-9 w-9 rounded-full bg-background/90 hover:bg-background flex items-center justify-center shadow"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-
                 {/* Nav arrows */}
                 <button
                   type="button"
